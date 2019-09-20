@@ -17,6 +17,8 @@ typedef void(^Errors)(id erro);
 -(void)localSession:(NSInteger)index cerrentmessageId:(NSString *)currentMessageID success:(Success)succe err:(Errors)err;
 -(void)startSession:(NSString *)sessionID withType:(NSString *)type;
 -(void)stopSession;
+//XX
+-(void)startChatMsg;
 -(void)sendAudioRecode:(NSString *)filePath;
 /**
  *  会话页详细配置

@@ -1,9 +1,11 @@
 /**
  * Created by dowin on 2017/8/2.
  */
-'use strict'
-import { NativeModules,Platform } from 'react-native'
-const { RNNeteaseIm } = NativeModules
+'use strict';
+import {NativeModules, Platform} from 'react-native';
+
+const {RNNeteaseIm} = NativeModules;
+
 class Session {
     /**
      * 登陆
@@ -12,56 +14,72 @@ class Session {
      * @returns {*} @see observeRecentContact observeOnlineStatus
      */
     login(contactId, token) {
-        return RNNeteaseIm.login(contactId, token)
+        return RNNeteaseIm.login(contactId, token);
     }
+
     /**
      * 退出
      * @returns {*}
      */
     logout() {
-        return RNNeteaseIm.logout()
+        return RNNeteaseIm.logout();
     }
+
     /**
      * 最近会话列表
      * @returns {*}
      */
-    getRecentContactList(){
-        return RNNeteaseIm.getRecentContactList()
+    getRecentContactList() {
+        return RNNeteaseIm.getRecentContactList();
     }
+
     /**
      * 删除最近会话
      * @param recentContactId
      * @returns {*}
      */
-    deleteRecentContact(recentContactId){
-        return RNNeteaseIm.deleteRecentContact(recentContactId)
+    deleteRecentContact(recentContactId) {
+        return RNNeteaseIm.deleteRecentContact(recentContactId);
     }
+
+    /**
+     * 开始监听接收消息
+     * @param sessionId
+     * @param type
+     * @returns {*} @see observeReceiveMessage 接收最近20消息记录
+     */
+    startChatMsg() {
+        return RNNeteaseIm.startChatMsg();
+    }
+
     /**
      * 进入聊天会话
      * @param sessionId
      * @param type
      * @returns {*} @see observeReceiveMessage 接收最近20消息记录
      */
-    startSession(sessionId, type){
-        return RNNeteaseIm.startSession(sessionId, type)
+    startSession(sessionId, type) {
+        return RNNeteaseIm.startSession(sessionId, type);
     }
 
     /**
      * 退出聊天会话
      * @returns {*}
      */
-    stopSession(){
-        return RNNeteaseIm.stopSession()
+    stopSession() {
+        return RNNeteaseIm.stopSession();
     }
+
     /**
      * 获取云端聊天记录
      * @param messageId
      * @param limit 查询结果的条数限制
      * @returns {*}  @see 回调返回最近所有消息记录
      */
-    queryMessageListEx(messageId, limit){
-        return RNNeteaseIm.queryMessageListEx(messageId, limit)
+    queryMessageListEx(messageId, limit) {
+        return RNNeteaseIm.queryMessageListEx(messageId, limit);
     }
+
     /**
      * 获取最近聊天内容
      * @param sessionId 聊天会话ID,
@@ -72,16 +90,17 @@ class Session {
      * @param asc 查询结果的排序规则，如果为 true，结果按照时间升级排列，如果为 false，按照时间降序排列
      * @returns {*}  @see 回调返回最近所有消息记录
      */
-    queryMessageListHistory(sessionId, sessionType, timeLong, direction, limit, asc){
-        return RNNeteaseIm.queryMessageListHistory(sessionId, sessionType, timeLong, direction, limit, asc)
+    queryMessageListHistory(sessionId, sessionType, timeLong, direction, limit, asc) {
+        return RNNeteaseIm.queryMessageListHistory(sessionId, sessionType, timeLong, direction, limit, asc);
     }
+
     /**
      *1.发送文本消息
      * @param content 文本内容
      * @param atUserIds @的群成员ID ["abc","abc12"]
      */
-    sendTextMessage(content, atUserIds){
-        return RNNeteaseIm.sendTextMessage(content, atUserIds)
+    sendTextMessage(content, atUserIds) {
+        return RNNeteaseIm.sendTextMessage(content, atUserIds);
     }
 
     /**
@@ -91,20 +110,21 @@ class Session {
      * @param displayName 文件显示名字，如果第三方 APP 不关注，可为空
      * @returns {*}
      */
-    sendImageMessages(file, displayName){
+    sendImageMessages(file, displayName) {
         if (Platform.OS === 'ios') {
-            return RNNeteaseIm.sendImageMessages(file, displayName)
+            return RNNeteaseIm.sendImageMessages(file, displayName);
         }
-        return RNNeteaseIm.sendImageMessage(file.replace("file://",""), displayName)
+        return RNNeteaseIm.sendImageMessage(file.replace("file://", ""), displayName);
     }
+
     /**
      * 发送音频消息
      * @param file 音频文件
      * @param duration 音频持续时间，单位是ms
      * @returns {*}
      */
-    sendAudioMessage(file, duration){
-       return RNNeteaseIm.sendAudioMessage(file, duration)
+    sendAudioMessage(file, duration) {
+        return RNNeteaseIm.sendAudioMessage(file, duration);
     }
 
     /**
@@ -116,9 +136,10 @@ class Session {
      * @param displayName 视频显示名，可为空
      * @returns {*}
      */
-    sendVideoMessage(file, duration, width, height, displayName){
-        return RNNeteaseIm.sendVideoMessage(file, duration, width, height, displayName)
+    sendVideoMessage(file, duration, width, height, displayName) {
+        return RNNeteaseIm.sendVideoMessage(file, duration, width, height, displayName);
     }
+
     /**
      * 发送地理位置消息
      * @param latitude 纬度
@@ -126,16 +147,17 @@ class Session {
      * @param address 地址信息描述
      * @returns {*}
      */
-    sendLocationMessage(latitude, longitude, address){
-        return RNNeteaseIm.sendLocationMessage(latitude, longitude, address)
+    sendLocationMessage(latitude, longitude, address) {
+        return RNNeteaseIm.sendLocationMessage(latitude, longitude, address);
     }
+
     /**
      * 发送系统通知
      * @param content
      * @returns {*}
      */
-    sendTipMessage(content){
-        return RNNeteaseIm.sendTipMessage(content)
+    sendTipMessage(content) {
+        return RNNeteaseIm.sendTipMessage(content);
     }
 
     /**
@@ -148,8 +170,8 @@ class Session {
      * @param serialNo 流水号
      * @returns {*}
      */
-    sendRedPacketMessage(type, comments, serialNo){
-        return RNNeteaseIm.sendRedPacketMessage(type, comments, serialNo)
+    sendRedPacketMessage(type, comments, serialNo) {
+        return RNNeteaseIm.sendRedPacketMessage(type, comments, serialNo);
     }
 
     /**
@@ -160,9 +182,10 @@ class Session {
      * @param sessionId
      * @returns {*}
      */
-    sendCardMessage(type, name, imgPath, sessionId){
-        return RNNeteaseIm.sendCardMessage(type, name, imgPath, sessionId)
+    sendCardMessage(type, name, imgPath, sessionId) {
+        return RNNeteaseIm.sendCardMessage(type, name, imgPath, sessionId);
     }
+
     /**
      * 拆红包
      * @param sendId 发送红包的sessionId
@@ -170,9 +193,10 @@ class Session {
      * @param serialNo 流水号
      * @returns {*}
      */
-    sendRedPacketOpenMessage(sendId, hasRedPacket, serialNo){
-        return RNNeteaseIm.sendRedPacketOpenMessage(sendId,  hasRedPacket, serialNo);
+    sendRedPacketOpenMessage(sendId, hasRedPacket, serialNo) {
+        return RNNeteaseIm.sendRedPacketOpenMessage(sendId, hasRedPacket, serialNo);
     }
+
     /**
      * 转账
      * min 转账最小金额
@@ -182,39 +206,42 @@ class Session {
      * @param serialNo 流水号
      * @returns {*}
      */
-    sendBankTransferMessage(amount, comments, serialNo){
-        return RNNeteaseIm.sendBankTransferMessage(amount, comments, serialNo)
+    sendBankTransferMessage(amount, comments, serialNo) {
+        return RNNeteaseIm.sendBankTransferMessage(amount, comments, serialNo);
     }
+
     /**
      * 发送自定义消息
      * @param attachment 自定义消息内容{Width:260,Height:100,pushContent:'发来一条自定义消息',recentContent:'[自定义消息]'}
      * Width 消息宽度，Height：消息高度， pushContent：推送消息内容， recentContent：最近会话显示的内容，
      * @returns {*}
      */
-    sendCustomMessage(attachment){
+    sendCustomMessage(attachment) {
         return RNNeteaseIm.sendCustomMessage(attachment);
     }
+
     /**
      * 开启录音权限
      * @returns {*}
      */
-    onTouchVoice(){
-        return RNNeteaseIm.onTouchVoice()
+    onTouchVoice() {
+        return RNNeteaseIm.onTouchVoice();
     }
+
     /**
      * 开始录音
      * @returns {*}
      */
-    startAudioRecord(){
-        return RNNeteaseIm.startAudioRecord()
+    startAudioRecord() {
+        return RNNeteaseIm.startAudioRecord();
     }
 
     /**
      * 结束录音,自动发送
      * @returns {*} @see observeAudioRecord
      */
-    endAudioRecord(){
-        return RNNeteaseIm.endAudioRecord()
+    endAudioRecord() {
+        return RNNeteaseIm.endAudioRecord();
     }
 
 
@@ -222,9 +249,10 @@ class Session {
      * 取消播放录音
      * @returns {*}
      */
-    cancelAudioRecord(){
-        return RNNeteaseIm.cancelAudioRecord()
+    cancelAudioRecord() {
+        return RNNeteaseIm.cancelAudioRecord();
     }
+
     /**
      * 转发消息操作
      * @param messageId
@@ -233,16 +261,17 @@ class Session {
      * @param content
      * @returns {*}
      */
-    sendForwardMessage(messageId, sessionId, sessionType,content){
-        return RNNeteaseIm.sendForwardMessage(messageId, sessionId, sessionType, content)
+    sendForwardMessage(messageId, sessionId, sessionType, content) {
+        return RNNeteaseIm.sendForwardMessage(messageId, sessionId, sessionType, content);
     }
+
     /**
      * 消息撤回
      * @param messageId
      * @returns {*}
      */
-    revokeMessage(messageId){
-        return RNNeteaseIm.revokeMessage(messageId)
+    revokeMessage(messageId) {
+        return RNNeteaseIm.revokeMessage(messageId);
     }
 
     /**
@@ -250,24 +279,26 @@ class Session {
      * @param messageId
      * @returns {*}
      */
-    resendMessage(messageId){
-        return RNNeteaseIm.resendMessage(messageId)
+    resendMessage(messageId) {
+        return RNNeteaseIm.resendMessage(messageId);
     }
+
     /**
      * 消息删除
      * @param messageId
      * @returns {*}
      */
-    deleteMessage(messageId){
-        return RNNeteaseIm.deleteMessage(messageId)
+    deleteMessage(messageId) {
+        return RNNeteaseIm.deleteMessage(messageId);
     }
+
     /**
      * 清空聊天记录
      * @param messageId
      * @returns {*}
      */
-    clearMessage(sessionId, type){
-        return RNNeteaseIm.clearMessage(sessionId, type)
+    clearMessage(sessionId, type) {
+        return RNNeteaseIm.clearMessage(sessionId, type);
     }
 
     /**
@@ -275,21 +306,24 @@ class Session {
      * @param messageId
      * @returns {*}
      */
-    downloadAttachment(messageId){
-        return RNNeteaseIm.downloadAttachment(messageId, '0')
+    downloadAttachment(messageId) {
+        return RNNeteaseIm.downloadAttachment(messageId, '0');
     }
+
     /**
      * 更新录音消息是否播放过的状态
      * @param messageId
      * @returns {*}
      */
-    updateAudioMessagePlayStatus(messageId){
-        return RNNeteaseIm.updateAudioMessagePlayStatus(messageId)
+    updateAudioMessagePlayStatus(messageId) {
+        return RNNeteaseIm.updateAudioMessagePlayStatus(messageId);
     }
-    getLaunch(){
+
+    getLaunch() {
         if (Platform.OS === 'android') {
-            return RNNeteaseIm.getLaunch()
+            return RNNeteaseIm.getLaunch();
         }
     }
 }
-export default new Session()
+
+export default new Session();

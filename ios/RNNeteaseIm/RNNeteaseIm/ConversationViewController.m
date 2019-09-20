@@ -81,6 +81,8 @@
     _sessionArr = [NSMutableArray array];
     [self addListener];
 }
+
+ 
 //本地历史记录
 -(void)localSessionList:(NSString *)sessionId sessionType:(NSString *)sessionType timeLong:(NSString *)timeLong direction:(NSString *)direction limit:(NSString *)limit asc:(BOOL)asc success:(Success)succe{
     // NIMMessageSearchOption *option = [[NIMMessageSearchOption alloc]init];
@@ -623,8 +625,9 @@
 - (void)onRecvMessages:(NSArray *)messages
 {
     NIMMessage *message = messages.firstObject;
+    [self refrashMessage:message From:@"receive" ];
     if ([message.session.sessionId isEqualToString:_sessionID]) {
-        [self refrashMessage:message From:@"receive" ];
+//        [self refrashMessage:message From:@"receive" ];
         NIMMessageReceipt *receipt = [[NIMMessageReceipt alloc] initWithMessage:message];
         [[[NIMSDK sharedSDK] chatManager] sendMessageReceipt:receipt completion:nil];
         //标记已读消息
@@ -704,7 +707,7 @@
 //    tipMessage.timestamp = notification.timestamp;
 //    NIMMessage *deleMess = notification.message;
 //    NSDictionary *deleteDict = @{@"msgId":deleMess.messageId};
-//   
+//
 //    // saveMessage 方法执行成功后会触发 onRecvMessages: 回调，但是这个回调上来的 NIMMessage 时间为服务器时间，和界面上的时间有一定出入，所以要提前先在界面上插入一个和被删消息的界面时间相符的 Tip, 当触发 onRecvMessages: 回调时，组件判断这条消息已经被插入过了，就会忽略掉。
 //    [[NIMSDK sharedSDK].conversationManager saveMessage:tipMessage
 //                                             forSession:notification.session
@@ -797,6 +800,15 @@
     //    }
     //    [self changeLeftBarBadge:totalUnreadCount];
 }
+
+//XX
+- (void)startChatMsg
+{
+    [[NIMSDK sharedSDK].chatManager addDelegate:self];
+//    [[NIMSDK sharedSDK].conversationManager addDelegate:self];
+    [[NIMSDK sharedSDK].systemNotificationManager addDelegate:self];
+}
+
 
 - (void)addListener
 {
