@@ -626,6 +626,7 @@
 {
     NIMMessage *message = messages.firstObject;
     [self refrashMessage:message From:@"receive" ];
+    
     if ([message.session.sessionId isEqualToString:_sessionID]) {
 //        [self refrashMessage:message From:@"receive" ];
         NIMMessageReceipt *receipt = [[NIMMessageReceipt alloc] initWithMessage:message];
@@ -812,9 +813,9 @@
 
 - (void)addListener
 {
-    [[NIMSDK sharedSDK].chatManager addDelegate:self];
+//    [[NIMSDK sharedSDK].chatManager addDelegate:self];
     [[NIMSDK sharedSDK].conversationManager addDelegate:self];
-    [[NIMSDK sharedSDK].systemNotificationManager addDelegate:self];
+//    [[NIMSDK sharedSDK].systemNotificationManager addDelegate:self];
 }
 
 
