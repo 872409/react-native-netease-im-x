@@ -9,12 +9,23 @@ const {RNNeteaseIm} = NativeModules;
 class Session {
     /**
      * 登陆
-     * @param account
+     * @param contactId
      * @param token
      * @returns {*} @see observeRecentContact observeOnlineStatus
      */
     login(contactId, token) {
         return RNNeteaseIm.login(contactId, token);
+    }
+
+    /**
+     * 登陆
+     * @param contactId
+     * @param token
+     * @param forced
+     * @returns {*} @see observeRecentContact observeOnlineStatus
+     */
+    autoLogin(contactId, token, forced) {
+        return RNNeteaseIm.autoLogin(contactId, token, forced);
     }
 
     /**
@@ -48,6 +59,7 @@ class Session {
     startChatMsg() {
         return RNNeteaseIm.startChatMsg();
     }
+
     /**
      * 暂停监听接收消息
      */

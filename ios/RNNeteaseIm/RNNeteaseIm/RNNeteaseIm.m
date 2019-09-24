@@ -87,6 +87,19 @@
 RCT_EXPORT_MODULE()
 
 
+//auto登录
+RCT_EXPORT_METHOD(autoLogin:(nonnull NSString *)account token:(nonnull NSString *)token
+                  forcedMode:(bool)forced){
+    NIMAutoLoginData *loginData = [[NIMAutoLoginData alloc] init];
+    loginData.account = account;
+    loginData.token = token;
+    loginData.forcedMode = forced;
+    [[[NIMSDK sharedSDK] loginManager] autoLogin:loginData];
+    
+    [NIMViewController initWithController].strToken = token;
+    [NIMViewController initWithController].strAccount = account;
+}
+
 
 //手动登录
 RCT_EXPORT_METHOD(login:(nonnull NSString *)account token:(nonnull NSString *)token
