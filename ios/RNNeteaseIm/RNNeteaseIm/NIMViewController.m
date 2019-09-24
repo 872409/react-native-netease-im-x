@@ -44,6 +44,7 @@
 //监听网络
 #pragma mark - NIMLoginManagerDelegate
 - (void)onLogin:(NIMLoginStep)step{
+    NSLog(@"onLogin:step %ld",step);
     NSString *strStatus = @"0";
     switch (step) {
         case NIMLoginStepLinking://连接服务器
