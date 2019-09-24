@@ -25,7 +25,7 @@ class Session {
      * @returns {*} @see observeRecentContact observeOnlineStatus
      */
     autoLogin(contactId, token, forced) {
-        return RNNeteaseIm.autoLogin(contactId, token, forced);
+        return RNNeteaseIm.autoLogin(contactId, token, forced ? "1" : "0");
     }
 
     /**
