@@ -1258,6 +1258,10 @@
 -(void)stopSession;
 {
 
+    _sessionID = nil;
+    _type = nil;
+    _session = nil;
+    
     [[NIMSDK sharedSDK].conversationManager removeDelegate:self];
 //    [[NIMSDK sharedSDK].chatManager removeDelegate:self];
 //    [[NIMSDK sharedSDK].systemNotificationManager removeDelegate:self];
