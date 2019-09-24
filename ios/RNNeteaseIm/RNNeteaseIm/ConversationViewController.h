@@ -19,6 +19,7 @@ typedef void(^Errors)(id erro);
 -(void)stopSession;
 //XX
 -(void)startChatMsg;
+-(void)stopChatMsg;
 -(void)sendAudioRecode:(NSString *)filePath;
 /**
  *  会话页详细配置
