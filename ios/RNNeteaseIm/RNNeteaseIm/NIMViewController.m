@@ -117,7 +117,7 @@
 #pragma NIMLoginManagerDelegate
 -(void)onKick:(NIMKickReason)code clientType:(NIMLoginClientType)clientType
 {
-
+        NSLog(@"踢下线");
         switch (code) {
             case NIMKickReasonByClient:{//被另外一个客户端踢下线 (互斥客户端一端登录挤掉上一个登录中的客户端)
                 [NIMModel initShareMD].NIMKick = @"1";

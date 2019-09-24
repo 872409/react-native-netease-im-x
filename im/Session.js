@@ -44,12 +44,15 @@ class Session {
 
     /**
      * 开始监听接收消息
-     * @param sessionId
-     * @param type
-     * @returns {*} @see observeReceiveMessage 接收最近20消息记录
      */
     startChatMsg() {
         return RNNeteaseIm.startChatMsg();
+    }
+    /**
+     * 暂停监听接收消息
+     */
+    stopChatMsg() {
+        return RNNeteaseIm.stopChatMsg();
     }
 
     /**

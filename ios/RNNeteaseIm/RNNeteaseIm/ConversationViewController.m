@@ -811,6 +811,14 @@
 }
 
 
+//XX
+- (void)stopChatMsg
+{
+    [[NIMSDK sharedSDK].chatManager removeDelegate:self];
+    [[NIMSDK sharedSDK].systemNotificationManager removeDelegate:self];
+}
+
+
 - (void)addListener
 {
 //    [[NIMSDK sharedSDK].chatManager addDelegate:self];
@@ -1249,9 +1257,10 @@
 
 -(void)stopSession;
 {
-    [[NIMSDK sharedSDK].chatManager removeDelegate:self];
+
     [[NIMSDK sharedSDK].conversationManager removeDelegate:self];
-    [[NIMSDK sharedSDK].systemNotificationManager removeDelegate:self];
+//    [[NIMSDK sharedSDK].chatManager removeDelegate:self];
+//    [[NIMSDK sharedSDK].systemNotificationManager removeDelegate:self];
 }
 //判断是不是好友
 - (BOOL)isFriendToSendMessage:(NIMMessage *)message{

@@ -279,11 +279,16 @@ RCT_EXPORT_METHOD(startSession:(nonnull  NSString *)sessionId type:(nonnull  NSS
     [[ConversationViewController initWithConversationViewController]startSession:sessionId withType:type];
 }
 
-//会话通知返回按钮
 //XX
 RCT_EXPORT_METHOD(startChatMsg){
     [[ConversationViewController initWithConversationViewController]startChatMsg];
 }
+
+//XX
+RCT_EXPORT_METHOD(stopChatMsg){
+    [[ConversationViewController initWithConversationViewController]stopChatMsg];
+}
+
 //会话通知返回按钮
 RCT_EXPORT_METHOD(stopSession){
     [[ConversationViewController initWithConversationViewController]stopSession];
