@@ -1,8 +1,11 @@
-import NimUtils from './Utils'
-import NimFriend from './im/Friend'
-import NimSession from './im/Session'
-import NimSystemMsg from './im/SystemMsg'
-import NimTeam from './im/Team'
+import NimUtils     from './Utils';
+import NimFriend    from './im/Friend';
+import NimSession   from './im/Session';
+import NimSystemMsg from './im/SystemMsg';
+import NimTeam      from './im/Team';
+import NimObserves  from './im/Observes';
+
+
 /**
  *监听列表
  *observeRecentContact 最近会话
@@ -20,9 +23,10 @@ import NimTeam from './im/Team'
  *observeOnKick 被踢出下线
  */
 export {
+    NimObserves,
     NimUtils,
     NimFriend,
     NimSession,
     NimSystemMsg,
-    NimTeam,
-}
+    NimTeam
+};
