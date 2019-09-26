@@ -89,7 +89,8 @@ RCT_EXPORT_MODULE()
 
 //auto登录
 RCT_EXPORT_METHOD(autoLogin:(nonnull NSString *)account token:(nonnull NSString *)token
-                  forcedMode:(nonnull NSString *)forced){
+                  forcedMode:(nonnull NSString *)forced)
+{
     NIMAutoLoginData *loginData = [[NIMAutoLoginData alloc] init];
     loginData.account = account;
     loginData.token = token;
@@ -813,6 +814,9 @@ RCT_EXPORT_METHOD(cleanCache){
                 //下载视频完成通知
                 [_bridge.eventDispatcher sendDeviceEventWithName:@"observeDownloadVideoNotice" body:param];
                 break;
+            case 18:
+                  [_bridge.eventDispatcher sendDeviceEventWithName:@"observeAutoLoginFailed" body:param];
+                  break;
             default:
                 break;
         }
