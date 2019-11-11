@@ -42,8 +42,9 @@ typedef void(^Errors)(id erro);
 -(void)sendCustomMessage:(NSDictionary *)dataDict;
 //发送地理位置消息
 -(void)sendLocationMessage:(  NSString *)latitude longitude:(  NSString *)longitude address:(  NSString *)address;
+//X
 //发送提醒消息
--(void)sendTipMessage:( NSString *)content;
+-(void)sendTipMessage:(NSString *)contactId content:(NSString *)content;
 //发送红包消息
 - (void)sendRedPacketMessage:(NSString *)type comments:(NSString *)comments serialNo:(NSString *)serialNo;
 //发送转账消息

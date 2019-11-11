@@ -25,15 +25,6 @@
 //    }
 //}
 
-
-
-- (void)setAutoLoginFailed:(NSError *)error{
-   if (self.myBlock) {
-        self.myBlock(17, error);
-    }
-}
-
-
 - (void)setRecentDict:(NSDictionary *)recentDict{
     if ((_recentDict != recentDict)&&(recentDict.count)) {
         _recentDict = recentDict;

@@ -149,9 +149,14 @@
     }
     NIMTeam *team;
     NSString *verifyText = @"未知请求";
+    NSString *notificationType = @"unknown";
+    NSString *operationType = @"";
+    NSMutableDictionary *extend= [NSMutableDictionary dictionary];
+
     switch (type) {
         case NIMSystemNotificationTypeTeamApply:
         {
+            notificationType=@"teamApply";
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             isVerify = @"1";
             verifyText = [NSString stringWithFormat:@"申请加入群 %@", team.teamName];
@@ -159,12 +164,14 @@
             break;
         case NIMSystemNotificationTypeTeamApplyReject:
         {
+            notificationType=@"teamApplyReject";
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             verifyText = [NSString stringWithFormat:@"群 %@ 拒绝你加入", team.teamName];
         }
             break;
         case NIMSystemNotificationTypeTeamInvite:
         {
+            notificationType=@"teamInvite";
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             isVerify = @"1";
             verifyText = [NSString stringWithFormat:@"群 %@ 邀请你加入", team.teamName];
@@ -172,28 +179,34 @@
             break;
         case NIMSystemNotificationTypeTeamIviteReject:
         {
+            notificationType=@"teamInviteRejct";
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             verifyText = [NSString stringWithFormat:@"拒绝了群 %@ 邀请", team.teamName];
         }
             break;
         case NIMSystemNotificationTypeFriendAdd:
         {
+            notificationType=@"friendAdd";
             id object = noti.attachment;
             if ([object isKindOfClass:[NIMUserAddAttachment class]]) {
                 NIMUserOperation operation = [(NIMUserAddAttachment *)object operationType];
                 switch (operation) {
                     case NIMUserOperationAdd:
+                        operationType =@"add";
                         verifyText = @"已添加你为好友";
                         break;
                     case NIMUserOperationRequest:
+                        operationType =@"request";
                         isVerify = @"1";
                         verifyText = [noti.postscript length]?noti.postscript:@"请求添加你为好友";
                         break;
                     case NIMUserOperationVerify:
+                        operationType =@"verify";
                         verifyText = @"通过了你的好友请求";
                         noti.handleStatus = NotificationHandleTypeOk;
                         break;
                     case NIMUserOperationReject:
+                        operationType =@"reject";
                         verifyText = @"拒绝了你的好友请求";
                         noti.handleStatus = NotificationHandleTypeNo;
                         break;
@@ -211,13 +224,18 @@
     [dic setObject:[NSString stringWithFormat:@"%@",verifyText] forKey:@"verifyResult"];
     [dic setObject:@"" forKey:@"messageId"];
     [dic setObject:[NSString stringWithFormat:@"%ld",noti.type] forKey:@"type"];
+    [dic setObject:notificationType forKey:@"notificationType"];
     [dic setObject:[NSString stringWithFormat:@"%@",noti.targetID] forKey:@"targetId"];
     [dic setObject:[NSString stringWithFormat:@"%@",noti.sourceID] forKey:@"fromAccount"];
     [dic setObject:[NSString stringWithFormat:@"%@",noti.postscript] forKey:@"content"];
     [dic setObject:[NSString stringWithFormat:@"%@",sourceMember.showName] forKey:@"name"];
     [dic setObject:[NSString stringWithFormat:@"%@",url] forKey:@"avatar"];
     [dic setObject:[NSString stringWithFormat:@"%ld",noti.handleStatus] forKey:@"status"];
-    [dic setObject:[NSString stringWithFormat:@"%f",noti.timestamp] forKey:@"time"];
+    [dic setObject:[NSString stringWithFormat:@"%f",noti.timestamp] forKey:@"timestamp"];
+    
+    [extend setObject:notificationType forKey:@"notificationType"];
+    [extend setObject:operationType forKey:@"operationType"];
+    [dic setObject:extend forKey:@"extend"];
     
     [_notiArr addObject:dic];
 
@@ -264,7 +282,7 @@
     }
 }
 //同意
--(void)onAccept:(NSString *)targetID timestamp:(NSString *)timestamp sucess:(Success)success error:(Errors)err{
+-(void)onAccept:(NSString *)targetID timestamp:(NSString *)timestamp msg:(NSString *)msg sucess:(Success)success error:(Errors)err{
     
     __weak typeof(self)weakSelf = self;
     for (int i = 0; i < _notiArr.count; i++) {
@@ -334,7 +352,7 @@
                                                                          [self updateSourceMember:sourceMember andNoti:notices];
                                                                      }
                                                                      success(@"同意成功");
-                                                                     [weakSelf sendMakeFriendSucessMessgae:request.userId];
+                                                                     [weakSelf sendMakeFriendSucessMessgae:request.userId content:msg];
                                                                      [self refrash];
                                                                  }
                                                                  else
@@ -356,17 +374,31 @@
     
 }
 
-
+   
 //发送成为好友提醒
-- (void)sendMakeFriendSucessMessgae:(NSString *)strUserId{
+- (void)sendMakeFriendSucessMessgae:(NSString *)strUserId content:(NSString *)content{
     NIMMessage *message = [[NIMMessage alloc] init];
-    message.text    = @"我们已经是朋友啦，一起来聊天吧！";
+    message.text    = content;
     NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
     setting.apnsEnabled = NO;
     message.setting = setting;
     NIMSession *session = [NIMSession session:strUserId type:NIMSessionTypeP2P];
     //发送消息
     [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:session error:nil];
+    
+    
+    
+    //X
+    NIMSession *session2  = [NIMSession session:strUserId type:NIMSessionTypeP2P];
+    // 获得文件附件对象
+    NIMTipObject *object = [[NIMTipObject alloc] init];
+    // 构造出具体消息并注入附件
+    NIMMessage *message2 = [[NIMMessage alloc] init];
+    message2.messageObject = object;
+    message2.text = @"friend_Verified";
+     
+    // 发送消息
+    [[NIMSDK sharedSDK].chatManager sendMessage:message2 toSession:session2 error:nil];
 }
 
 
@@ -433,6 +465,7 @@
                         NIMUserRequest *request = [[NIMUserRequest alloc] init];
                         request.userId = notices.sourceID;
                         request.operation = NIMUserOperationReject;
+                        
                         
                         [[[NIMSDK sharedSDK] userManager] requestFriend:request
                                                              completion:^(NSError *error) {

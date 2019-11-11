@@ -89,8 +89,7 @@ RCT_EXPORT_MODULE()
 
 //auto登录
 RCT_EXPORT_METHOD(autoLogin:(nonnull NSString *)account token:(nonnull NSString *)token
-                  forcedMode:(nonnull NSString *)forced)
-{
+                  forcedMode:(nonnull NSString *)forced){
     NIMAutoLoginData *loginData = [[NIMAutoLoginData alloc] init];
     loginData.account = account;
     loginData.token = token;
@@ -197,9 +196,9 @@ RCT_EXPORT_METHOD(addFriendWithType:(nonnull  NSString *)contactId verifyType:(n
     }];
 }
 //通过/拒绝对方好友请求
-RCT_EXPORT_METHOD(ackAddFriendRequest:(nonnull  NSString *)targetId msg:(nonnull  NSString * )msg timestamp:(nonnull  NSString * )timestamp resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
-    if ([msg isEqualToString:@"1"]) {
-        [[NoticeViewController initWithNoticeViewController]onAccept:targetId timestamp:timestamp sucess:^(id param) {
+RCT_EXPORT_METHOD(ackAddFriendRequest:(nonnull  NSString *)targetId accept:(nonnull  NSString * )accept msg:(nonnull  NSString * )msg timestamp:(nonnull  NSString * )timestamp resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+    if ([accept isEqualToString:@"1"]) {
+        [[NoticeViewController initWithNoticeViewController]onAccept:targetId timestamp:timestamp msg:msg sucess:^(id param) {
             resolve(param);
         } error:^(id erro) {
             reject(@"-1",erro, nil);
@@ -435,10 +434,12 @@ RCT_EXPORT_METHOD(sendCardMessage:(NSString *)type name:(NSString *)name imgPath
     [[ConversationViewController initWithConversationViewController] sendCardMessage:type sessionId:sessionId name:name imgPath:imgPath];
 }
 
+
 //发送提醒消息
-RCT_EXPORT_METHOD(sendTipMessage:(nonnull  NSString *)content){
-    //    [[ConversationViewController initWithConversationViewController]sendMessage:content];
+RCT_EXPORT_METHOD(sendTipMessage:(NSString *)contactId content:(NSString *)content){
+    [[ConversationViewController initWithConversationViewController] sendTipMessage:contactId content:content];
 }
+
 //获取黑名单列表
 RCT_EXPORT_METHOD(startBlackList){
     [[BankListViewController initWithBankListViewController]getBlackList];
@@ -500,6 +501,16 @@ RCT_EXPORT_METHOD(setTeamNotify:(nonnull NSString *)teamId needNotify:(nonnull N
     [[TeamViewController initWithTeamViewController]muteTeam:teamId mute:needNotify Succ:^(id param) {
         resolve(param);
         [weakSelf updateMessageList];
+    } Err:^(id erro) {
+        reject(@"-1",erro,nil);
+    }];
+}
+
+
+//群成员全体禁言 mute字符串:0是false 1是true
+RCT_EXPORT_METHOD(setTeamMute:(nonnull NSString *)teamId mute:(nonnull NSString *)mute resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+    [[TeamViewController initWithTeamViewController]setTeamMute:teamId mute:mute Succ:^(id param) {
+        resolve(param);
     } Err:^(id erro) {
         reject(@"-1",erro,nil);
     }];
@@ -814,9 +825,6 @@ RCT_EXPORT_METHOD(cleanCache){
                 //下载视频完成通知
                 [_bridge.eventDispatcher sendDeviceEventWithName:@"observeDownloadVideoNotice" body:param];
                 break;
-            case 18:
-                  [_bridge.eventDispatcher sendDeviceEventWithName:@"observeAutoLoginFailed" body:param];
-                  break;
             default:
                 break;
         }

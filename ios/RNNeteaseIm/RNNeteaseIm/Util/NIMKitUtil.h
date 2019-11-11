@@ -18,12 +18,17 @@
 
 + (NSString *)showTime:(NSTimeInterval)msglastTime showDetail:(BOOL)showDetail;
 
+//X
++ (NSString *)messageTipContent2:(NIMMessage *)message result:(NSMutableDictionary *) result;
 + (NSString *)messageTipContent:(NIMMessage *)message;
 
 + (BOOL)canEditTeamInfo:(NIMTeamMember *)member;
 
 + (BOOL)canInviteMember:(NIMTeamMember *)member;
 
+//X
++ (NSString*)teamNotificationFormatedMessage2:(NIMMessage *)message  result:(NSMutableDictionary *) result;
 + (NSString*)teamNotificationFormatedMessage:(NIMMessage *)message;
+
 
 @end

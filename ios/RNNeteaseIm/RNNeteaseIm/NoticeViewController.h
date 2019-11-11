@@ -25,6 +25,6 @@ static const NSInteger MaxNotificationCount = 20;
 -(void)deleteNotice:(NSString *)targetID timestamp:(NSString *)timestamp;
 -(void)deleAllNotic;
 -(void)setAllread;
--(void)onAccept:(NSString *)targetID timestamp:(NSString *)timestamp sucess:(Success)success error:(Errors)err;
+-(void)onAccept:(NSString *)targetID timestamp:(NSString *)timestamp msg:(NSString *)msg sucess:(Success)success error:(Errors)err;
 -(void)onRefuse:(NSString *)targetID timestamp:(NSString *)timestamp sucess:(Success)success error:(Errors)err;
 @end

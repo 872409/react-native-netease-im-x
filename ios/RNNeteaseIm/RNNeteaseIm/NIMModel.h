@@ -12,7 +12,6 @@ typedef void(^onSuccess)(NSInteger index,id param);
 @interface NIMModel : NSObject
 +(instancetype)initShareMD;
 @property(nonatomic,strong)onSuccess myBlock;
-@property(nonatomic,strong)NSError *AutoLoginFailed;
 //@property(nonatomic,strong)NSMutableArray *recentListArr;
 @property (strong, nonatomic) NSDictionary *recentDict;//最近会话对象
 @property(nonatomic,strong)NSString *NetStatus;

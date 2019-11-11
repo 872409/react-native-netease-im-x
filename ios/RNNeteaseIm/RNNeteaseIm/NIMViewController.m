@@ -184,10 +184,24 @@
         [dic setObject:[NSString stringWithFormat:@"%zd", recent.lastMessage.deliveryState] forKey:@"msgStatus"];
         //消息ID
         [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.messageId] forKey:@"messageId"];
+        
+        [dic setObject:[NSString stringWithFormat:@"%d", recent.lastMessage.isOutgoingMsg] forKey:@"isOutgoing"];
+//        [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.localExt] forKey:@"localExt"];
         //消息内容
-        [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent] ] forKey:@"content"];
+//        [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent] ] forKey:@"content"];
+        
+        //X
+        NSMutableDictionary *options = [NSMutableDictionary dictionary];
+        [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent options:options] ] forKey:@"content"];
+        if([options count]>0){
+            [dic setObject:@{@"options":options} forKey:@"content_extend"];
+        }
+//
+        
         //发送时间
-        [dic setObject:[NSString stringWithFormat:@"%@", [self timestampDescriptionForRecentSession:recent] ] forKey:@"time"];
+        //X
+//        [dic setObject:[NSString stringWithFormat:@"%@", [self timestampDescriptionForRecentSession:recent] ] forKey:@"time"];
+        [dic setObject:[NSString stringWithFormat:@"%f", recent.lastMessage.timestamp ] forKey:@"timestamp"];
         
         [dic setObject:[NSString stringWithFormat:@"%@", [self imageUrlForRecentSession:recent] ?  [self imageUrlForRecentSession:recent] : @""] forKey:@"imagePath"];
         if (recent.session.sessionType == 1) {
@@ -231,10 +245,21 @@
             [dic setObject:[NSString stringWithFormat:@"%zd", recent.lastMessage.deliveryState] forKey:@"msgStatus"];
             //消息ID
             [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.messageId] forKey:@"messageId"];
+            [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.messageId] forKey:@"messageId3"];
+            [dic setObject:[NSString stringWithFormat:@"%d", recent.lastMessage.isOutgoingMsg] forKey:@"isOutgoing"];
             //消息内容
-            [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent] ] forKey:@"content"];
+            //[dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent] ] forKey:@"content"];
+            
+            //X 消息内容扩展
+            NSMutableDictionary *options = [NSMutableDictionary dictionary];
+            [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent options:options] ] forKey:@"content"];
+            if([options count]>0){
+                [dic setObject:@{@"options":options} forKey:@"content_extend"];
+            }
             //发送时间
-            [dic setObject:[NSString stringWithFormat:@"%@", [self timestampDescriptionForRecentSession:recent] ] forKey:@"time"];
+            //X
+//            [dic setObject:[NSString stringWithFormat:@"%@", [self timestampDescriptionForRecentSession:recent] ] forKey:@"time"];
+            [dic setObject:[NSString stringWithFormat:@"%f", recent.lastMessage.timestamp ] forKey:@"timestamp"];
             
             [dic setObject:[NSString stringWithFormat:@"%@", [self imageUrlForRecentSession:recent] ?  [self imageUrlForRecentSession:recent] : @""] forKey:@"imagePath"];
             NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:recent.lastMessage.session.sessionId];
@@ -256,6 +281,7 @@
                 [dic setObject:[NSString stringWithFormat:@"%@", [self nameForRecentSession:recent] ] forKey:@"name"];
                 //账号
                 [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.from] forKey:@"account"];
+                [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.senderName] forKey:@"account_name"];
                 //消息类型
                 [dic setObject:[NSString stringWithFormat:@"%zd", recent.lastMessage.messageType] forKey:@"msgType"];
                 //消息状态
@@ -263,9 +289,19 @@
                 //消息ID
                 [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.messageId] forKey:@"messageId"];
                 //消息内容
-                [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent] ] forKey:@"content"];
+//                [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent] ] forKey:@"content"];
+                
+                NSMutableDictionary *options = [NSMutableDictionary dictionary];
+                [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent options:options] ] forKey:@"content"];
+                NSLog(@"options: %ld",[options count]);
+                if([options count] > 0){
+                    [dic setObject:@{@"options":options} forKey:@"content_extend"];
+                }
+                
                 //发送时间
-                [dic setObject:[NSString stringWithFormat:@"%@", [self timestampDescriptionForRecentSession:recent] ] forKey:@"time"];
+                //X
+//                [dic setObject:[NSString stringWithFormat:@"%@", [self timestampDescriptionForRecentSession:recent] ] forKey:@"time"];
+                [dic setObject:[NSString stringWithFormat:@"%f", recent.lastMessage.timestamp ] forKey:@"timestamp"];
                 
                 [dic setObject:[NSString stringWithFormat:@"%@", [self imageUrlForRecentSession:recent] ?  [self imageUrlForRecentSession:recent] : @""] forKey:@"imagePath"];
                 NIMTeam *team = [[[NIMSDK sharedSDK] teamManager]teamById:recent.lastMessage.session.sessionId];
@@ -307,8 +343,8 @@
     return url;
 }
 //会话内容
-- (NSString *)contentForRecentSession:(NIMRecentSession *)recent{
-    NSString *content = [self messageContent:recent.lastMessage];
+- (NSString *)contentForRecentSession:(NIMRecentSession *)recent options:(NSMutableDictionary *)options{
+    NSString *content = [self messageContent:recent.lastMessage options:options];
     return content;
 }
 //会话时间
@@ -316,7 +352,7 @@
     return [NIMKitUtil showTime:recent.lastMessage.timestamp showDetail:NO];
 }
 
-- (NSString *)messageContent:(NIMMessage*)lastMessage{
+- (NSString *)messageContent:(NIMMessage*)lastMessage options:(NSMutableDictionary *)options{
     NSString *text = @"";
     switch (lastMessage.messageType) {
         case NIMMessageTypeText:
@@ -335,7 +371,8 @@
             text = @"[位置]";
             break;
         case NIMMessageTypeNotification:{
-            return [self notificationMessageContent:lastMessage];
+            [options setObject:@"notification" forKey:@"messageType"];
+            return [self notificationMessageContent:lastMessage options:options];
         }
         case NIMMessageTypeFile:
             text = @"[文件]";
@@ -465,7 +502,7 @@
 }
 
 
-- (NSString *)notificationMessageContent:(NIMMessage *)lastMessage{
+- (NSString *)notificationMessageContent:(NIMMessage *)lastMessage  options:(NSMutableDictionary *)options{
     NIMNotificationObject *object = lastMessage.messageObject;
     if (object.notificationType == NIMNotificationTypeNetCall) {
         NIMNetCallNotificationContent *content = (NIMNetCallNotificationContent *)object.content;
@@ -475,7 +512,8 @@
         return @"[视频聊天]";
     }
     if (object.notificationType == NIMNotificationTypeTeam) {
-        NSString *strContent = [NIMKitUtil teamNotificationFormatedMessage:lastMessage];
+        [options setObject:@"team" forKey:@"notificationType"];
+        NSString *strContent = [NIMKitUtil teamNotificationFormatedMessage2:lastMessage result:options];
         return strContent;
     }
     return @"[未知消息]";

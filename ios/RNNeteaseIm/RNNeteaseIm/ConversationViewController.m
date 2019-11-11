@@ -273,8 +273,11 @@
                 case NIMNotificationTypeTeam:
                 case NIMNotificationTypeChatroom:
                 {
-                    
-                    [notiObj setObject:[NIMKitUtil messageTipContent:message] forKey:@"tipMsg"];
+//                    [notiObj setObject:[NIMKitUtil messageTipContent:message] forKey:@"tipMsg"];
+                    //X
+                    NSMutableDictionary *options = [NSMutableDictionary dictionary];
+                    [notiObj setObject:[NIMKitUtil messageTipContent2:message result:options] forKey:@"tipMsg"];
+                    [notiObj setObject:options forKey:@"options"];
                     break;
                 }
                 case NIMNotificationTypeNetCall:{
@@ -477,9 +480,20 @@
     }
 }
 
+//X
 //发送提醒消息
--(void)sendTipMessage:( NSString *)content{
+-(void)sendTipMessage:(NSString *)contactId content:(NSString *)content{
+    NIMSession *session2  = [NIMSession session:contactId type:NIMSessionTypeP2P];
     
+    // 获得文件附件对象
+    NIMTipObject *object = [[NIMTipObject alloc] init];
+    // 构造出具体消息并注入附件
+    NIMMessage *message2 = [[NIMMessage alloc] init];
+    message2.messageObject = object;
+    message2.text = content;
+    
+    // 发送消息
+    [[NIMSDK sharedSDK].chatManager sendMessage:message2 toSession:session2 error:nil];
 }
 //- (NIMKitMediaFetcher *)mediaFetcher
 //{
@@ -595,7 +609,10 @@
         NSDictionary *userInfo = error.userInfo;
         NSString *strEnum = [userInfo objectForKey:@"enum"];
         if ([strEnum isEqualToString:@"NIMRemoteErrorCodeInBlackList"]) {
-            NSString * tip = @"消息已发出，但被对方拒收了";
+
+            //X
+            //NSString * tip = @"消息已发出，但被对方拒收了";
+            NSString * tip = @"msg_send_reject";
             NIMMessage *tipMessage = [self msgWithTip:tip];
             tipMessage.timestamp = message.timestamp;
             [[NIMSDK sharedSDK].conversationManager saveMessage:tipMessage forSession:_session completion:nil];
@@ -982,8 +999,12 @@
             case NIMNotificationTypeTeam:
             case NIMNotificationTypeChatroom:
             {
+                //X
+                //[notiObj setObject:[NIMKitUtil messageTipContent:message] forKey:@"tipMsg"];
                 
-                [notiObj setObject:[NIMKitUtil messageTipContent:message] forKey:@"tipMsg"];
+                NSMutableDictionary *options = [NSMutableDictionary dictionary];
+                [notiObj setObject:[NIMKitUtil messageTipContent2:message result:options] forKey:@"tipMsg"];
+                [notiObj setObject:options forKey:@"options"];
                 break;
             }
             case NIMNotificationTypeNetCall:{
@@ -1284,7 +1305,10 @@
                 strSessionName = userInfo.nickName;
             }
             
-            NSString * tip = [NSString stringWithFormat:@"%@开启了朋友验证，你还不是他（她）朋友。请先发送朋友验证请求，对方验证通过后，才能聊天。发送朋友验证",strSessionName];
+            //X
+//            NSString * tip = [NSString stringWithFormat:@"%@开启了朋友验证，你还不是他（她）朋友。请先发送朋友验证请求，对方验证通过后，才能聊天。发送朋友验证",strSessionName];
+//
+            NSString * tip = @"not_friends_send_failed";
             NIMMessage *tipMessage = [self msgWithTip:tip];
             tipMessage.timestamp = message.timestamp+1;
             [[NIMSDK sharedSDK].conversationManager saveMessage:tipMessage forSession:_session completion:nil];

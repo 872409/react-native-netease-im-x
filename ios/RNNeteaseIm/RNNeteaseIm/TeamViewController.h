@@ -21,6 +21,9 @@ typedef void(^Errors)(id erro);
 - (void)updateMemberNick:(nonnull NSString *)teamId contactId:(nonnull NSString *)contactId nick:(nonnull NSString*)nick Succ:(Success)succ Err:(Errors)err;
 //获取群资料
 -(void)getTeamInfo:(NSString *)teamId Succ:(Success)succ Err:(Errors)err;
+
+//群成员全体禁言
+-(void)setTeamMute:(NSString *)teamId  mute:(NSString *)mute Succ:(Success)succ Err:(Errors)err;
 ////群成员禁言
 -(void)setTeamMemberMute:(NSString *)teamId contactId:(NSString *)contactId mute:(NSString *)mute Succ:(Success)succ Err:(Errors)err;
 //获取远程群资料
