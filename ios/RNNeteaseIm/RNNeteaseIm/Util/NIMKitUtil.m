@@ -51,7 +51,7 @@
     NSCalendarUnit components = (NSCalendarUnit)(NSCalendarUnitYear|NSCalendarUnitMonth|NSCalendarUnitDay|NSCalendarUnitWeekday|NSCalendarUnitHour | NSCalendarUnitMinute);
     NSDateComponents *nowDateComponents = [[NSCalendar currentCalendar] components:components fromDate:nowDate];
     NSDateComponents *msgDateComponents = [[NSCalendar currentCalendar] components:components fromDate:msgDate];
-    
+
     NSInteger hour = msgDateComponents.hour;
     double OnedayTimeIntervalValue = 24*60*60;  //一天的秒数
 
@@ -123,11 +123,12 @@
     return [daysOfWeekDict objectForKey:@(dayOfWeek)];
 }
 
+
 //X
 + (NSString *)messageTipContent2:(NIMMessage *)message result:(NSMutableDictionary *) result{
-    
+
     NSString *text = nil;
-    
+
     if (text == nil) {
         switch (message.messageType) {
             case NIMMessageTypeNotification:
@@ -146,9 +147,9 @@
 }
 
 + (NSString *)messageTipContent:(NIMMessage *)message{
-    
+
     NSString *text = nil;
-    
+
     if (text == nil) {
         switch (message.messageType) {
             case NIMMessageTypeNotification:
@@ -211,7 +212,7 @@
         NSArray *targets = [NIMKitUtil teamNotificationTargetNames:message];
         NSString *targetText = [targets count] > 1 ? [targets componentsJoinedByString:@","] : [targets firstObject];
         NSString *teamName = [NIMKitUtil teamNotificationTeamShowName2:message];
-        
+
         switch (content.operationType) {
             case NIMTeamOperationTypeInvite:{
                 NSString *str = [NSString stringWithFormat:@"%@邀请%@",source,targets.firstObject];
@@ -220,7 +221,7 @@
                 }
                 str = [str stringByAppendingFormat:@"进入了%@",teamName];
                 formatedMessage = str;
-                
+
                 [result setObject:@"invite" forKey:@"operationType"];
                 [result setObject:@{
                     @"source":[source isEqualToString:@"你"]?@"you":source,
@@ -232,13 +233,13 @@
                 break;
             case NIMTeamOperationTypeDismiss:
                 formatedMessage = [NSString stringWithFormat:@"%@解散了%@",source,teamName];
-                
+
                 [result setObject:@"dismiss" forKey:@"operationType"];
                 [result setObject:@{
                    @"source":[source isEqualToString:@"你"]?@"you":source,
                    @"teamName":teamName
                 } forKey:@"format"];
-                
+
                 break;
             case NIMTeamOperationTypeKick:{
                 NSString *str = [NSString stringWithFormat:@"%@将%@",source,targets.firstObject];
@@ -247,7 +248,7 @@
                 }
                 str = [str stringByAppendingFormat:@"移出了%@",teamName];
                 formatedMessage = str;
-                
+
                 [result setObject:@"kick" forKey:@"operationType"];
                 [result setObject:@{
                    @"source":[source isEqualToString:@"你"]?@"you":source,
@@ -264,14 +265,14 @@
                     NIMUpdateTeamInfoAttachment *teamAttachment = (NIMUpdateTeamInfoAttachment *)attachment;
                     formatedMessage = [NSString stringWithFormat:@"%@更新了%@信息",source,teamName];
                     [result setObject:@"update" forKey:@"operationType"];
-                    
-                    
-                    
+
+
+
                     [result setObject:@{
                        @"source":[source isEqualToString:@"你"]?@"you":source,
                        @"teamName":teamName
                     } forKey:@"format"];
-                    
+
                     //如果只是单个项目项被修改则显示具体的修改项
                     if ([teamAttachment.values count] == 1) {
                         NIMTeamUpdateTag tag = [[[teamAttachment.values allKeys] firstObject] integerValue];
@@ -318,11 +319,11 @@
                             }
                             default:
                                 break;
-                                
+
                         }
                         [result setObject:operationTag forKey:@"operationTag"];
                     }
-                    
+
                 }
                 if (formatedMessage == nil){
                     formatedMessage = [NSString stringWithFormat:@"%@更新了%@信息",source,teamName];
@@ -392,7 +393,7 @@
                     @"targetText":targetText,
                     @"teamName":teamName
                 } forKey:@"format"];
-                
+
                 break;
             case NIMTeamOperationTypeMute:{
                 id attachment = [content attachment];
@@ -402,7 +403,7 @@
                     NSString *muteStr = mute? @"禁言" : @"解除禁言";
                     NSString *str = [targets componentsJoinedByString:@","];
                     formatedMessage = [NSString stringWithFormat:@"%@被%@%@",str,source,muteStr];
-                    
+
                     [result setObject:@"mute" forKey:@"operationType"];
                     [result setObject:mute?@"enabled":@"disabled" forKey:@"operationTag"];
                     [result setObject:@{
@@ -415,7 +416,7 @@
             default:
                 break;
         }
-        
+
     }
     if (!formatedMessage.length) {
         formatedMessage = [NSString stringWithFormat:@"未知系统消息"];
@@ -433,7 +434,7 @@
         NSArray *targets = [NIMKitUtil teamNotificationTargetNames:message];
         NSString *targetText = [targets count] > 1 ? [targets componentsJoinedByString:@","] : [targets firstObject];
         NSString *teamName = [NIMKitUtil teamNotificationTeamShowName:message];
-        
+
         switch (content.operationType) {
             case NIMTeamOperationTypeInvite:{
                 NSString *str = [NSString stringWithFormat:@"%@邀请%@",source,targets.firstObject];
@@ -498,7 +499,7 @@
                             }
                             default:
                                 break;
-                                
+
                         }
                     }
                 }
@@ -545,7 +546,7 @@
             default:
                 break;
         }
-        
+
     }
     if (!formatedMessage.length) {
         formatedMessage = [NSString stringWithFormat:@"未知系统消息"];
