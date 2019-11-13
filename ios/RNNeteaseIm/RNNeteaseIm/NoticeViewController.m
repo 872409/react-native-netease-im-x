@@ -151,37 +151,63 @@
     NSString *verifyText = @"未知请求";
     NSString *notificationType = @"unknown";
     NSString *operationType = @"";
+    
     NSMutableDictionary *extend= [NSMutableDictionary dictionary];
+    NSMutableDictionary *options= [NSMutableDictionary dictionary];
 
     switch (type) {
         case NIMSystemNotificationTypeTeamApply:
         {
-            notificationType=@"teamApply";
+            notificationType=@"team";
+            operationType =@"Apply";
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             isVerify = @"1";
             verifyText = [NSString stringWithFormat:@"申请加入群 %@", team.teamName];
+            
+            [options setObject:@{
+                @"accountName":sourceMember.showName,
+                @"group":team.teamName
+            } forKey:@"format"];
+            
         }
             break;
         case NIMSystemNotificationTypeTeamApplyReject:
         {
-            notificationType=@"teamApplyReject";
+            notificationType=@"team";
+            operationType =@"ApplyReject";
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             verifyText = [NSString stringWithFormat:@"群 %@ 拒绝你加入", team.teamName];
+            [options setObject:@{
+               @"accountName":sourceMember.showName,
+               @"group":team.teamName
+            } forKey:@"format"];
         }
             break;
         case NIMSystemNotificationTypeTeamInvite:
         {
-            notificationType=@"teamInvite";
+            notificationType=@"team";
+            operationType =@"Invite";
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             isVerify = @"1";
             verifyText = [NSString stringWithFormat:@"群 %@ 邀请你加入", team.teamName];
+            
+            [options setObject:@{
+               @"accountName":sourceMember.showName,
+               @"group":team.teamName
+            } forKey:@"format"];
         }
             break;
         case NIMSystemNotificationTypeTeamIviteReject:
         {
-            notificationType=@"teamInviteRejct";
+            
+            notificationType=@"team";
+            operationType =@"InviteRejct";
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             verifyText = [NSString stringWithFormat:@"拒绝了群 %@ 邀请", team.teamName];
+            [options setObject:@{
+               @"accountName":sourceMember.showName,
+               @"group":team.teamName
+            } forKey:@"format"];
         }
             break;
         case NIMSystemNotificationTypeFriendAdd:
@@ -233,8 +259,11 @@
     [dic setObject:[NSString stringWithFormat:@"%ld",noti.handleStatus] forKey:@"status"];
     [dic setObject:[NSString stringWithFormat:@"%f",noti.timestamp] forKey:@"timestamp"];
     
-    [extend setObject:notificationType forKey:@"notificationType"];
-    [extend setObject:operationType forKey:@"operationType"];
+    [options setObject:notificationType forKey:@"notificationType"];
+    [options setObject:operationType forKey:@"operationType"];
+
+    [extend setObject:options forKey:@"options"];
+    
     [dic setObject:extend forKey:@"extend"];
     
     [_notiArr addObject:dic];

@@ -26,9 +26,62 @@ NSMutableArray *_myTeams;
     });
     return teamVC;
 }
+
+//X
+/**
+ *  群组增加回调
+ *
+ *  @param team 添加的群组
+ */
+- (void)onTeamAdded:(NIMTeam *)team{
+    NSLog(@"onTeamAdded:%@",team);
+    [self dispatchTeamList];
+}
+//X
+/**
+ *  群组更新回调
+ *
+ *  @param team 更新的群组
+ */
+- (void)onTeamUpdated:(NIMTeam *)team{
+    NSLog(@"onTeamUpdated:%@",team);
+}
+//X
+/**
+ *  群组移除回调
+ *
+ *  @param team 被移除的群组
+ */
+- (void)onTeamRemoved:(NIMTeam *)team{
+    NSLog(@"onTeamRemoved:%@",team);
+    [self dispatchTeamList];
+}
+//X
+/**
+ *  群组成员变动回调,包括数量增减以及成员属性变动
+ *
+ *  @param team 变动的群组
+ */
+- (void)onTeamMemberChanged:(NIMTeam *)team{
+      NSLog(@"onTeamMemberChanged:%@",team);
+}
+
+
 -(void)initWithDelegate{
-       [[NIMSDK sharedSDK].teamManager addDelegate:self];
-       _myTeams = [self fetchTeams];
+    [[NIMSDK sharedSDK].teamManager addDelegate:self];
+    //X
+    [self dispatchTeamList];
+}
+//X
+-(void)dispatchTeamList{
+    NSMutableArray *teamArr = [self getTeamList];
+    
+    NIMModel *model = [NIMModel initShareMD];
+    model.teamArr = teamArr;
+}
+
+-(NSMutableArray*)getTeamList{
+    _myTeams = [self fetchTeams];
     NSMutableArray *teamArr = [NSMutableArray array];
     for (NIMTeam *team in _myTeams) {
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
@@ -45,26 +98,12 @@ NSMutableArray *_myTeams;
 
         [teamArr addObject:dic];
     }
-    NIMModel *model = [NIMModel initShareMD];
-    model.teamArr = teamArr;
+    return teamArr;
 }
+
 -(void)getTeamList:(Success)succ Err:(Errors)err{
     _myTeams = [self fetchTeams];
-    NSMutableArray *teamArr = [NSMutableArray array];
-    for (NIMTeam *team in _myTeams) {
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        [dic setObject:team.teamId forKey:@"teamId"];
-        [dic setObject:[NSString stringWithFormat:@"%@", team.teamName] forKey:@"name"];
-        [dic setObject:[NSString stringWithFormat:@"%@", team.avatarUrl ] forKey:@"avatar"];
-        [dic setObject:[NSString stringWithFormat:@"%ld", team.type] forKey:@"type"];
-        NSArray *keys = [dic allKeys];
-        for (NSString *tem  in keys) {
-            if ([[dic objectForKey:tem] isEqualToString:@"(null)"]) {
-                [dic setObject:@"" forKey:tem];
-            }
-        }
-        [teamArr addObject:dic];
-    }
+    NSMutableArray *teamArr = [self getTeamList];
     if (teamArr) {
         succ(teamArr);
     }else{
@@ -441,6 +480,35 @@ NSMutableArray *_myTeams;
     }];
 
 }
+
+//提升管理员
+-(void)addManagersToTeam:(NSString *)teamId accounts:(NSArray *)count Succ:(Success)succ Err:(Errors)err{
+    
+    [[NIMSDK sharedSDK].teamManager addManagersToTeam:teamId users:count completion:^(NSError *error) {
+        if (!error) {
+            succ(@"200");
+        }else{
+            err([NSString stringWithFormat:@"提升管理员失败 code:%zd",error.code]);
+        }
+    }];
+
+}
+
+
+//移除管理员
+-(void)removeManagersFromTeam:(NSString *)teamId accounts:(NSArray *)count Succ:(Success)succ Err:(Errors)err{
+    
+    [[NIMSDK sharedSDK].teamManager removeManagersFromTeam:teamId users:count completion:^(NSError *error) {
+        if (!error) {
+            succ(@"200");
+        }else{
+            err([NSString stringWithFormat:@"移除管理员失败 code:%zd",error.code]);
+        }
+    }];
+
+}
+
+
 //拉人入群
 -(void)addMembers:(NSString *)teamId accounts:(NSArray *)count Succ:(Success)succ Err:(Errors)err{
     NSString *postscript = @"邀请你加入群组";

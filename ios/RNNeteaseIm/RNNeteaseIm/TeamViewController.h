@@ -40,6 +40,10 @@ typedef void(^Errors)(id erro);
 -(void)dismissTeam:(NSString *)teamId Succ:(Success)succ Err:(Errors)err;
 //拉人入群
 -(void)addMembers:(NSString *)teamId accounts:(NSArray *)count Succ:(Success)succ Err:(Errors)err;
+//X
+-(void)removeManagersFromTeam:(NSString *)teamId accounts:(NSArray *)count Succ:(Success)succ Err:(Errors)err;
+-(void)addManagersToTeam:(NSString *)teamId accounts:(NSArray *)count Succ:(Success)succ Err:(Errors)err;
+
 //踢人出群
 -(void)removeMember:(NSString *)teamId accounts:(NSArray *)count Succ:(Success)succ Err:(Errors)err;
 //主动退群
