@@ -435,6 +435,13 @@ RCT_EXPORT_METHOD(sendCardMessage:(NSString *)type name:(NSString *)name imgPath
 }
 
 
+//X
+RCT_EXPORT_METHOD(sendRTCCallMessage:(NSString *)channelName callType:(NSInteger )callType msgType:(NSString *)msgType apns:(BOOL)apns){
+    [[ConversationViewController initWithConversationViewController] sendRTCCallMessage:channelName callType:callType msgType:msgType apns:apns];
+}
+
+
+
 //发送提醒消息
 RCT_EXPORT_METHOD(sendTipMessage:(NSString *)contactId content:(NSString *)content){
     [[ConversationViewController initWithConversationViewController] sendTipMessage:contactId content:content];
@@ -847,6 +854,10 @@ RCT_EXPORT_METHOD(cleanCache){
             case 17:
                 //下载视频完成通知
                 [_bridge.eventDispatcher sendDeviceEventWithName:@"observeDownloadVideoNotice" body:param];
+                break;
+            case 200:
+                //自定义通知
+                [_bridge.eventDispatcher sendDeviceEventWithName:@"observeCustomNotice" body:param];
                 break;
             default:
                 break;

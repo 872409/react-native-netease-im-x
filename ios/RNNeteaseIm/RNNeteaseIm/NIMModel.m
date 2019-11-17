@@ -57,6 +57,13 @@
         }
     }
 }
+-(void)setCustomNotify:(NSMutableDictionary *)customNotify{
+    _customNotify = customNotify;
+    if (self.myBlock) {
+        self.myBlock(200, customNotify);
+    }
+}
+
 -(void)setNotiArr:(NSMutableArray *)notiArr{
     _notiArr = notiArr;
     if (self.myBlock) {

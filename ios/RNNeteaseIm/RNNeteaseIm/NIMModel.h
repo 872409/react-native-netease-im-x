@@ -18,6 +18,7 @@ typedef void(^onSuccess)(NSInteger index,id param);
 @property(nonatomic,strong)NSString *NIMKick;
 @property(nonatomic,strong)NSMutableDictionary *contactList;
 @property(nonatomic,strong)NSMutableArray *notiArr;
+@property(nonatomic,strong)NSMutableDictionary *customNotify;
 @property(nonatomic,assign)NSInteger unreadCount;
 @property(nonatomic,strong)NSMutableArray *teamArr;
 @property(nonatomic,assign)NSMutableArray *ResorcesArr;

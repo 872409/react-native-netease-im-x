@@ -47,6 +47,9 @@ typedef void(^Errors)(id erro);
 -(void)sendTipMessage:(NSString *)contactId content:(NSString *)content;
 //发送红包消息
 - (void)sendRedPacketMessage:(NSString *)type comments:(NSString *)comments serialNo:(NSString *)serialNo;
+
+//X
+-(void)sendRTCCallMessage:(NSString *)channelName callType:(NSInteger )callType msgType:(NSString *)msgType apns:(BOOL)apns;
 //发送转账消息
 - (void)sendBankTransferMessage:(NSString *)amount comments:(NSString *)comments serialNo:(NSString *)serialNo;
 //发送拆红包消息

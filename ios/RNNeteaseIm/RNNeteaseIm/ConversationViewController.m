@@ -503,6 +503,51 @@
 //    return _mediaFetcher;
 //}
 
+
+//callType:视频：0，语音：1
+//msgType:call,reject 拨打，拒绝
+//发送RTC消息
+-(void)sendRTCCallMessage:(NSString *)channelName callType:(NSInteger )callType msgType:(NSString *)msgType apns:(BOOL)apns{
+//    NSDictionary *dict = @{@"channelName":channelName,@"callType":[NSString stringWithFormat:@"%ld",callType],@"msgType":msgType};
+    
+    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+    NSDictionary *dataDict = @{@"type":[NSString stringWithFormat:@"%d",CustomMessgeTypeRTCCall],
+                               @"timestamp":[NSString stringWithFormat:@"%f",timestamp],
+                               @"sessionId":_session.sessionId,
+                               @"sessionType":[NSString stringWithFormat:@"%zd",_session.sessionType],
+                               @"data":@{
+                                       @"channelName":channelName,
+                                       @"callType":[NSString stringWithFormat:@"%ld",callType],
+                                       @"msgType":msgType,
+                               }
+                               
+    };
+
+    NSString *content = [self jsonStringWithDictionary:dataDict];
+    NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
+    
+    
+    
+    if (apns) {
+//        notifi.sendToOnlineUsersOnly = NO;
+        NIMCustomSystemNotificationSetting *setting = [[NIMCustomSystemNotificationSetting alloc]init];
+        setting.shouldBeCounted = YES;
+        setting.apnsEnabled = apns;
+        
+        notifi.apnsPayload = dataDict;
+        notifi.setting = setting;
+    }
+    
+    
+    [[NIMSDK sharedSDK].systemNotificationManager sendCustomNotification:notifi toSession:_session completion:nil];//发送自定义通知
+
+
+//    [[NIMSDK sharedSDK].conversationManager saveMessage:message forSession:_session completion:nil];
+//    [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:_session completion:nil];
+
+}
+
+
 //发送红包消息
 - (void)sendRedPacketMessage:(NSString *)type comments:(NSString *)comments serialNo:(NSString *)serialNo{
     NSDictionary *dict = @{@"type":type,@"comments":comments,@"serialNo":serialNo};
@@ -712,7 +757,6 @@
 
 - (void)onRecvMessageReceipt:(NIMMessageReceipt *)receipt
 {
-    
     NIMModel *mode = [NIMModel initShareMD];
     mode.receipt = @"1";
 }
@@ -847,18 +891,46 @@
 #pragma mark - NIMSystemNotificationManagerDelegate
 - (void)onReceiveCustomSystemNotification:(NIMCustomSystemNotification *)notification
 {
+    NSLog(@"onReceiveCustomSystemNotification:%@",notification);
+    
     if (!notification.sendToOnlineUsersOnly) {
         return;
     }
+    
     NSData *data = [[notification content] dataUsingEncoding:NSUTF8StringEncoding];
     if (data) {
-        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data
-                                                             options:0
+        
+        
+        NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:data
+                                                             options:NSJSONReadingMutableContainers
                                                                error:nil];
-        if ([dict jsonInteger:NTESNotifyID] == NTESCommandTyping &&_session.sessionType == NIMSessionTypeP2P && [notification.sender isEqualToString:_session.sessionId])
-        {
-            NSLog(@"正在输入...");
+        
+        NIMKitInfo *sourceMember;
+        if([dict jsonInteger:@"sessionType"] == NIMSessionTypeP2P){
+            sourceMember = [[NIMKit sharedKit] infoByUser:notification.sender option:nil];
         }
+        else{
+            sourceMember = [[NIMKit sharedKit] infoByTeam:notification.sender option:nil];
+        }
+        
+        if (sourceMember!=nil) {
+           NSString *avatar = sourceMember.avatarUrlString!=nil && sourceMember.avatarUrlString.length>0?sourceMember.avatarUrlString:@"";
+           [dict setObject:@{@"name":[sourceMember showName],@"avatar":avatar,@"contactId":sourceMember.infoId} forKey:@"sender"];
+        }
+        else{
+           [dict setObject:notification.sender forKey:@"sender_id"];
+        }
+         
+        NIMModel *model = [NIMModel initShareMD];
+        model.customNotify = dict;
+        
+        
+         
+        
+//        if ([dict jsonInteger:NTESNotifyID] == NTESCommandTyping &&_session.sessionType == NIMSessionTypeP2P && [notification.sender isEqualToString:_session.sessionId])
+//        {
+//            NSLog(@"正在输入...");
+//        }
     }
 }
 
