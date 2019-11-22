@@ -54,7 +54,7 @@
     
     NSInteger hour = msgDateComponents.hour;
     double OnedayTimeIntervalValue = 24*60*60;  //一天的秒数
-
+    
     result = [NIMKitUtil getPeriodOfTime:hour withMinute:msgDateComponents.minute];
     if (hour > 12)
     {
@@ -223,8 +223,8 @@
                 
                 [result setObject:@"invite" forKey:@"operationType"];
                 [result setObject:@{
-                    @"source":[source isEqualToString:@"你"]?@"you":source,
-                    @"firstTarget":[targets.firstObject isEqualToString:@"你"]?@"you":targets.firstObject,
+                    @"source":source,
+                    @"firstTarget":targets.firstObject,
                     @"targets":@(targets.count),
                     @"teamName":teamName
                 } forKey:@"format"];
@@ -235,8 +235,8 @@
                 
                 [result setObject:@"dismiss" forKey:@"operationType"];
                 [result setObject:@{
-                   @"source":[source isEqualToString:@"你"]?@"you":source,
-                   @"teamName":teamName
+                    @"source":source,
+                    @"teamName":teamName
                 } forKey:@"format"];
                 
                 break;
@@ -250,10 +250,10 @@
                 
                 [result setObject:@"kick" forKey:@"operationType"];
                 [result setObject:@{
-                   @"source":[source isEqualToString:@"你"]?@"you":source,
-                   @"firstTarget":[targets.firstObject isEqualToString:@"你"]?@"you":targets.firstObject,
-                   @"targets":@(targets.count),
-                   @"teamName":teamName
+                    @"source":source,
+                    @"firstTarget":targets.firstObject,
+                    @"targets":@(targets.count),
+                    @"teamName":teamName
                 } forKey:@"format"];
             }
                 break;
@@ -268,8 +268,8 @@
                     
                     
                     [result setObject:@{
-                       @"source":[source isEqualToString:@"你"]?@"you":source,
-                       @"teamName":teamName
+                        @"source":source,
+                        @"teamName":teamName
                     } forKey:@"format"];
                     
                     //如果只是单个项目项被修改则显示具体的修改项
@@ -333,8 +333,8 @@
                 formatedMessage = [NSString stringWithFormat:@"%@离开了%@",source,teamName];
                 [result setObject:@"leave" forKey:@"operationType"];
                 [result setObject:@{
-                   @"source":[source isEqualToString:@"你"]?@"you":source,
-                   @"teamName":teamName
+                    @"source":source,
+                    @"teamName":teamName
                 } forKey:@"format"];
                 break;
             case NIMTeamOperationTypeApplyPass:{
@@ -343,16 +343,16 @@
                     formatedMessage = [NSString stringWithFormat:@"%@进入了%@",source,teamName];
                     [result setObject:@"apply_pass_self" forKey:@"operationType"];
                     [result setObject:@{
-                       @"source":[source isEqualToString:@"你"]?@"you":source,
-                       @"teamName":teamName
+                        @"source":source,
+                        @"teamName":teamName
                     } forKey:@"format"];
                 }else{
                     formatedMessage = [NSString stringWithFormat:@"%@通过了%@的申请",source,targetText];
                     [result setObject:@"apply_pass_invite" forKey:@"operationType"];
                     [result setObject:@{
-                       @"source":[source isEqualToString:@"你"]?@"you":source,
-                       @"targetText":targetText,
-                       @"teamName":teamName
+                        @"source":source,
+                        @"target":targetText,
+                        @"teamName":teamName
                     } forKey:@"format"];
                 }
             }
@@ -360,36 +360,36 @@
             case NIMTeamOperationTypeTransferOwner:
                 formatedMessage = [NSString stringWithFormat:@"%@转移了群主身份给%@",source,targetText];
                 [result setObject:@"transfer_owner" forKey:@"operationType"];
-                                   [result setObject:@{
-                                      @"source":[source isEqualToString:@"你"]?@"you":source,
-                                      @"targetText":targetText,
-                                      @"teamName":teamName
-                                   } forKey:@"format"];
+                [result setObject:@{
+                    @"source":source,
+                    @"target":targetText,
+                    @"teamName":teamName
+                } forKey:@"format"];
                 break;
             case NIMTeamOperationTypeAddManager:
                 formatedMessage = [NSString stringWithFormat:@"%@被添加为群管理员",targetText];
                 [result setObject:@"add_manager" forKey:@"operationType"];
-                                                  [result setObject:@{
-                                                    @"source":[source isEqualToString:@"你"]?@"you":source,
-                                                     @"targetText":targetText,
-                                                     @"teamName":teamName
-                                                  } forKey:@"format"];
+                [result setObject:@{
+                    @"source":source,
+                    @"target":targetText,
+                    @"teamName":teamName
+                } forKey:@"format"];
                 break;
             case NIMTeamOperationTypeRemoveManager:
                 formatedMessage = [NSString stringWithFormat:@"%@被撤销了群管理员身份",targetText];
                 [result setObject:@"remove_manager" forKey:@"operationType"];
-                 [result setObject:@{
-                   @"source":[source isEqualToString:@"你"]?@"you":source,
-                    @"targetText":targetText,
+                [result setObject:@{
+                    @"source":source,
+                    @"target":targetText,
                     @"teamName":teamName
-                 } forKey:@"format"];
+                } forKey:@"format"];
                 break;
             case NIMTeamOperationTypeAcceptInvitation:
                 formatedMessage = [NSString stringWithFormat:@"%@接受%@的邀请进群",source,targetText];
                 [result setObject:@"accept_invitation" forKey:@"operationType"];
                 [result setObject:@{
-                   @"source":[source isEqualToString:@"你"]?@"you":source,
-                    @"targetText":targetText,
+                    @"source":source,
+                    @"target":targetText,
                     @"teamName":teamName
                 } forKey:@"format"];
                 
@@ -406,8 +406,8 @@
                     [result setObject:@"mute" forKey:@"operationType"];
                     [result setObject:mute?@"enabled":@"disabled" forKey:@"operationTag"];
                     [result setObject:@{
-                       @"source":[source isEqualToString:@"你"]?@"you":source,
-                       @"target":[str isEqualToString:@"你"]?@"you":str
+                        @"source":source,
+                        @"target":str
                     } forKey:@"format"];
                 }
             }
@@ -592,11 +592,11 @@
     NSMutableArray *targetNicks = [[NSMutableArray alloc] init];
     for (NIMChatroomNotificationMember *memebr in content.targets) {
         if ([memebr.userId isEqualToString:[[NIMSDK sharedSDK].loginManager currentAccount]]) {
-           [targetNicks addObject:@"你"];
+            [targetNicks addObject:@"[you]"];
         }else{
-           [targetNicks addObject:memebr.nick];
+            [targetNicks addObject:memebr.nick];
         }
-
+        
     }
     NSString *targetText =[targetNicks componentsJoinedByString:@","];
     switch (content.eventType) {
@@ -700,7 +700,7 @@
     NIMTeamNotificationContent *content = (NIMTeamNotificationContent*)object.content;
     NSString *currentAccount = [[NIMSDK sharedSDK].loginManager currentAccount];
     if ([content.sourceID isEqualToString:currentAccount]) {
-        source = @"你";
+        source = @"[you]";
     }else{
         source = [NIMKitUtil showNick:content.sourceID inSession:message.session];
     }
@@ -714,7 +714,7 @@
     NSString *currentAccount = [[NIMSDK sharedSDK].loginManager currentAccount];
     for (NSString *item in content.targetIDs) {
         if ([item isEqualToString:currentAccount]) {
-            [targets addObject:@"你"];
+            [targets addObject:@"[you]"];
         }else{
             NSString *targetShowName = [NIMKitUtil showNick:item inSession:message.session];
             [targets addObject:targetShowName];
@@ -760,7 +760,7 @@
     {
         return member.type == NIMTeamMemberTypeOwner || member.type == NIMTeamMemberTypeManager || member.type == NIMTeamMemberTypeNormal;
     }
-
+    
 }
 
 @end

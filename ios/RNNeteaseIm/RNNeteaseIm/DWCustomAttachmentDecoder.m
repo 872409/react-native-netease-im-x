@@ -25,6 +25,8 @@
             NSInteger custType = 0;
             if ([strType isEqualToString:@"redpacket"]) {//红包
                 custType = CustomMessgeTypeRedpacket;
+            }else if([strType isEqualToString:@"rtc_call"]){//转账
+                custType = CustomMessgeTypeRTCCall;
             }else if([strType isEqualToString:@"transfer"]){//转账
                 custType = CustomMessgeTypeBankTransfer;
             }else if([strType isEqualToString:@"url"]){//链接

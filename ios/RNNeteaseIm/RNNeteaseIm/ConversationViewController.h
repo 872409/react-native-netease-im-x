@@ -41,7 +41,7 @@ typedef void(^Errors)(id erro);
 //发送自定义消息
 -(void)sendCustomMessage:(NSDictionary *)dataDict;
 //发送地理位置消息
--(void)sendLocationMessage:(  NSString *)latitude longitude:(  NSString *)longitude address:(  NSString *)address;
+-(void)sendLocationMessage:(  NSString *)latitude longitude:(  NSString *)longitude address:( NSString *)address;
 //X
 //发送提醒消息
 -(void)sendTipMessage:(NSString *)contactId content:(NSString *)content;
@@ -49,7 +49,12 @@ typedef void(^Errors)(id erro);
 - (void)sendRedPacketMessage:(NSString *)type comments:(NSString *)comments serialNo:(NSString *)serialNo;
 
 //X
--(void)sendRTCCallMessage:(NSString *)channelName callType:(NSInteger )callType msgType:(NSString *)msgType apns:(BOOL)apns;
+-(void)sendRTCCallNotice:(NSDictionary *)options;
+//x
+-(void)saveRTCCallMessage:(NSDictionary *)options;
+//x
+-(void)sendRTCCallMessage:(NSDictionary *)options;
+
 //发送转账消息
 - (void)sendBankTransferMessage:(NSString *)amount comments:(NSString *)comments serialNo:(NSString *)serialNo;
 //发送拆红包消息

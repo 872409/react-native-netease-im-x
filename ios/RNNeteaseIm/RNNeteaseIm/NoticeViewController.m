@@ -316,7 +316,7 @@
     __weak typeof(self)weakSelf = self;
     for (int i = 0; i < _notiArr.count; i++) {
         if ([targetID isEqualToString:[[_notiArr objectAtIndex:i] objectForKey:@"fromAccount"]]) {
-            if ([timestamp isEqualToString:[[_notiArr objectAtIndex:i] objectForKey:@"time"]]) {
+            if ([timestamp isEqualToString:[[_notiArr objectAtIndex:i] objectForKey:@"timestamp"]]) {
                 NIMSystemNotification *notices = [_notifications objectAtIndex:i];
                 switch (notices.type) {
                     case NIMSystemNotificationTypeTeamApply:{

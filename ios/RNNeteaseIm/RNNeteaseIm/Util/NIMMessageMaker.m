@@ -62,6 +62,9 @@
         case CustomMessgeTypeRedpacket:
             text = [NSString stringWithFormat:@"[红包]%@", [attachment.dataDict objectForKey:@"comments"]];
             break;
+        case CustomMessgeTypeRTCCall:
+            text = @"RTC_CALL";
+            break;
         case CustomMessgeTypeBankTransfer:
             text = [NSString stringWithFormat:@"[转账]%@", [attachment.dataDict objectForKey:@"comments"]];
             break;

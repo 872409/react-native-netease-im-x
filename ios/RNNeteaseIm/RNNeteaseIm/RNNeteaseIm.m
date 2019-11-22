@@ -195,6 +195,7 @@ RCT_EXPORT_METHOD(addFriendWithType:(nonnull  NSString *)contactId verifyType:(n
         resolve(error);
     }];
 }
+
 //通过/拒绝对方好友请求
 RCT_EXPORT_METHOD(ackAddFriendRequest:(nonnull  NSString *)targetId accept:(nonnull  NSString * )accept msg:(nonnull  NSString * )msg timestamp:(nonnull  NSString * )timestamp resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
     if ([accept isEqualToString:@"1"]) {
@@ -364,6 +365,11 @@ RCT_EXPORT_METHOD(sendAudioMessage:(nonnull  NSString *)file duration:(nonnull  
 RCT_EXPORT_METHOD(sendCustomMessage:(nonnull  NSDictionary *)attachment){
     [[ConversationViewController initWithConversationViewController]sendCustomMessage:attachment];
 }
+
+////发送自定义消息
+//RCT_EXPORT_METHOD(sendRTCCallMessage:(nonnull  NSDictionary *)attachment){
+//    [[ConversationViewController initWithConversationViewController] sendRTCCallMessage:attachment];
+//}
 //发送视频消息
 RCT_EXPORT_METHOD(sendVideoMessage:(nonnull  NSString *)file duration:(nonnull  NSString *)duration width:(nonnull  NSString *)width height:(nonnull  NSString *)height displayName:(nonnull  NSString *)displayName){
     [[ConversationViewController initWithConversationViewController]sendVideoMessage:file duration:duration width:width height:height displayName:displayName];
@@ -434,10 +440,17 @@ RCT_EXPORT_METHOD(sendCardMessage:(NSString *)type name:(NSString *)name imgPath
     [[ConversationViewController initWithConversationViewController] sendCardMessage:type sessionId:sessionId name:name imgPath:imgPath];
 }
 
-
 //X
-RCT_EXPORT_METHOD(sendRTCCallMessage:(NSString *)channelName callType:(NSInteger )callType msgType:(NSString *)msgType apns:(BOOL)apns){
-    [[ConversationViewController initWithConversationViewController] sendRTCCallMessage:channelName callType:callType msgType:msgType apns:apns];
+RCT_EXPORT_METHOD(sendRTCCallNotice:(NSDictionary *)options){
+    [[ConversationViewController initWithConversationViewController] sendRTCCallNotice:options];
+}
+//X
+RCT_EXPORT_METHOD(saveRTCCallMessage:(NSDictionary *)options){
+    [[ConversationViewController initWithConversationViewController] saveRTCCallMessage:options];
+}
+//X
+RCT_EXPORT_METHOD(sendRTCCallMessage:(NSDictionary *)options){
+    [[ConversationViewController initWithConversationViewController] sendRTCCallMessage:options];
 }
 
 
