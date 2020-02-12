@@ -1,10 +1,10 @@
 apply plugin: 'com.android.library'
 
-def DEFAULT_COMPILE_SDK_VERSION   = 27
-def DEFAULT_BUILD_TOOLS_VERSION   = "27.0.3"
-def DEFAULT_TARGET_SDK_VERSION    = 27
-def DEFAULT_MIN_SDK_VERSION       = 16
-def DEFAULT_SUPPOR_LIBVERSION = "27.0.3"
+def DEFAULT_COMPILE_SDK_VERSION = 28
+def DEFAULT_BUILD_TOOLS_VERSION = "28.0.3"
+def DEFAULT_TARGET_SDK_VERSION = 28
+def DEFAULT_MIN_SDK_VERSION = 16
+def DEFAULT_SUPPOR_LIBVERSION = "28.0.3"
 
 android {
 //    useLibrary 'org.apache.http.legacy'
@@ -19,7 +19,7 @@ android {
         versionName "1.0"
         ndk {
             //设置支持的SO库架构
-            abiFilters "armeabi-v7a", "x86","arm64-v8a","x86_64"
+            abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
     }
     buildTypes {
@@ -27,8 +27,8 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
-    sourceSets{
-        main{
+    sourceSets {
+        main {
             jniLibs.srcDir(['libs'])
         }
     }
@@ -36,14 +36,26 @@ android {
         abortOnError false
     }
 }
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.3'
+//        classpath 'com.huawei.agconnect:agcp:1.0.0.300'
+    }
+}
 
 repositories {
+    google()
     mavenCentral()
 }
 
 dependencies {
-    compile fileTree(include: '*.jar', dir: 'libs')
-    compile 'com.facebook.react:react-native:+'
+    implementation fileTree(include: '*.jar', dir: 'libs')
+    implementation 'com.facebook.react:react-native:+'
     // 基础功能 (必需)
     implementation 'com.netease.nimlib:basesdk:6.3.0'
     implementation 'com.netease.nimlib:push:6.3.0'
@@ -52,4 +64,13 @@ dependencies {
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 
 }
-  
+
+allprojects {
+    repositories {
+        mavenLocal()
+        google()
+        jcenter()
+        maven { url 'http://developer.huawei.com/repo/' }
+        maven { url 'https://maven.google.com' }
+    }
+}

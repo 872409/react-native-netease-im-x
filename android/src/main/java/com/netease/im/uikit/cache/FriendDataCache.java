@@ -30,6 +30,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 public class FriendDataCache {
     final static String TAG = "FriendDataCache";
+
     public static FriendDataCache getInstance() {
         return InstanceHolder.instance;
     }
@@ -52,10 +53,13 @@ public class FriendDataCache {
     }
 
     public void buildCache() {
+        LogUtil.w(TAG, NIMClient.getService(FriendService.class).toString());
         // 获取我所有的好友关系
         List<Friend> friends = NIMClient.getService(FriendService.class).getFriends();
-        for (Friend f : friends) {
-            friendMap.put(f.getAccount(), f);
+        if (friends != null) {
+            for (Friend f : friends) {
+                friendMap.put(f.getAccount(), f);
+            }
         }
 
         // 获取我所有好友的帐号
@@ -66,7 +70,9 @@ public class FriendDataCache {
 
         // 排除黑名单
         List<String> blacks = NIMClient.getService(FriendService.class).getBlackList();
-        accounts.removeAll(blacks);
+        if (blacks != null) {
+            accounts.removeAll(blacks);
+        }
 
         // 排除掉自己
         accounts.remove(LoginService.getInstance().getAccount());

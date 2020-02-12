@@ -42,7 +42,7 @@ public class TeamDataCache {
 
         addOrUpdateTeam(teams);
 
-        LogUtil.w(TAG, "build TeamDataCache completed, team count = " + teams.size());
+//        LogUtil.w(TAG, "build TeamDataCache completed, team count = " + teams.size());
     }
 
     public void clear() {

@@ -3,7 +3,9 @@ package com.netease.im.session;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
+
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -412,7 +414,9 @@ public class SessionService {
     Observer<RevokeMsgNotification> revokeMessageObserver = new Observer<RevokeMsgNotification>() {
         @Override
         public void onEvent(RevokeMsgNotification item) {
-            if (item == null) {return;}
+            if (item == null) {
+                return;
+            }
             IMMessage message = item.getMessage();
             if (message == null || sessionId == null || !sessionId.equals(message.getSessionId())) {
                 return;
@@ -520,7 +524,7 @@ public class SessionService {
 
     boolean hasRegister;
 
-    private void registerObservers(boolean register) {
+    public void registerObservers(boolean register) {
         if (hasRegister && register) {
             return;
         }
@@ -641,17 +645,20 @@ public class SessionService {
     }
 
     /**
+     * //TODO:X contactId
+     *
      * @param content
      */
-    public void sendTipMessage(String content, OnSendMessageListener onSendMessageListener) {
-        sendTipMessage(content, onSendMessageListener, false, true);
+    public void sendTipMessage(String contactId, String content, OnSendMessageListener onSendMessageListener) {
+        sendTipMessage(contactId, content, onSendMessageListener, false, true);
     }
 
-    public void sendTipMessage(String content, OnSendMessageListener onSendMessageListener, boolean local, boolean enableUnreadCount) {
+    //TODO:X contactId
+    public void sendTipMessage(String contactId, String content, OnSendMessageListener onSendMessageListener, boolean local, boolean enableUnreadCount) {
         CustomMessageConfig config = new CustomMessageConfig();
         config.enablePush = false; // 不推送
         config.enableUnreadCount = enableUnreadCount;
-        IMMessage message = MessageBuilder.createTipMessage(sessionId, sessionTypeEnum);
+        IMMessage message = MessageBuilder.createTipMessage(contactId != null ? contactId : sessionId, sessionTypeEnum);
         if (sessionTypeEnum == SessionTypeEnum.Team) {
             Map<String, Object> contentMap = new HashMap<>(1);
             contentMap.put("content", content);
@@ -887,7 +894,7 @@ public class SessionService {
                 config.enableUnreadCount = false;
                 message.setConfig(config);
                 getMsgService().saveMessageToLocal(message, true);
-                sendTipMessage(sessionName + "开启了朋友验证，你还不是他(她)朋友。请先发送朋友验证请求，对方验证后，才能聊天。发送朋友验证", null, true, false);
+                sendTipMessage(sessionId, sessionName + "开启了朋友验证，你还不是他(她)朋友。请先发送朋友验证请求，对方验证后，才能聊天。发送朋友验证", null, true, false);
                 return;
             }
         }
@@ -905,7 +912,7 @@ public class SessionService {
                     map.put("resend", false);
                     message.setLocalExtension(map);
                     getMsgService().updateIMMessage(message);
-                    sendTipMessage("消息已发出，但被对方拒收了。", null, true, false);
+                    sendTipMessage(sessionId, "消息已发出，但被对方拒收了。", null, true, false);
                 }
             }
 

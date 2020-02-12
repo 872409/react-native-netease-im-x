@@ -181,6 +181,24 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     }
 
     /**
+     * 登陆
+     *
+     * @param contactId
+     * @param token
+     * @param promise
+     */
+    @ReactMethod
+    public void autoLogin(String contactId, String token, final Promise promise) {
+        LogUtil.w(TAG, "_id:" + contactId);
+        LogUtil.w(TAG, "t:" + token);
+//        LogUtil.w(TAG, "md5:" + MD5.getStringMD5(token));
+
+        NIMClient.getService(AuthService.class).openLocalCache(contactId);
+        LogUtil.w(TAG, "s:" + NIMClient.getStatus().name());
+        LoginService.getInstance().autoLogin();
+    }
+
+    /**
      * 退出
      */
     @ReactMethod
@@ -519,6 +537,29 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     }
 
     /**
+     * //群成员全体禁言 mute字符串:0是false 1是true
+     *
+     * @param teamId
+     * @param mute
+     * @param promise
+     */
+    @ReactMethod
+    public void setTeamMute(String teamId, String mute, final Promise promise) {
+
+        NIMClient.getService(TeamService.class).muteAllTeamMember(teamId, string2Boolean(mute))
+                .setCallback(new RequestCallbackWrapper<Void>() {
+                    @Override
+                    public void onResult(int code, Void aVoid, Throwable throwable) {
+                        if (code == ResponseCode.RES_SUCCESS) {
+                            promise.resolve("" + code);
+                        } else {
+                            promise.reject("" + code, "");
+                        }
+                    }
+                });
+    }
+
+    /**
      * 群成员禁言
      *
      * @param teamId
@@ -644,6 +685,24 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
                 }
             });
         }
+    }
+
+    //TODO:X
+    @ReactMethod
+    public void sendRTCCallNotice(ReadableMap options) {
+
+    }
+
+    //TODO:X
+    @ReactMethod
+    public void saveRTCCallMessage(ReadableMap options) {
+
+    }
+
+    //TODO:X
+    @ReactMethod
+    public void sendRTCCallMessage(ReadableMap options) {
+
     }
 
 
@@ -1026,6 +1085,52 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     }
 
     /**
+     * 拥有者添加管理员
+     *
+     * @param teamId   群ID
+     * @param accounts 待提升为管理员的用户帐号列表
+     * @param promise
+     */
+    @ReactMethod
+    public void addManagersToTeam(String teamId, ReadableArray accounts, final Promise promise) {
+
+        NIMClient.getService(TeamService.class).addManagers(teamId, array2ListString(accounts))
+                .setCallback(new RequestCallbackWrapper<List<TeamMember>>() {
+                    @Override
+                    public void onResult(int code, List<TeamMember> teamMembers, Throwable throwable) {
+                        if (code == ResponseCode.RES_SUCCESS) {
+                            promise.resolve("" + code);
+                        } else {
+                            promise.reject("" + code, "");
+                        }
+                    }
+                });
+    }
+
+    /**
+     * 拥有者撤销管理员权限
+     *
+     * @param teamId   群ID
+     * @param accounts 待撤销的管理员的帐号列表
+     * @param promise
+     */
+    @ReactMethod
+    public void removeManagersFromTeam(String teamId, ReadableArray accounts, final Promise promise) {
+
+        NIMClient.getService(TeamService.class).removeManagers(teamId, array2ListString(accounts))
+                .setCallback(new RequestCallbackWrapper<List<TeamMember>>() {
+                    @Override
+                    public void onResult(int code, List<TeamMember> teamMembers, Throwable throwable) {
+                        if (code == ResponseCode.RES_SUCCESS) {
+                            promise.resolve("" + code);
+                        } else {
+                            promise.reject("" + code, "");
+                        }
+                    }
+                });
+    }
+
+    /**
      * 修改的群名称
      *
      * @param teamId
@@ -1204,8 +1309,8 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     //7.发送提醒消息
 //    content   //提醒内容
     @ReactMethod
-    public void sendTipMessage(String content, final Promise promise) {
-        sessionService.sendTipMessage(content, new SessionService.OnSendMessageListener() {
+    public void sendTipMessage(String contactId, String content, final Promise promise) {
+        sessionService.sendTipMessage(contactId, content, new SessionService.OnSendMessageListener() {
             @Override
             public int onResult(int code, IMMessage message) {
                 return 0;
@@ -1505,6 +1610,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
         sessionService.startSession(handler, sessionId, type);
     }
 
+
     /**
      * 退出聊天会话
      *
@@ -1514,6 +1620,26 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     public void stopSession(final Promise promise) {
         LogUtil.w(TAG, "stopSession");
         sessionService.stopSession();
+    }
+
+    /**
+     * //X: 监听接收消息
+     *
+     * @param promise
+     */
+    @ReactMethod
+    public void startChatMsg(final Promise promise) {
+        sessionService.registerObservers(true);
+    }
+
+    /**
+     * //X: 监听接收消息
+     *
+     * @param promise
+     */
+    @ReactMethod
+    public void stopChatMsg(final Promise promise) {
+        sessionService.registerObservers(false);
     }
 
     /**
@@ -1867,7 +1993,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      * @param promise
      */
     @ReactMethod
-    public void ackAddFriendRequest(String messageId, final String contactId, String pass, String timestamp, final Promise promise) {
+    public void ackAddFriendRequest(String messageId, final String contactId, String pass, final String msg, String timestamp, final Promise promise) {
         LogUtil.w(TAG, "ackAddFriendRequest" + contactId);
         long messageIdLong = 0L;
         try {
@@ -1882,7 +2008,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
                 public void onResult(int code, Void aVoid, Throwable throwable) {
                     if (code == ResponseCode.RES_SUCCESS) {
                         if (toPass) {
-                            IMMessage message = MessageBuilder.createTextMessage(contactId, SessionTypeEnum.P2P, "我们已经是好友啦，一起来聊天吧！");
+                            IMMessage message = MessageBuilder.createTextMessage(contactId, SessionTypeEnum.P2P, msg);
                             NIMClient.getService(MsgService.class).sendMessage(message, false);
                         }
                         promise.resolve("" + code);
@@ -1969,6 +2095,10 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
         });
     }
 
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//
+//    }
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
         LogUtil.w(TAG, "onActivityResult:" + requestCode + "-result:" + resultCode);
@@ -2055,4 +2185,5 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     public void onHostDestroy() {
         LogUtil.w(TAG, "onHostDestroy");
     }
+
 }
