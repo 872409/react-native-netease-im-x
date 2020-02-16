@@ -1,6 +1,7 @@
 package com.netease.im.login;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.netease.im.ReactCache;
 import com.netease.im.uikit.cache.NimUserInfoCache;
@@ -185,6 +186,7 @@ public class SysMessageObserver {
 
 
     private void onIncomingMessage(final SystemMessage message, boolean refresh) {
+        Log.d(TAG, message.getType().getValue() + "");
         // 同一个账号的好友申请仅保留最近一条
         SystemMessage del = null;
         if (addFriendVerifyFilter(message)) {

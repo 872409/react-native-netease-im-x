@@ -10,12 +10,14 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
 import com.netease.im.IMApplication;
 import com.netease.im.MessageConstant;
 import com.netease.im.MessageUtil;
 import com.netease.im.ReactCache;
+import com.netease.im.ReactNativeJson;
 import com.netease.im.login.LoginService;
 import com.netease.im.session.extension.BankTransferAttachment;
 import com.netease.im.session.extension.CardAttachment;
@@ -746,6 +748,36 @@ public class SessionService {
         attachment.setContent(content);
         IMMessage message = MessageBuilder.createCustomMessage(sessionId, sessionTypeEnum, digst, attachment, config);
         sendMessageSelf(message, onSendMessageListener, false);
+    }
+
+    public void sendRTCCallMessage(String sessionId, SessionTypeEnum sessionType, String content, OnSendMessageListener onSendMessageListener) {
+        CustomMessageConfig config = new CustomMessageConfig();
+        config.enableUnreadCount = false;
+        config.enablePush = false;
+        DefaultCustomAttachment attachment = new DefaultCustomAttachment(CustomAttachmentType.RTCCall);
+        attachment.setDigst(CustomAttachmentType.RTCCall);
+        attachment.setContent(content);
+        IMMessage message = MessageBuilder.createCustomMessage(sessionId, sessionType, CustomAttachmentType.RTCCall, attachment, config);
+        sendMessageSelf(message, onSendMessageListener, false);
+    }
+
+    public void saveRTCCallMessage(ReadableMap options, OnSendMessageListener onSendMessageListener) {
+        String sessionId = options.getString("sessionId");
+        String from = options.getString("from");
+
+        String content = ReactNativeJson.convertMapToJson(options.getMap("data")).toJSONString();
+
+        CustomMessageConfig config = new CustomMessageConfig();
+        config.enableUnreadCount = false;
+        config.enablePush = false;
+        DefaultCustomAttachment attachment = new DefaultCustomAttachment(CustomAttachmentType.RTCCall);
+        attachment.setDigst(CustomAttachmentType.RTCCall);
+        attachment.setContent(content);
+        IMMessage message = MessageBuilder.createCustomMessage(sessionId, SessionTypeEnum.P2P, CustomAttachmentType.RTCCall, attachment, config);
+        if (from != null) {
+            message.setFromAccount(from);
+        }
+        getMsgService().saveMessageToLocal(message, false);
     }
 
     public void sendRedPacketOpenMessage(String sendId, String openId, String hasRedPacket, String serialNo, OnSendMessageListener onSendMessageListener) {

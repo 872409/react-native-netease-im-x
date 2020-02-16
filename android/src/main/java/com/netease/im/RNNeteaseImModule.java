@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSONObject;
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -86,6 +87,7 @@ import com.netease.nimlib.sdk.uinfo.model.UserInfo;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -690,19 +692,35 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     //TODO:X
     @ReactMethod
     public void sendRTCCallNotice(ReadableMap options) {
-
+        SessionUtil.sendCustomNotification(options);
     }
 
     //TODO:X
     @ReactMethod
     public void saveRTCCallMessage(ReadableMap options) {
 
+        sessionService.saveRTCCallMessage(options, new SessionService.OnSendMessageListener() {
+            @Override
+            public int onResult(int code, IMMessage message) {
+                return 0;
+            }
+        });
     }
 
     //TODO:X
     @ReactMethod
     public void sendRTCCallMessage(ReadableMap options) {
+        String sessionId = options.getString("sessionId");
+        int sessionTypeInt = options.getInt("sessionType");
+        SessionTypeEnum sessionType = SessionUtil.getSessionType(sessionTypeInt);
+        String content = ReactNativeJson.convertMapToJson(options.getMap("data")).toJSONString();
 
+        sessionService.sendRTCCallMessage(sessionId, sessionType, content, new SessionService.OnSendMessageListener() {
+            @Override
+            public int onResult(int code, IMMessage message) {
+                return 0;
+            }
+        });
     }
 
 
@@ -2095,7 +2113,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
         });
     }
 
-//    @Override
+    //    @Override
 //    public void onActivityResult(int requestCode, int resultCode, Intent data) {
 //
 //    }

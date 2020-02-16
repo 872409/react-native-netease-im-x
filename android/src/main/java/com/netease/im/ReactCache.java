@@ -86,6 +86,7 @@ public class ReactCache {
     public final static String observeAccountNotice = "observeAccountNotice";//'账户变动通知'
     public final static String observeLaunchPushEvent = "observeLaunchPushEvent";//''
     public final static String observeBackgroundPushEvent = "observeBackgroundPushEvent";//''
+    public final static String observeCustomNotice = "observeCustomNotice";//''
 
     final static String TAG = "ReactCache";
     private static ReactContext reactContext;
@@ -228,6 +229,11 @@ public class ReactCache {
                 if (attachment != null) {
                     map.putString("custType", attachment.getType());
                     switch (attachment.getType()) {
+                        case CustomAttachmentType.RTCCall:
+                            if (attachment instanceof DefaultCustomAttachment) {
+                                content = CustomAttachmentType.RTCCall;
+                            }
+                            break;
                         case CustomAttachmentType.RedPacket:
                             if (attachment instanceof RedPacketAttachement) {
                                 content = "[红包] " + ((RedPacketAttachement) attachment).getComments();
@@ -636,13 +642,13 @@ public class ReactCache {
         return writableArray;
     }
 
-    static String getMessageNotifyType(TeamMessageNotifyTypeEnum notifyTypeEnum){
+    static String getMessageNotifyType(TeamMessageNotifyTypeEnum notifyTypeEnum) {
         String notify = "1";
-        if(notifyTypeEnum==TeamMessageNotifyTypeEnum.All){
+        if (notifyTypeEnum == TeamMessageNotifyTypeEnum.All) {
             notify = "1";
-        }else if(notifyTypeEnum==TeamMessageNotifyTypeEnum.Manager){
+        } else if (notifyTypeEnum == TeamMessageNotifyTypeEnum.Manager) {
             notify = "0";
-        }else if(notifyTypeEnum==TeamMessageNotifyTypeEnum.Mute){
+        } else if (notifyTypeEnum == TeamMessageNotifyTypeEnum.Mute) {
             notify = "0";
         }
         return notify;

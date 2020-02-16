@@ -3,12 +3,16 @@ package com.netease.im.session;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+
 import androidx.core.app.NotificationCompat;
+
 import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.facebook.react.bridge.ReadableMap;
 import com.netease.im.IMApplication;
+import com.netease.im.ReactNativeJson;
 import com.netease.im.login.LoginService;
 import com.netease.im.session.extension.RedPacketOpenAttachement;
 import com.netease.im.uikit.cache.NimUserInfoCache;
@@ -35,11 +39,17 @@ public class SessionUtil {
 
     public final static String CUSTOM_Notification = "1";
     public final static String CUSTOM_Notification_redpacket_open = "2";
+    public final static String CUSTOM_Notification_RTCCallNotice = "103";
+    public final static String CUSTOM_Notification_RTCCallMessage = "103";
 
     public static SessionTypeEnum getSessionType(String sessionType) {
+        return getSessionType(Integer.parseInt(sessionType));
+    }
+
+    public static SessionTypeEnum getSessionType(Integer sessionType) {
         SessionTypeEnum sessionTypeE = SessionTypeEnum.None;
         try {
-            sessionTypeE = SessionTypeEnum.typeOfValue(Integer.parseInt(sessionType));
+            sessionTypeE = SessionTypeEnum.typeOfValue(sessionType);
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
@@ -175,6 +185,35 @@ public class SessionUtil {
 
         NIMClient.getService(MsgService.class).sendCustomNotification(notification);
     }
+
+    /**
+     * //TODO:X
+     * @param options
+     */
+    public static void sendCustomNotification(ReadableMap options) {
+
+        String sessionId = options.getString("sessionId");
+        int sessionTypeInt = options.getInt("sessionType");
+        SessionTypeEnum sessionType = getSessionType(sessionTypeInt);
+
+        CustomNotification notification = new CustomNotification();
+        notification.setSessionId(sessionId);
+        notification.setSessionType(sessionType);
+
+        String content = ReactNativeJson.convertMapToJson(options).toJSONString();
+
+        notification.setContent(content);
+        notification.setSendToOnlineUserOnly(false);
+        notification.setApnsText(content);
+
+        Map<String, Object> pushPayload = new HashMap<>();
+        pushPayload.put("type", sessionTypeInt);
+        pushPayload.put("content", content);
+        notification.setPushPayload(pushPayload);
+
+        NIMClient.getService(MsgService.class).sendCustomNotification(notification);
+    }
+
 
     public static void sendRedPacketOpenLocal(String sessionId, SessionTypeEnum sessionType,
                                               String sendId, String openId, String hasRedPacket, String serialNo, long timestamp) {

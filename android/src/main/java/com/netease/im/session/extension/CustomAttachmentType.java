@@ -20,5 +20,6 @@ public interface CustomAttachmentType {
     String LinkUrl = "url";//链接
     String AccountNotice = "account_notice";//账户变动通知
     String Card = "card";//账户变动通知
+    String RTCCall = "rtc_call";//账户变动通知
 
 }
