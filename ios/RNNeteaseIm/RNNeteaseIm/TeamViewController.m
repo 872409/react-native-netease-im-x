@@ -223,7 +223,7 @@ NSMutableArray *_myTeams;
             }
         }
         else{
-            DDLogDebug(@"Jion team failed: %@", error.localizedDescription);
+//            DDLogDebug(@"Jion team failed: %@", error.localizedDescription);
             switch (error.code) {
                 case NIMRemoteErrorCodeTeamAlreadyIn:
                     err(@"已经在群里");
@@ -233,7 +233,7 @@ NSMutableArray *_myTeams;
                     break;
             }
         }
-        DDLogDebug(@"Jion team status: %zd", applyStatus);
+//        DDLogDebug(@"Jion team status: %zd", applyStatus);
     
     }];
 }

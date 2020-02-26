@@ -8,12 +8,22 @@
 
 #import "NoticeViewController.h"
 #import "NTESBundleSetting.h"
+#import "ImConfig.h"
+
+//@interface NoticeViewController ()<NIMUserManagerDelegate,NIMSystemNotificationManagerDelegate>
+//
+//@property (nonatomic,strong) NSMutableArray *_notifications;
+//NSMutableArray *_notiArr;    @property (nonatomic,strong) NSMutableArray *_notiArr;
+//BOOL self._shouldMarkAsRead;    @property (nonatomic,assign) BOOL self._shouldMarkAsRead;
+//
+//@end
+
 @interface NoticeViewController ()<NIMUserManagerDelegate,NIMSystemNotificationManagerDelegate>
-{
-    NSMutableArray *_notifications;
-    NSMutableArray *_notiArr;
-    BOOL _shouldMarkAsRead;
-}
+
+@property (nonatomic,strong) NSMutableArray *_notifications;
+@property (nonatomic,strong) NSMutableArray *_notiArr;
+@property (nonatomic,assign) BOOL _shouldMarkAsRead;
+
 
 @end
 
@@ -32,14 +42,15 @@
 -(void)initWithDelegate{
     [[[NIMSDK sharedSDK] systemNotificationManager] addDelegate:self];
     [[[NIMSDK sharedSDK] userManager] addDelegate:self];
-    _notifications = [NSMutableArray array];
+    self._notifications = [NSMutableArray array];
+//    _notifications = [NSMutableArray array];
     [self setAllread];
     id<NIMSystemNotificationManager> systemNotificationManager = [[NIMSDK sharedSDK] systemNotificationManager];
     [systemNotificationManager addDelegate:nil];
     
-    NSArray *notifications = [systemNotificationManager fetchSystemNotifications:nil
-                                                                           limit:MaxNotificationCount];
-    _notiArr = [NSMutableArray array];
+    NSArray *notifications = [systemNotificationManager fetchSystemNotifications:nil limit:MaxNotificationCount];
+    self._notiArr = [NSMutableArray array];
+//    _notiArr = [NSMutableArray array];
     if ([notifications count])
     {
 //        for (int i = 0; i < notifications.count - 1; i++) {
@@ -76,10 +87,10 @@
     
    
    
-        [_notiArr removeAllObjects];
-        [_notifications removeAllObjects];
-        [_notifications addObjectsFromArray:Secnotifications];
-        for (NIMSystemNotification *notices in _notifications) {
+        [self._notiArr removeAllObjects];
+        [self._notifications removeAllObjects];
+        [self._notifications addObjectsFromArray:Secnotifications];
+        for (NIMSystemNotification *notices in self._notifications) {
             NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
             [self updateSourceMember:sourceMember andNoti:notices];
         }
@@ -112,9 +123,9 @@
         }
     }
     
-    if (_notifications.count) {
+    if (self._notifications.count) {
         NSMutableArray *tmpArr = [NSMutableArray array];
-        for (NIMSystemNotification *notices in _notifications) {
+        for (NIMSystemNotification *notices in self._notifications) {
             
             if ([notices.sourceID isEqualToString:notification.sourceID]) {
                 [[[NIMSDK sharedSDK] systemNotificationManager] deleteNotification:notices];
@@ -122,14 +133,14 @@
                 [tmpArr addObject:notices];
             }
         }
-        [_notifications removeAllObjects];
-        [_notifications addObjectsFromArray:tmpArr];
+        [self._notifications removeAllObjects];
+        [self._notifications addObjectsFromArray:tmpArr];
     }
-    [_notifications insertObject:notification atIndex:0];
+    [self._notifications insertObject:notification atIndex:0];
     
-    _shouldMarkAsRead = YES;
-    [_notiArr removeAllObjects];
-    for (NIMSystemNotification *notices in _notifications) {
+    self._shouldMarkAsRead = YES;
+    [self._notiArr removeAllObjects];
+    for (NIMSystemNotification *notices in self._notifications) {
         NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
         [self updateSourceMember:sourceMember andNoti:notices];
     }
@@ -266,24 +277,24 @@
     
     [dic setObject:extend forKey:@"extend"];
     
-    [_notiArr addObject:dic];
+    [self._notiArr addObject:dic];
 
 }
 //加载更多
 - (void)loadMore:(id)sender
 {
-    NSArray *notifications = [[[NIMSDK sharedSDK] systemNotificationManager] fetchSystemNotifications:[_notifications lastObject]
+    NSArray *notifications = [[[NIMSDK sharedSDK] systemNotificationManager] fetchSystemNotifications:[self._notifications lastObject]
                                                                                                 limit:MaxNotificationCount];
     if ([notifications count])
     {
-        [_notifications addObjectsFromArray:notifications];
+        [self._notifications addObjectsFromArray:notifications];
         
     }
 }
 //删除信息
 -(void)deleteNotice:(NSString *)targetID timestamp:(NSString *)timestamp{
-    for (int i = 0; i < _notifications.count; i++) {
-        NIMSystemNotification *notices =_notifications[i];
+    for (int i = 0; i < self._notifications.count; i++) {
+        NIMSystemNotification *notices =self._notifications[i];
         if ([targetID isEqualToString:notices.sourceID]) {
                 [[[NIMSDK sharedSDK] systemNotificationManager] deleteNotification:notices];
         }
@@ -293,19 +304,19 @@
 //删除所有
 -(void)deleAllNotic{
     [[[NIMSDK sharedSDK] systemNotificationManager] deleteAllNotifications];
-    [_notifications removeAllObjects];
-    [_notiArr removeAllObjects];
+    [self._notifications removeAllObjects];
+    [self._notiArr removeAllObjects];
     [self refrash];
     
 }
 -(void)refrash{
     NIMModel *mode = [NIMModel initShareMD];
    
-    mode.notiArr = _notiArr;
+    mode.notiArr = self._notiArr;
 }
 //返回标记为已读
 -(void)setAllread{
-    if (_shouldMarkAsRead)
+    if (self._shouldMarkAsRead)
     {
         [[[NIMSDK sharedSDK] systemNotificationManager] markAllNotificationsAsRead];
     }
@@ -314,16 +325,16 @@
 -(void)onAccept:(NSString *)targetID timestamp:(NSString *)timestamp msg:(NSString *)msg sucess:(Success)success error:(Errors)err{
     
     __weak typeof(self)weakSelf = self;
-    for (int i = 0; i < _notiArr.count; i++) {
-        if ([targetID isEqualToString:[[_notiArr objectAtIndex:i] objectForKey:@"fromAccount"]]) {
-            if ([timestamp isEqualToString:[[_notiArr objectAtIndex:i] objectForKey:@"timestamp"]]) {
-                NIMSystemNotification *notices = [_notifications objectAtIndex:i];
+    for (int i = 0; i < self._notiArr.count; i++) {
+        if ([targetID isEqualToString:[[self._notiArr objectAtIndex:i] objectForKey:@"fromAccount"]]) {
+            if ([timestamp isEqualToString:[[self._notiArr objectAtIndex:i] objectForKey:@"timestamp"]]) {
+                NIMSystemNotification *notices = [self._notifications objectAtIndex:i];
                 switch (notices.type) {
                     case NIMSystemNotificationTypeTeamApply:{
                         [[NIMSDK sharedSDK].teamManager passApplyToTeam:notices.targetID userId:notices.sourceID completion:^(NSError *error, NIMTeamApplyStatus applyStatus) {
                             if (!error) {
-                                [_notifications replaceObjectAtIndex:i withObject:notices];
-                                for (NIMSystemNotification *notices in _notifications) {
+                                [self._notifications replaceObjectAtIndex:i withObject:notices];
+                                for (NIMSystemNotification *notices in self._notifications) {
                                     NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
                                     [self updateSourceMember:sourceMember andNoti:notices];
                                 }
@@ -342,8 +353,8 @@
                     case NIMSystemNotificationTypeTeamInvite:{
                         [[NIMSDK sharedSDK].teamManager acceptInviteWithTeam:notices.targetID invitorId:notices.sourceID completion:^(NSError *error) {
                             if (!error) {
-                                [_notifications replaceObjectAtIndex:i withObject:notices];
-                                for (NIMSystemNotification *notices in _notifications) {
+                                [self._notifications replaceObjectAtIndex:i withObject:notices];
+                                for (NIMSystemNotification *notices in self._notifications) {
                                     NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
                                     [self updateSourceMember:sourceMember andNoti:notices];
                                 }
@@ -374,9 +385,9 @@
                                                              completion:^(NSError *error) {
                                                                  if (!error) {
                                                                      notices.handleStatus = NotificationHandleTypeOk;
-                                                                     [_notifications replaceObjectAtIndex:i withObject:notices];
-                                                                     [_notiArr removeAllObjects];
-                                                                     for (NIMSystemNotification *notices in _notifications) {
+                                                                     [self._notifications replaceObjectAtIndex:i withObject:notices];
+                                                                     [self._notiArr removeAllObjects];
+                                                                     for (NIMSystemNotification *notices in self._notifications) {
                                                                          NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
                                                                          [self updateSourceMember:sourceMember andNoti:notices];
                                                                      }
@@ -433,18 +444,18 @@
 
 //拒绝
 -(void)onRefuse:(NSString *)targetID timestamp:(NSString *)timestamp sucess:(Success)success error:(Errors)err{
-    for (int i = 0; i < _notiArr.count; i++) {
-        if ([targetID isEqualToString:[[_notiArr objectAtIndex:i] objectForKey:@"fromAccount"]]) {
-            if ([timestamp isEqualToString:[[_notiArr objectAtIndex:i] objectForKey:@"time"]]) {
-                NIMSystemNotification *notices = [_notifications objectAtIndex:i];
+    for (int i = 0; i < self._notiArr.count; i++) {
+        if ([targetID isEqualToString:[[self._notiArr objectAtIndex:i] objectForKey:@"fromAccount"]]) {
+            if ([timestamp isEqualToString:[[self._notiArr objectAtIndex:i] objectForKey:@"time"]]) {
+                NIMSystemNotification *notices = [self._notifications objectAtIndex:i];
                 switch (notices.type) {
                     case NIMSystemNotificationTypeTeamApply:{
                         [[NIMSDK sharedSDK].teamManager rejectApplyToTeam:notices.targetID userId:notices.sourceID rejectReason:@"" completion:^(NSError *error) {
                             if (!error) {
                                 
                                 notices.handleStatus = NotificationHandleTypeNo;
-                                [_notifications replaceObjectAtIndex:i withObject:notices];
-                                for (NIMSystemNotification *notices in _notifications) {
+                                [self._notifications replaceObjectAtIndex:i withObject:notices];
+                                for (NIMSystemNotification *notices in self._notifications) {
                                     NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
                                     [self updateSourceMember:sourceMember andNoti:notices];
                                 }
@@ -466,8 +477,8 @@
                             if (!error) {
                                 
                                 notices.handleStatus = NotificationHandleTypeNo;
-                                [_notifications replaceObjectAtIndex:i withObject:notices];
-                                for (NIMSystemNotification *notices in _notifications) {
+                                [self._notifications replaceObjectAtIndex:i withObject:notices];
+                                for (NIMSystemNotification *notices in self._notifications) {
                                     NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
                                     [self updateSourceMember:sourceMember andNoti:notices];
                                 }
@@ -501,7 +512,7 @@
                                                                  if (!error) {
                                                                      
                                                                      notices.handleStatus = NotificationHandleTypeNo;
-//                                                                     [_notifications replaceObjectAtIndex:i withObject:notices];
+//                                                                     [self._notifications replaceObjectAtIndex:i withObject:notices];
 //                                                                     for (NIMSystemNotification *notices in _notifications) {
 //                                                                         NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
 //                                                                         [self updateSourceMember:sourceMember andNoti:notices];

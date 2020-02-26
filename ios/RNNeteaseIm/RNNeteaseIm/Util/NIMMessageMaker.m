@@ -172,6 +172,11 @@
     NSString *strSessionType = [NSString stringWithFormat:@"%zd",session.sessionType];
     [payload setObject:@{@"sessionId":strSessionID,@"sessionType":strSessionType} forKey:@"sessionBody"];
     message.apnsPayload = payload;
+    
+    NIMMessageSetting *seting = [[NIMMessageSetting alloc]init];
+    seting.apnsEnabled = YES;
+    seting.shouldBeCounted = YES;
+    message.setting = seting;
 }
 
 @end

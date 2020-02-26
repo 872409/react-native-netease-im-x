@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "NIMModel.h"
+//#import "NIMModel.h"
+#import "ImConfig.h"
 
 typedef void(^Success)(id param);
 typedef void(^Errors)(id erro);
@@ -20,7 +21,7 @@ typedef void(^Errors)(id erro);
 //XX
 -(void)startChatMsg;
 -(void)stopChatMsg;
--(void)sendAudioRecode:(NSString *)filePath;
+//-(void)sendAudioRecode:(NSString *)filePath;
 /**
  *  会话页详细配置
  */
