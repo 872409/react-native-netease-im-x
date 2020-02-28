@@ -46,5 +46,8 @@
 #define CustomMessgeTypeBusinessCard  10     //名片
 #define CustomMessgeTypeCustom  102     //名片
 
+#define APNsTypeContact @"Contact"
+#define APNsTypeConversationMsg @"ConversationMsg"
+#define APNsTypeRTCMsg @"RTCMsg"
 
 #endif /* ImConfig_h */

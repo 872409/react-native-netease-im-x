@@ -45,8 +45,11 @@
 - (void)clickObserveNotification:(NSNotification *)noti{
     NSDictionary *dict = noti.object;
     NSMutableDictionary *param = [NSMutableDictionary dictionaryWithDictionary:[dict objectForKey:@"dict"]];
-    NSString *strDict = [param objectForKey:@"sessionBody"];
-    if ([strDict length]) {
+    
+    NSString *notificationType = [param objectForKey:@"type"];
+    //
+    if ([notificationType isEqualToString:APNsTypeConversationMsg]) {
+        NSString *strDict = [param objectForKey:@"payload"];
         NSDictionary *dataDict = [self dictChangeFromJson:strDict];
         NSMutableDictionary *mutaDict = [NSMutableDictionary dictionaryWithDictionary:dataDict];
         NSString *strType = [mutaDict objectForKey:@"sessionType"];
@@ -60,6 +63,7 @@
                 NIMUserInfo *userInfo = user.userInfo;
                 strSessionName = userInfo.nickName;
             }
+            [mutaDict setObject:strSessionId forKey:@"contactId"];
         }else{//群主
             NIMTeam *team = [[[NIMSDK sharedSDK] teamManager]teamById:strSessionId];
             strSessionName = team.teamName;
@@ -67,13 +71,19 @@
         if (!strSessionName) {
             strSessionName = @"";
         }
-        [mutaDict setObject:strSessionName forKey:@"sessionName"];
-        [param setObject:mutaDict forKey:@"sessionBody"];
-        if ([[dict objectForKey:@"type"] isEqualToString:@"launch"]) {
-            [_bridge.eventDispatcher sendDeviceEventWithName:@"observeLaunchPushEvent" body:param];
-        }else{
-            [_bridge.eventDispatcher sendDeviceEventWithName:@"observeBackgroundPushEvent" body:param];
-        }
+//        [mutaDict setObject:[strType intValue] forKey:@"sessionType"];
+        [mutaDict setObject:strSessionName forKey:@"name"];
+        [param setObject:mutaDict forKey:@"payload"];
+    }
+//    else{
+//        [param setObject:@"other" forKey:@"notifycation_type"];
+////        [param setObject:param forKey:@"payload"];
+//    }
+    //RCTEventEmitter
+    if ([[dict objectForKey:@"type"] isEqualToString:@"launch"]) {
+        [_bridge.eventDispatcher sendDeviceEventWithName:@"observeLaunchPushEvent" body:param];
+    }else{
+        [_bridge.eventDispatcher sendDeviceEventWithName:@"observeBackgroundPushEvent" body:param];
     }
 
 }
@@ -349,7 +359,7 @@ RCT_EXPORT_METHOD(resendMessage:(nonnull NSString *)messageId){
     [[ConversationViewController initWithConversationViewController]resendMessage:messageId];
     
 }
-
+ 
 //删除会话内容
 RCT_EXPORT_METHOD(deleteMessage:(nonnull NSString *)messageId){
     [[ConversationViewController initWithConversationViewController]deleteMsg:messageId];
@@ -359,20 +369,20 @@ RCT_EXPORT_METHOD(clearMessage:(nonnull  NSString *)sessionId sessionId:(nonnull
     [[ConversationViewController initWithConversationViewController] clearMsg:sessionId type:type];
 }
 //发送文字消息,atUserIds为@用户名单，@功能仅适用于群组
-RCT_EXPORT_METHOD(sendTextMessage:(nonnull  NSString *)content atUserIds:(NSArray *)atUserIds){
-    [[ConversationViewController initWithConversationViewController]sendMessage:content andApnsMembers:atUserIds];
+RCT_EXPORT_METHOD(sendTextMessage:(nonnull  NSString *)content atUserIds:(NSArray *)atUserIds apns:(nonnull  NSString *)apns){
+    [[ConversationViewController initWithConversationViewController]sendMessage:content andApnsMembers:atUserIds apns:apns];
 }
 //发送图片消息
-RCT_EXPORT_METHOD(sendImageMessages:(nonnull  NSString *)file  displayName:(nonnull  NSString *)displayName){
-    [[ConversationViewController initWithConversationViewController]sendImageMessages:file  displayName:displayName];
+RCT_EXPORT_METHOD(sendImageMessages:(nonnull  NSString *)file  displayName:(nonnull  NSString *)displayName apns:(nonnull  NSString *)apns){
+    [[ConversationViewController initWithConversationViewController]sendImageMessages:file  displayName:displayName apns:apns];
 }
 //发送音频消息
-RCT_EXPORT_METHOD(sendAudioMessage:(nonnull  NSString *)file duration:(nonnull  NSString *)duration){
-    [[ConversationViewController initWithConversationViewController]sendAudioMessage:file duration:duration];
+RCT_EXPORT_METHOD(sendAudioMessage:(nonnull  NSString *)file duration:(nonnull  NSString *)duration  apns:(nonnull  NSString *)apns){
+    [[ConversationViewController initWithConversationViewController]sendAudioMessage:file duration:duration apns:apns];
 }
 //发送自定义消息
-RCT_EXPORT_METHOD(sendCustomMessage:(nonnull  NSDictionary *)attachment){
-    [[ConversationViewController initWithConversationViewController]sendCustomMessage:attachment];
+RCT_EXPORT_METHOD(sendCustomMessage:(nonnull  NSDictionary *)attachment  apns:(nonnull  NSString *)apns){
+    [[ConversationViewController initWithConversationViewController]sendCustomMessage:attachment apns:apns];
 }
 
 ////发送自定义消息
@@ -380,14 +390,14 @@ RCT_EXPORT_METHOD(sendCustomMessage:(nonnull  NSDictionary *)attachment){
 //    [[ConversationViewController initWithConversationViewController] sendRTCCallMessage:attachment];
 //}
 //发送视频消息
-RCT_EXPORT_METHOD(sendVideoMessage:(nonnull  NSString *)file duration:(nonnull  NSString *)duration width:(nonnull  NSString *)width height:(nonnull  NSString *)height displayName:(nonnull  NSString *)displayName){
-    [[ConversationViewController initWithConversationViewController]sendVideoMessage:file duration:duration width:width height:height displayName:displayName];
+RCT_EXPORT_METHOD(sendVideoMessage:(nonnull  NSString *)file duration:(nonnull  NSString *)duration width:(nonnull  NSString *)width height:(nonnull  NSString *)height displayName:(nonnull  NSString *)displayName  apns:(nonnull  NSString *)apns){
+    [[ConversationViewController initWithConversationViewController]sendVideoMessage:file duration:duration width:width height:height displayName:displayName apns:apns];
 
 }
 
 //发送地理位置消息
-RCT_EXPORT_METHOD(sendLocationMessage:(nonnull  NSString *)latitude longitude:(nonnull  NSString *)longitude address:(nonnull  NSString *)address){
-    [[ConversationViewController initWithConversationViewController]sendLocationMessage:latitude longitude:longitude address:address];
+RCT_EXPORT_METHOD(sendLocationMessage:(nonnull  NSString *)latitude longitude:(nonnull  NSString *)longitude address:(nonnull  NSString *)address  apns:(nonnull  NSString *)apns){
+    [[ConversationViewController initWithConversationViewController]sendLocationMessage:latitude longitude:longitude address:address apns:apns];
 }
 //开启录音权限
 RCT_EXPORT_METHOD(onTouchVoice:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
@@ -465,8 +475,8 @@ RCT_EXPORT_METHOD(sendRTCCallMessage:(NSDictionary *)options){
 
 
 //发送提醒消息
-RCT_EXPORT_METHOD(sendTipMessage:(NSString *)contactId content:(NSString *)content){
-    [[ConversationViewController initWithConversationViewController] sendTipMessage:contactId content:content];
+RCT_EXPORT_METHOD(sendTipMessage:(NSString *)contactId content:(NSString *)content  apns:(nonnull  NSString *)apns){
+    [[ConversationViewController initWithConversationViewController] sendTipMessage:contactId content:content apns:apns];
 }
 
 //获取黑名单列表
@@ -803,6 +813,7 @@ RCT_EXPORT_METHOD(cleanCache){
 -(void)setSendState{
     NIMModel *mod = [NIMModel initShareMD];
     mod.myBlock = ^(NSInteger index, id param) {
+        NSLog(@"index %ld param:%@",index,param);
         switch (index) {
             case 0:
                 //网络状态

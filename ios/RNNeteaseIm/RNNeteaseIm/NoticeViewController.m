@@ -43,26 +43,26 @@
     [[[NIMSDK sharedSDK] systemNotificationManager] addDelegate:self];
     [[[NIMSDK sharedSDK] userManager] addDelegate:self];
     self._notifications = [NSMutableArray array];
-//    _notifications = [NSMutableArray array];
+    //    _notifications = [NSMutableArray array];
     [self setAllread];
     id<NIMSystemNotificationManager> systemNotificationManager = [[NIMSDK sharedSDK] systemNotificationManager];
     [systemNotificationManager addDelegate:nil];
     
     NSArray *notifications = [systemNotificationManager fetchSystemNotifications:nil limit:MaxNotificationCount];
     self._notiArr = [NSMutableArray array];
-//    _notiArr = [NSMutableArray array];
+    //    _notiArr = [NSMutableArray array];
     if ([notifications count])
     {
-//        for (int i = 0; i < notifications.count - 1; i++) {
-//            NIMSystemNotification *notices = [notifications objectAtIndex:i];
-//            NIMSystemNotification *notices1 = [notifications objectAtIndex:i+1];
-//           NSLog(@"555555555555555%@",notices.sourceID);
-//            if ([notices.sourceID isEqualToString:notices1.sourceID]) {
-//                
-//                [[NIMSDK sharedSDK].systemNotificationManager markNotificationsAsRead:notices];
-//                [[[NIMSDK sharedSDK] systemNotificationManager] deleteNotification:notices];
-//            }
-//        }
+        //        for (int i = 0; i < notifications.count - 1; i++) {
+        //            NIMSystemNotification *notices = [notifications objectAtIndex:i];
+        //            NIMSystemNotification *notices1 = [notifications objectAtIndex:i+1];
+        //           NSLog(@"555555555555555%@",notices.sourceID);
+        //            if ([notices.sourceID isEqualToString:notices1.sourceID]) {
+        //
+        //                [[NIMSDK sharedSDK].systemNotificationManager markNotificationsAsRead:notices];
+        //                [[[NIMSDK sharedSDK] systemNotificationManager] deleteNotification:notices];
+        //            }
+        //        }
         for (int i = 0; i < notifications.count - 1; i++) {
             for (int j = i+ 1; j <  notifications.count; j++) {
                 NIMSystemNotification *notices = [notifications objectAtIndex:i];
@@ -77,7 +77,7 @@
     }
     
     [self ReFrash];
-  
+    
 }
 -(void)ReFrash{
     id<NIMSystemNotificationManager> systemNotificationManager = [[NIMSDK sharedSDK] systemNotificationManager];
@@ -85,16 +85,16 @@
     NSArray *Secnotifications = [systemNotificationManager fetchSystemNotifications:nil
                                                                               limit:MaxNotificationCount];
     
-   
-   
-        [self._notiArr removeAllObjects];
-        [self._notifications removeAllObjects];
-        [self._notifications addObjectsFromArray:Secnotifications];
-        for (NIMSystemNotification *notices in self._notifications) {
-            NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
-            [self updateSourceMember:sourceMember andNoti:notices];
-        }
-        [self refrash];
+    
+    NSLog(@"ReFrash:%@",Secnotifications);
+    [self._notiArr removeAllObjects];
+    [self._notifications removeAllObjects];
+    [self._notifications addObjectsFromArray:Secnotifications];
+    for (NIMSystemNotification *notices in self._notifications) {
+        NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
+        [self updateSourceMember:sourceMember andNoti:notices];
+    }
+    [self refrash];
     
 }
 
@@ -109,7 +109,7 @@
     NIMModel *mode = [NIMModel initShareMD];
     mode.unreadCount = unreadCount;
     NSLog(@"2-----------unreadCount:%zd",unreadCount);
-
+    
 }
 - (void)onReceiveSystemNotification:(NIMSystemNotification *)notification{
     NSLog(@"2----notification:%@",notification);
@@ -165,7 +165,7 @@
     
     NSMutableDictionary *extend= [NSMutableDictionary dictionary];
     NSMutableDictionary *options= [NSMutableDictionary dictionary];
-
+    
     switch (type) {
         case NIMSystemNotificationTypeTeamApply:
         {
@@ -189,8 +189,8 @@
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             verifyText = [NSString stringWithFormat:@"群 %@ 拒绝你加入", team.teamName];
             [options setObject:@{
-               @"accountName":sourceMember.showName,
-               @"group":team.teamName
+                @"accountName":sourceMember.showName,
+                @"group":team.teamName
             } forKey:@"format"];
         }
             break;
@@ -203,8 +203,8 @@
             verifyText = [NSString stringWithFormat:@"群 %@ 邀请你加入", team.teamName];
             
             [options setObject:@{
-               @"accountName":sourceMember.showName,
-               @"group":team.teamName
+                @"accountName":sourceMember.showName,
+                @"group":team.teamName
             } forKey:@"format"];
         }
             break;
@@ -216,8 +216,8 @@
             team = [[NIMSDK sharedSDK].teamManager teamById:noti.targetID];
             verifyText = [NSString stringWithFormat:@"拒绝了群 %@ 邀请", team.teamName];
             [options setObject:@{
-               @"accountName":sourceMember.showName,
-               @"group":team.teamName
+                @"accountName":sourceMember.showName,
+                @"group":team.teamName
             } forKey:@"format"];
         }
             break;
@@ -272,13 +272,13 @@
     
     [options setObject:notificationType forKey:@"notificationType"];
     [options setObject:operationType forKey:@"operationType"];
-
+    
     [extend setObject:options forKey:@"options"];
     
     [dic setObject:extend forKey:@"extend"];
     
     [self._notiArr addObject:dic];
-
+    
 }
 //加载更多
 - (void)loadMore:(id)sender
@@ -296,7 +296,7 @@
     for (int i = 0; i < self._notifications.count; i++) {
         NIMSystemNotification *notices =self._notifications[i];
         if ([targetID isEqualToString:notices.sourceID]) {
-                [[[NIMSDK sharedSDK] systemNotificationManager] deleteNotification:notices];
+            [[[NIMSDK sharedSDK] systemNotificationManager] deleteNotification:notices];
         }
     }
     [self ReFrash];
@@ -311,7 +311,7 @@
 }
 -(void)refrash{
     NIMModel *mode = [NIMModel initShareMD];
-   
+    
     mode.notiArr = self._notiArr;
 }
 //返回标记为已读
@@ -383,24 +383,24 @@
                         
                         [[[NIMSDK sharedSDK] userManager] requestFriend:request
                                                              completion:^(NSError *error) {
-                                                                 if (!error) {
-                                                                     notices.handleStatus = NotificationHandleTypeOk;
-                                                                     [self._notifications replaceObjectAtIndex:i withObject:notices];
-                                                                     [self._notiArr removeAllObjects];
-                                                                     for (NIMSystemNotification *notices in self._notifications) {
-                                                                         NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
-                                                                         [self updateSourceMember:sourceMember andNoti:notices];
-                                                                     }
-                                                                     success(@"同意成功");
-                                                                     [weakSelf sendMakeFriendSucessMessgae:request.userId content:msg];
-                                                                     [self refrash];
-                                                                 }
-                                                                 else
-                                                                 {
-                                                                     err(@"网络问题，请重试");
-                                                                     
-                                                                 }
-                                                             }];
+                            if (!error) {
+                                notices.handleStatus = NotificationHandleTypeOk;
+                                [self._notifications replaceObjectAtIndex:i withObject:notices];
+                                [self._notiArr removeAllObjects];
+                                for (NIMSystemNotification *notices in self._notifications) {
+                                    NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
+                                    [self updateSourceMember:sourceMember andNoti:notices];
+                                }
+                                success(@"同意成功");
+                                [weakSelf sendMakeFriendSucessMessgae:request.userId content:msg];
+                                [self refrash];
+                            }
+                            else
+                            {
+                                err(@"网络问题，请重试");
+                                
+                            }
+                        }];
                     }
                         break;
                     default:
@@ -414,7 +414,7 @@
     
 }
 
-   
+
 //发送成为好友提醒
 - (void)sendMakeFriendSucessMessgae:(NSString *)strUserId content:(NSString *)content{
     NIMMessage *message = [[NIMMessage alloc] init];
@@ -436,7 +436,7 @@
     NIMMessage *message2 = [[NIMMessage alloc] init];
     message2.messageObject = object;
     message2.text = @"friend_Verified";
-     
+    
     // 发送消息
     [[NIMSDK sharedSDK].chatManager sendMessage:message2 toSession:session2 error:nil];
 }
@@ -509,24 +509,24 @@
                         
                         [[[NIMSDK sharedSDK] userManager] requestFriend:request
                                                              completion:^(NSError *error) {
-                                                                 if (!error) {
-                                                                     
-                                                                     notices.handleStatus = NotificationHandleTypeNo;
-//                                                                     [self._notifications replaceObjectAtIndex:i withObject:notices];
-//                                                                     for (NIMSystemNotification *notices in _notifications) {
-//                                                                         NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
-//                                                                         [self updateSourceMember:sourceMember andNoti:notices];
-//                                                                     }
-                                                                     success(@"拒绝成功");
-                                                                     
-                                                                 }
-                                                                 else
-                                                                 {
-                                                                     err(@"拒绝失败,请重试");
-                                                                 }
-                                                                 
-                                                                 DDLogDebug(@"%@",error.localizedDescription);
-                                                             }];
+                            if (!error) {
+                                
+                                notices.handleStatus = NotificationHandleTypeNo;
+                                //                                                                     [self._notifications replaceObjectAtIndex:i withObject:notices];
+                                //                                                                     for (NIMSystemNotification *notices in _notifications) {
+                                //                                                                         NIMKitInfo *sourceMember = [[NIMKit sharedKit] infoByUser:notices.sourceID option:nil];
+                                //                                                                         [self updateSourceMember:sourceMember andNoti:notices];
+                                //                                                                     }
+                                success(@"拒绝成功");
+                                
+                            }
+                            else
+                            {
+                                err(@"拒绝失败,请重试");
+                            }
+                            
+                            DDLogDebug(@"%@",error.localizedDescription);
+                        }];
                     }
                         break;
                     default:

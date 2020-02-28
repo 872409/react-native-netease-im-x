@@ -12,17 +12,17 @@
 
 @implementation NIMMessageMaker
 
-+ (NIMMessage*)msgWithText:(NSString*)text andApnsMembers:(NSArray *)members andeSession:(NIMSession *)session
++ (NIMMessage*)msgWithText:(NSString*)text andApnsMembers:(NSArray *)members andeSession:(NIMSession *)session apns:(nonnull  NSString *)apns
 {
-    
+
     NIMMessage *message = [[NIMMessage alloc] init];
     message.text    = text;
-    message.apnsContent = text;
+//    message.apnsContent = text;
     if (members.count) {
         NIMMessageApnsMemberOption *apnsMemberOption = [[NIMMessageApnsMemberOption alloc]init];
         apnsMemberOption.userIds = members;
         apnsMemberOption.forcePush = YES;
-        apnsMemberOption.apnsContent = @"有人@了你";
+        apnsMemberOption.apnsContent = apns;//@"有人@了你";
         message.apnsMemberOption = apnsMemberOption;
     }
     message.apnsContent = text;
@@ -30,29 +30,29 @@
     return message;
 }
 
-+ (NIMMessage*)msgWithAudio:(NSString*)filePath andeSession:(NIMSession *)session
++ (NIMMessage*)msgWithAudio:(NSString*)filePath andeSession:(NIMSession *)session apns:(nonnull  NSString *)apns
 {
     NIMAudioObject *audioObject = [[NIMAudioObject alloc] initWithSourcePath:filePath];
     NIMMessage *message = [[NIMMessage alloc] init];
     message.messageObject = audioObject;
-    message.text = @"发来了一段语音";
+    message.text = apns;// @"发来了一段语音";
     [NIMMessageMaker setupMessagePushBody:message andSession:session];
     return message;
 }
-+ (NIMMessage*)msgWithCustom:(NIMObject *)attachment andeSession:(NIMSession *)session
++ (NIMMessage*)msgWithCustom:(NIMObject *)attachment andeSession:(NIMSession *)session apns:(nonnull  NSString *)apns
 {
-    
+
     NIMMessage *message               = [[NIMMessage alloc] init];
     NIMCustomObject *customObject     = [[NIMCustomObject alloc] init];
     customObject.attachment           = attachment;
     message.messageObject             = customObject;
-    message.apnsContent = @"发来了一条未知消息";
+    message.apnsContent = apns;//@"发来了一条未知消息";
     [NIMMessageMaker setupMessagePushBody:message andSession:session];
     return message;
 }
-+ (NIMMessage*)msgWithCustomAttachment:(DWCustomAttachment *)attachment andeSession:(NIMSession *)session
++ (NIMMessage*)msgWithCustomAttachment:(DWCustomAttachment *)attachment andeSession:(NIMSession *)session apns:(nonnull  NSString *)apns
 {
-    
+
     NIMMessage *message               = [[NIMMessage alloc] init];
     NIMCustomObject *customObject     = [[NIMCustomObject alloc] init];
     customObject.attachment           = attachment;
@@ -96,12 +96,12 @@
             text = @"发来了一条未知消息";
             break;
     }
-    message.apnsContent = text;
+    message.apnsContent = apns;
     [NIMMessageMaker setupMessagePushBody:message andSession:session];
     return message;
 }
 
-+ (NIMMessage*)msgWithVideo:(NSString*)filePath andeSession:(NIMSession *)session
++ (NIMMessage*)msgWithVideo:(NSString*)filePath andeSession:(NIMSession *)session  apns:(nonnull  NSString *)apns
 {
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm"];
@@ -110,20 +110,20 @@
     videoObject.displayName = [NSString stringWithFormat:@"视频发送于%@",dateString];
     NIMMessage *message = [[NIMMessage alloc] init];
     message.messageObject = videoObject;
-    message.apnsContent = @"发来了一段视频";
+    message.apnsContent = apns;//@"发来了一段视频";
     [NIMMessageMaker setupMessagePushBody:message andSession:session];
     return message;
 }
-+ (NIMMessage*)msgWithImage:(UIImage*)image andeSession:(NIMSession *)session
++ (NIMMessage*)msgWithImage:(UIImage*)image andeSession:(NIMSession *)session apns:(nonnull  NSString *)apns
 {
     NIMImageObject *imageObject = [[NIMImageObject alloc] initWithImage:image];
     NIMImageOption *option  = [[NIMImageOption alloc] init];
     option.compressQuality  = 0.7;
     imageObject.option      = option;
-    return [NIMMessageMaker generateImageMessage:imageObject andeSession:session];
+    return [NIMMessageMaker generateImageMessage:imageObject andeSession:session apns:apns];
 }
 
-+ (NIMMessage *)msgWithImagePath:(NSString*)path andeSession:(NIMSession *)session
++ (NIMMessage *)msgWithImagePath:(NSString*)path andeSession:(NIMSession *)session apns:(nonnull  NSString *)apns
 {
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm"];
@@ -132,11 +132,12 @@
     imageObject.displayName = [NSString stringWithFormat:@"图片发送于%@",dateString];
     NIMMessage *message     = [[NIMMessage alloc] init];
     message.messageObject   = imageObject;
-    message.apnsContent = @"发来了一张图片";
-    return [NIMMessageMaker generateImageMessage:imageObject  andeSession:session];
+    message.apnsContent =  apns;//@"发来一张图片";
+//    message.apnsContent = [NIMMessageMaker jsonStringWithDictionary:@{@"loc-key":@"IM_RECEIVE_IMAGE",@"loc-args":@"XX"}];
+    return [NIMMessageMaker generateImageMessage:imageObject  andeSession:session apns:apns];
 }
 
-+ (NIMMessage *)generateImageMessage:(NIMImageObject *)imageObject andeSession:(NIMSession *)session
++ (NIMMessage *)generateImageMessage:(NIMImageObject *)imageObject andeSession:(NIMSession *)session apns:(nonnull  NSString *)apns
 {
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm"];
@@ -144,25 +145,48 @@
     imageObject.displayName = [NSString stringWithFormat:@"图片发送于%@",dateString];
     NIMMessage *message     = [[NIMMessage alloc] init];
     message.messageObject   = imageObject;
-    message.apnsContent = @"发来了一张图片";
+    message.apnsContent =  apns;//@"发来一张图片";
+//    message.apnsContent = [NIMMessageMaker jsonStringWithDictionary:@{@"loc-key":@"IM_RECEIVE_IMAGE",@"loc-args":@"XX"}];
     [NIMMessageMaker setupMessagePushBody:message andSession:session];
     return message;
 }
 
++ (NSString *)jsonStringWithDictionary:(NSDictionary *)dict
+{
+    if (dict && 0 != dict.count)
+    {
+        NSError *error = nil;
+        // NSJSONWritingOptions 是"NSJSONWritingPrettyPrinted"的话有换位符\n；是"0"的话没有换位符\n。
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        return jsonString;
+    }
+    
+    return nil;
+}
 
-+ (NIMMessage*)msgWithLocation:(NIMKitLocationPoint *)locationPoint andeSession:(NIMSession *)session{
++ (NIMMessage*)msgWithLocation:(NIMKitLocationPoint *)locationPoint andeSession:(NIMSession *)session  apns:(nonnull  NSString *)apns{
     NIMLocationObject *locationObject = [[NIMLocationObject alloc] initWithLatitude:locationPoint.coordinate.latitude
                                                                           longitude:locationPoint.coordinate.longitude
                                                                               title:locationPoint.title];
     NIMMessage *message               = [[NIMMessage alloc] init];
     message.messageObject             = locationObject;
-    message.apnsContent = @"发来了一条位置信息";
+    message.apnsContent =  apns;//@"发来了一条位置信息";
     [NIMMessageMaker setupMessagePushBody:message andSession:session];
     return message;
 }
 
-+ (void)setupMessagePushBody:(NIMMessage *)message andSession:(NIMSession *)session{
++ (NSMutableDictionary *)makeApnsPayload:(NSString *) type payloadData:(NSDictionary *)payloadData sound:(NSString *)sound{
+    
     NSMutableDictionary *payload = [NSMutableDictionary dictionary];
+    [payload setObject:[sound length]?sound:@"default" forKey:@"sound"];
+    [payload setObject:type forKey:@"type"];
+    [payload setObject:payloadData forKey:@"payload"];
+    return payload;
+}
+
++ (void)setupMessagePushBody:(NIMMessage *)message andSession:(NIMSession *)session{
+//    NSMutableDictionary *payload = [NSMutableDictionary dictionary];
     NSString *strSessionID = @"";
     if (session.sessionType == NIMSessionTypeP2P) {//点对点
         strSessionID = [NIMSDK sharedSDK].loginManager.currentAccount;
@@ -170,13 +194,16 @@
         strSessionID = [NSString stringWithFormat:@"%@",session.sessionId];
     }
     NSString *strSessionType = [NSString stringWithFormat:@"%zd",session.sessionType];
-    [payload setObject:@{@"sessionId":strSessionID,@"sessionType":strSessionType} forKey:@"sessionBody"];
-    message.apnsPayload = payload;
+    NSMutableDictionary *payload  = [NIMMessageMaker makeApnsPayload:APNsTypeConversationMsg payloadData:@{@"sessionId":strSessionID,@"sessionType":strSessionType} sound:@""];
     
-    NIMMessageSetting *seting = [[NIMMessageSetting alloc]init];
-    seting.apnsEnabled = YES;
-    seting.shouldBeCounted = YES;
-    message.setting = seting;
+    message.apnsPayload = payload;
+//    id json = [NIMMessageMaker jsonStringWithDictionary:payload];
+//    NSLog(@"apnsPlayload:%@",json);
+
+//     NIMMessageSetting *seting = [[NIMMessageSetting alloc]init];
+//     seting.apnsEnabled = YES;
+//     seting.shouldBeCounted = YES;
+//     message.setting = seting;
 }
 
 @end

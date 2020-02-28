@@ -32,20 +32,20 @@ typedef void(^Errors)(id erro);
 //开始录音
 - (void)onStartRecording;
 //发送文本，并指定@用户（@仅适用于群组）
--(void)sendMessage:(NSString *)mess andApnsMembers:(NSArray *)members;
+-(void)sendMessage:(NSString *)mess andApnsMembers:(NSArray *)members apns:(nonnull  NSString *)apns;
 //发送图片
--(void)sendImageMessages:(  NSString *)path   displayName:(  NSString *)displayName;
+-(void)sendImageMessages:(  NSString *)path   displayName:(  NSString *)displayName apns:(nonnull  NSString *)apns;
 //发送音频
--(void)sendAudioMessage:(  NSString *)file duration:(  NSString *)duration;
+-(void)sendAudioMessage:(  NSString *)file duration:(  NSString *)duration apns:(nonnull  NSString *)apns;
 //发送视频
--(void)sendVideoMessage:(  NSString *)path duration:(  NSString *)duration width:(  NSString *)width height:(  NSString *)height displayName:(  NSString *)displayName;
+-(void)sendVideoMessage:(  NSString *)path duration:(  NSString *)duration width:(  NSString *)width height:(  NSString *)height displayName:(  NSString *)displayName apns:(nonnull  NSString *)apns;
 //发送自定义消息
--(void)sendCustomMessage:(NSDictionary *)dataDict;
+-(void)sendCustomMessage:(NSDictionary *)dataDict apns:(nonnull  NSString *)apns;
 //发送地理位置消息
--(void)sendLocationMessage:(  NSString *)latitude longitude:(  NSString *)longitude address:( NSString *)address;
+-(void)sendLocationMessage:(  NSString *)latitude longitude:(  NSString *)longitude address:( NSString *)address apns:(nonnull  NSString *)apns;
 //X
 //发送提醒消息
--(void)sendTipMessage:(NSString *)contactId content:(NSString *)content;
+-(void)sendTipMessage:(NSString *)contactId content:(NSString *)content apns:(nonnull  NSString *)apns;
 //发送红包消息
 - (void)sendRedPacketMessage:(NSString *)type comments:(NSString *)comments serialNo:(NSString *)serialNo;
 

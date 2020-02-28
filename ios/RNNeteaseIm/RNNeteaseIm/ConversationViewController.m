@@ -420,26 +420,26 @@
     [[NIMSDK sharedSDK].mediaManager stopPlay];
 }
 //发送录音
--(void)sendAudioMessage:(  NSString *)file duration:(  NSString *)duration{
+-(void)sendAudioMessage:(  NSString *)file duration:(  NSString *)duration apns:(nonnull  NSString *)apns{
     if (file) {
-        NIMMessage *message = [NIMMessageMaker msgWithAudio:file andeSession:self._session];
+        NIMMessage *message = [NIMMessageMaker msgWithAudio:file andeSession:self._session apns:apns];
         if ([self isFriendToSendMessage:message]) {
             [[[NIMSDK sharedSDK] chatManager] sendMessage:message toSession:self._session error:nil];
         }
     }
 }
 //发送文字消息
--(void)sendMessage:(NSString *)mess andApnsMembers:(NSArray *)members{
-    NIMMessage *message = [NIMMessageMaker msgWithText:mess andApnsMembers:members andeSession:self._session];
+-(void)sendMessage:(NSString *)mess andApnsMembers:(NSArray *)members  apns:(nonnull  NSString *)apns{
+    NIMMessage *message = [NIMMessageMaker msgWithText:mess andApnsMembers:members andeSession:self._session apns:apns];
     //发送消息
     if ([self isFriendToSendMessage:message]) {
         [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:self._session error:nil];
     }
 }
 //发送图片
--(void)sendImageMessages:(  NSString *)path  displayName:(  NSString *)displayName{
+-(void)sendImageMessages:(  NSString *)path  displayName:(  NSString *)displayName  apns:(nonnull  NSString *)apns{
     UIImage *img = [[UIImage alloc]initWithContentsOfFile:path];
-    NIMMessage *message = [NIMMessageMaker msgWithImage:img andeSession:self._session];
+    NIMMessage *message = [NIMMessageMaker msgWithImage:img andeSession:self._session apns:apns];
     //    NIMMessage *message = [NIMMessageMaker msgWithImagePath:path];
     if ([self isFriendToSendMessage:message]) {
         [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:self._session error:nil];
@@ -447,7 +447,7 @@
 }
 
 //发送视频
--(void)sendVideoMessage:(  NSString *)path duration:(  NSString *)duration width:(  NSString *)width height:(  NSString *)height displayName:(  NSString *)displayName{
+-(void)sendVideoMessage:(  NSString *)path duration:(  NSString *)duration width:(  NSString *)width height:(  NSString *)height displayName:(  NSString *)displayName  apns:(nonnull  NSString *)apns{
     //    __weak typeof(self) weakSelf = self;
     //    [self.mediaFetcher fetchMediaFromCamera:^(NSString *path, UIImage *image) {
     NIMMessage *message;
@@ -457,7 +457,7 @@
     if ([path hasPrefix:@"file:///private"]) {
         path = [path stringByReplacingOccurrencesOfString:@"file:///private" withString:@""];
     }
-    message = [NIMMessageMaker msgWithVideo:path andeSession:self._session];
+    message = [NIMMessageMaker msgWithVideo:path andeSession:self._session apns:apns];
     //        }
     if ([self isFriendToSendMessage:message]) {
         [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:self._session error:nil];
@@ -466,30 +466,32 @@
 }
 
 //发送自定义消息
--(void)sendCustomMessage:(NSDictionary *)dataDict{
+-(void)sendCustomMessage:(NSDictionary *)dataDict  apns:(nonnull  NSString *)apns{
     NSString *strW = [dataDict objectForKey:@"Width"] ? [NSString stringWithFormat:@"%@",[dataDict objectForKey:@"Width"]] : @"0";
     NSString *strH = [dataDict objectForKey:@"Height"] ? [NSString stringWithFormat:@"%@",[dataDict objectForKey:@"Height"]] : @"0";
     [dataDict setValue:strW forKey:@"Width"];
     [dataDict setValue:strH forKey:@"Height"];
-    [self sendCustomMessage:CustomMessgeTypeCustom data:dataDict];
+    [self sendCustomMessage:CustomMessgeTypeCustom data:dataDict apns:apns];
 }
 
 
 //发送自定义消息2
--(void)sendCustomMessage:(NSInteger )custType data:(NSDictionary *)dataDict{
-    [self sendCustomMessage:custType data:dataDict toSession:self._session];
+-(void)sendCustomMessage:(NSInteger )custType data:(NSDictionary *)dataDict  apns:(nonnull  NSString *)apns{
+    [self sendCustomMessage:custType data:dataDict toSession:self._session apns:apns];
 }
 //发送自定义消息3
--(void)sendCustomMessage:(NSInteger )custType data:(NSDictionary *)dataDict toSession:(NIMSession *)session{
+-(void)sendCustomMessage:(NSInteger )custType data:(NSDictionary *)dataDict toSession:(NIMSession *)session  apns:(nonnull  NSString *)apns{
     NIMMessage *message;
     DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
     obj.custType = custType;
     obj.dataDict = dataDict;
-    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:session];
+    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:session apns:apns];
     
     NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
     setting.shouldBeCounted = false;
     message.setting = setting;
+    message.apnsContent = apns;
+
     
     if ([self isFriendToSendMessage:message toSession:session]) {
         [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:session error:nil];
@@ -497,30 +499,13 @@
 }
 
 
-//发送自定义消息3
--(void)sendRTCCallMessage:(NSDictionary *)dataDict toSession:(NIMSession *)session{
-    NIMMessage *message;
-    DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
-    obj.custType = CustomMessgeTypeRTCCall;
-    obj.dataDict = dataDict;
-    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:session];
-    
-    NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
-    setting.shouldBeCounted = false;
-    message.setting = setting;
-    
-    if ([self isFriendToSendMessage:message toSession:session]) {
-        [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:session error:nil];
-    }
-}
 
-
--(void)saveCustomMessage:(NSInteger )custType data:(NSDictionary *)dataDict{
+-(void)saveCustomMessage:(NSInteger )custType data:(NSDictionary *)dataDict  apns:(nonnull  NSString *)apns{
     NIMMessage *message;
     DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
     obj.custType = custType;
     obj.dataDict = dataDict;
-    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:self._session];
+    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:self._session apns:apns];
     
     //    message.from = [ self._session sessionId];
     //    message.text = @"aaaaa";
@@ -530,10 +515,10 @@
 }
 
 //发送地理位置消息
--(void)sendLocationMessage:(  NSString *)latitude longitude:(  NSString *)longitude address:(  NSString *)address{
+-(void)sendLocationMessage:(  NSString *)latitude longitude:(  NSString *)longitude address:(  NSString *)address  apns:(nonnull  NSString *)apns{
     NIMLocationObject *locaObj = [[NIMLocationObject alloc]initWithLatitude:[latitude doubleValue] longitude:[longitude doubleValue] title:address];
     NIMKitLocationPoint *locationPoint = [[NIMKitLocationPoint alloc]initWithLocationObject:locaObj];
-    NIMMessage *message = [NIMMessageMaker msgWithLocation:locationPoint andeSession:self._session];
+    NIMMessage *message = [NIMMessageMaker msgWithLocation:locationPoint andeSession:self._session apns:apns];
     if ([self isFriendToSendMessage:message]) {
         [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:self._session error:nil];
     }
@@ -541,7 +526,7 @@
 
 //X
 //发送提醒消息
--(void)sendTipMessage:(NSString *)contactId content:(NSString *)content{
+-(void)sendTipMessage:(NSString *)contactId content:(NSString *)content  apns:(nonnull  NSString *)apns{
     NIMSession *session2  = [NIMSession session:contactId type:NIMSessionTypeP2P];
     
     // 获得文件附件对象
@@ -550,6 +535,7 @@
     NIMMessage *message2 = [[NIMMessage alloc] init];
     message2.messageObject = object;
     message2.text = content;
+    message2.apnsContent = apns;
     
     // 发送消息
     [[NIMSDK sharedSDK].chatManager sendMessage:message2 toSession:session2 error:nil];
@@ -563,12 +549,35 @@
 //}
 
 
+#pragma mark - RTC
+
+//发送自定义消息3
+-(void)sendRTCCallMessage:(NSDictionary *)dataDict toSession:(NIMSession *)session shouldBeCounted:(BOOL )shouldBeCounted apns:(nonnull  NSString *)apns{
+    NIMMessage *message;
+    DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
+    obj.custType = CustomMessgeTypeRTCCall;
+    obj.dataDict = dataDict;
+    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:session apns:apns];
+    
+    NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
+    setting.shouldBeCounted = shouldBeCounted;
+    setting.apnsWithPrefix = YES;
+    message.setting = setting;
+    message.apnsContent = apns;
+    
+    if ([self isFriendToSendMessage:message toSession:session]) {
+        [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:session error:nil];
+    }
+}
+
 -(void)sendRTCCallMessage:(NSDictionary *)options{
     NSString *sessionId = [options objectForKey:@"sessionId"];
     NSDictionary *data = [options jsonDict:@"data"];
+    NSString *apns = [options objectForKey:@"apns"];
+    BOOL shouldBeCounted = [options jsonBool:@"counted"];
     
     NIMSession *session = [NIMSession session:sessionId type:NIMSessionTypeP2P];
-    [self sendRTCCallMessage:data toSession:session];
+    [self sendRTCCallMessage:data toSession:session shouldBeCounted:shouldBeCounted apns:apns];
 }
 
 //发送RTC消息
@@ -583,7 +592,7 @@
     DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
     obj.custType = CustomMessgeTypeRTCCall;
     obj.dataDict = data;
-    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:session];
+    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:session apns:@""];
     
     NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
     message.setting = setting;
@@ -632,65 +641,72 @@
     
     NSString *content = [self jsonStringWithDictionary:mOptions];
     NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
+    notifi.sendToOnlineUsersOnly = YES;
     
-    //    notifi.sendToOnlineUsersOnly = NO;
-    if ([options jsonBool:@"apns"] ) {
+    NSString *apns = [options jsonString:@"apns"];
+    if (apns.length) {
+        
         //        notifi.sendToOnlineUsersOnly = NO;
         NIMCustomSystemNotificationSetting *setting = [[NIMCustomSystemNotificationSetting alloc]init];
         setting.shouldBeCounted = YES;
         setting.apnsEnabled = YES;
+        setting.apnsWithPrefix = YES;
         
-        notifi.apnsPayload = mOptions;
+        notifi.apnsContent = apns;
+        
+        NSString *apns_sound = [options jsonString:@"apns_sound"];
+        notifi.apnsPayload = [NIMMessageMaker makeApnsPayload:APNsTypeRTCMsg payloadData:mOptions sound:apns_sound];
         notifi.setting = setting;
     }
     
+    NSLog(@"mOptions:%@ apns %@,options %@,notifi %@",mOptions,apns,options,notifi);
     
     [[NIMSDK sharedSDK].systemNotificationManager sendCustomNotification:notifi toSession:session completion:nil];//发送自定义通知
 }
 
--(void)sendRTCCallNotice2:(NSString *)sessionId sessionType:(NSInteger )sessionType channelName:(NSString *)channelName callType:(NSInteger )callType msg:(NSString *)msg apns:(BOOL)apns{
-    NIMSession *session = [NIMSession session:sessionId type:sessionType];
-    
-    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
-    NSDictionary *dataDict = @{
-        @"type":[NSString stringWithFormat:@"%d",CustomMessgeTypeRTCCall],
-        @"timestamp":[NSString stringWithFormat:@"%f",timestamp],
-        @"sessionId":sessionId,
-        @"sessionType":[NSString stringWithFormat:@"%zd",sessionType],
-        @"data":@{
-                @"channelName":channelName,
-                @"callType":[NSString stringWithFormat:@"%ld",callType],
-                @"msg":msg
-        }
-    };
-    
-    NSString *content = [self jsonStringWithDictionary:dataDict];
-    NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
-    
-    //    notifi.sendToOnlineUsersOnly = NO;
-    if (apns) {
-        //        notifi.sendToOnlineUsersOnly = NO;
-        NIMCustomSystemNotificationSetting *setting = [[NIMCustomSystemNotificationSetting alloc]init];
-        setting.shouldBeCounted = YES;
-        setting.apnsEnabled = apns;
-        
-        notifi.apnsPayload = dataDict;
-        notifi.setting = setting;
-    }
-    
-    
-    [[NIMSDK sharedSDK].systemNotificationManager sendCustomNotification:notifi toSession:session completion:nil];//发送自定义通知
-}
+//-(void)sendRTCCallNotice2:(NSString *)sessionId sessionType:(NSInteger )sessionType channelName:(NSString *)channelName callType:(NSInteger )callType msg:(NSString *)msg apns:(BOOL)apns{
+//    NIMSession *session = [NIMSession session:sessionId type:sessionType];
+//
+//    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+//    NSDictionary *dataDict = @{
+//        @"type":[NSString stringWithFormat:@"%d",CustomMessgeTypeRTCCall],
+//        @"timestamp":[NSString stringWithFormat:@"%f",timestamp],
+//        @"sessionId":sessionId,
+//        @"sessionType":[NSString stringWithFormat:@"%zd",sessionType],
+//        @"data":@{
+//                @"channelName":channelName,
+//                @"callType":[NSString stringWithFormat:@"%zd",callType],
+//                @"msg":msg
+//        }
+//    };
+//
+//    NSString *content = [self jsonStringWithDictionary:dataDict];
+//    NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
+//
+//    //    notifi.sendToOnlineUsersOnly = NO;
+//    if (apns) {
+//        //        notifi.sendToOnlineUsersOnly = NO;
+//        NIMCustomSystemNotificationSetting *setting = [[NIMCustomSystemNotificationSetting alloc]init];
+//        setting.shouldBeCounted = YES;
+//        setting.apnsEnabled = apns;
+//
+//        notifi.apnsPayload = dataDict;
+//        notifi.setting = setting;
+//    }
+//
+//
+//    [[NIMSDK sharedSDK].systemNotificationManager sendCustomNotification:notifi toSession:session completion:nil];//发送自定义通知
+//}
 
 //发送红包消息
 - (void)sendRedPacketMessage:(NSString *)type comments:(NSString *)comments serialNo:(NSString *)serialNo{
     NSDictionary *dict = @{@"type":type,@"comments":comments,@"serialNo":serialNo};
-    [self sendCustomMessage:CustomMessgeTypeRedpacket data:dict];
+    [self sendCustomMessage:CustomMessgeTypeRedpacket data:dict apns:@""];
 }
 //发送转账消息
 - (void)sendBankTransferMessage:(NSString *)amount comments:(NSString *)comments serialNo:(NSString *)serialNo{
     NSDictionary *dict = @{@"amount":amount,@"comments":comments,@"serialNo":serialNo};
-    [self sendCustomMessage:CustomMessgeTypeBankTransfer data:dict];
+    [self sendCustomMessage:CustomMessgeTypeBankTransfer data:dict apns:@""];
 }
 
 //发送拆红包消息
@@ -701,7 +717,7 @@
     DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
     obj.custType = CustomMessgeTypeRedPacketOpenMessage;
     obj.dataDict = dict;
-    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:self._session];
+    message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:self._session apns:@""];
     NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
     message.timestamp = timestamp;
     if(![sendId isEqualToString:strMyId]){
@@ -734,7 +750,7 @@
         name = team.teamName ? team.teamName : name;
     }
     NSDictionary *dict = @{@"type":type,@"name":name,@"imgPath":strImgPath,@"sessionId":sessionId};
-    [self sendCustomMessage:CustomMessgeTypeBusinessCard data:dict];
+    [self sendCustomMessage:CustomMessgeTypeBusinessCard data:dict apns:@""];
 }
 
 // dict字典转json字符串
@@ -922,7 +938,7 @@
 - (void)recordAudio:(NSString *)filePath didCompletedWithError:(NSError *)error {
     if(!error) {
         if ([self recordFileCanBeSend:filePath]) {
-            [[[NIMSDK sharedSDK] chatManager] sendMessage:[NIMMessageMaker msgWithAudio:filePath andeSession:self._session] toSession:self._session error:nil];
+            [[[NIMSDK sharedSDK] chatManager] sendMessage:[NIMMessageMaker msgWithAudio:filePath andeSession:self._session apns:@""] toSession:self._session error:nil];
         }else{
             [self showRecordFileNotSendReason];
         }
@@ -1025,11 +1041,11 @@
 #pragma mark - NIMSystemNotificationManagerDelegate
 - (void)onReceiveCustomSystemNotification:(NIMCustomSystemNotification *)notification
 {
-    NSLog(@"onReceiveCustomSystemNotification:%@",notification);
-    
-    if (!notification.sendToOnlineUsersOnly) {
-        return;
-    }
+    NSLog(@"onReceiveCustomSystemNotification:%@,sendToOnlineUsersOnly:%s",notification,notification.sendToOnlineUsersOnly?"YES":"NO");
+//
+//    if (!notification.sendToOnlineUsersOnly) {
+//        return;
+//    }
     
     NSData *data = [[notification content] dataUsingEncoding:NSUTF8StringEncoding];
     if (data) {
@@ -1054,6 +1070,7 @@
         else{
             [dict setObject:notification.sender forKey:@"sender_id"];
         }
+        NSLog(@"dict:%@",dict);
         
         NIMModel *model = [NIMModel initShareMD];
         model.customNotify = dict;

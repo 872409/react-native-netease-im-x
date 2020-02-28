@@ -5,7 +5,7 @@
 //  Created by Dowin on 2017/5/2.
 //  Copyright © 2017年 Dowin. All rights reserved.
 //
-
+#import "NIMMessageMaker.h"
 #import "ContactViewController.h"
 #import "NTESGroupedContacts.h"
 #import "NTESContactDataMember.h"
@@ -14,7 +14,7 @@
 
 @interface ContactViewController ()<NIMLoginManagerDelegate,NIMSystemNotificationManagerDelegate,NIMUserManagerDelegate>
 {
-  NTESContactDataMember *_contacts;
+    NTESContactDataMember *_contacts;
     NSMutableOrderedSet *_specialGroupTtiles;
     NSMutableOrderedSet *_specialGroups;
     NSMutableOrderedSet *_groupTtiles;
@@ -31,7 +31,7 @@
     dispatch_once(&onceToken, ^{
         nimAddVC = [[ContactViewController alloc]init];
         [nimAddVC initWithDelegate];
-    
+        
     });
     return nimAddVC;
 }
@@ -41,12 +41,12 @@
     _specialGroups = [[NSMutableOrderedSet alloc] init];
     _groupTtiles = [[NSMutableOrderedSet alloc] init];
     _groups = [[NSMutableOrderedSet alloc] init];
-//    [[[NIMSDK sharedSDK] systemNotificationManager] addDelegate:self];
+    //    [[[NIMSDK sharedSDK] systemNotificationManager] addDelegate:self];
     [[[NIMSDK sharedSDK] userManager] addDelegate:self];
     
-//    id<NIMSystemNotificationManager> systemNotificationManager = [[NIMSDK sharedSDK] systemNotificationManager];
-//    [systemNotificationManager addDelegate:self];
-//    notifications = [systemNotificationManager fetchSystemNotifications:nil limit:20];
+    //    id<NIMSystemNotificationManager> systemNotificationManager = [[NIMSDK sharedSDK] systemNotificationManager];
+    //    [systemNotificationManager addDelegate:self];
+    //    notifications = [systemNotificationManager fetchSystemNotifications:nil limit:20];
 }
 
 - (void)disealloc{
@@ -124,7 +124,7 @@
     }
     NSMutableDictionary *userDict = [self setupUserDict:user andUserId:userId];
     success(userDict);
-
+    
 }
 
 //获取服务器用户资料
@@ -183,7 +183,7 @@
             err(@"备注名设置失败，请重试");
         }
     }];
-
+    
 }
 //修改个人资料
 -(void)updateMyUserInfo:(NSString *)strName{
@@ -217,7 +217,7 @@
 {
     NSMutableDictionary *tmp = [NSMutableDictionary dictionary];
     NSString *me = [[NIMSDK sharedSDK].loginManager currentAccount];
- 
+    
     for (id<NTESGroupMemberProtocol>member in members) {
         if ([[member memberId] isEqualToString:me]) {
             continue;
@@ -230,7 +230,7 @@
         if (contact.info.avatarUrlString.length != 0) {
             [dic setObject:[NSString stringWithFormat:@"%@", contact.info.avatarUrlString ] forKey:@"avatar"];
         }else{
-        [dic setObject:@""forKey:@"avatar"];
+            [dic setObject:@""forKey:@"avatar"];
         }
         
         NSMutableArray *groupedMembers = [tmp objectForKey:groupTitle];
@@ -240,7 +240,7 @@
         [groupedMembers addObject:dic];
         [tmp setObject:groupedMembers forKey:groupTitle];
     }
-
+    
     NIMModel *model = [NIMModel initShareMD];
     model.contactList = tmp;
 }
@@ -259,7 +259,7 @@
             err(@"删除失败");
         }
     }];
-
+    
 }
 //添加好友
 -(void)adduserId:(NSString *)userId andVerifyType:(NSString *)strType andMag:(NSString *)msg Friends:(Error)err  Success:(Error )success{
@@ -267,7 +267,9 @@
     NIMUserRequest *request = [[NIMUserRequest alloc] init];
     request.userId = userId;
     request.message = msg;
+    
     NSInteger type = [strType integerValue];
+    NSLog(@"adduserId type:%ld",type);
     request.operation = (type == 1)?NIMUserOperationAdd:NIMUserOperationRequest;
     NSString *apnsText = (type == 1)?@"添加你为好友":@"请求加为好友";
     NSString *successText = request.operation == NIMUserOperationAdd ? @"添加成功" : @"请求成功";
@@ -275,16 +277,26 @@
     NSString *myID = [NIMSDK sharedSDK].loginManager.currentAccount;
     NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:myID];
     NSString *apnsContent = [NSString stringWithFormat:@"%@ %@",user.userInfo.nickName,apnsText];
-    NSDictionary *dataDict = @{@"type":@"1",@"data":@{@"content":[NSString stringWithFormat:@"%@",msg]}};
-        [[NIMSDK sharedSDK].userManager requestFriend:request completion:^(NSError *error) {
-            if (!error) {
-                success(successText);
-                [weakSelf sendCustomNotificationContent:msg andSessionID:userId andApnsContent:apnsContent AndData:dataDict shouldBeCounted:YES];
-               // [self refresh];
-            }else{
-                err(failedText);
-            }
-        }];
+    NSDictionary *apnsPayload = [NIMMessageMaker makeApnsPayload:APNsTypeContact
+                                                     payloadData:@{
+                                                         @"operation":strType,
+                                                         @"contactId":myID,
+                                                         @"name":user.userInfo.nickName,
+                                                         @"content":[NSString stringWithFormat:@"%@",msg]
+                                                     }
+                                 sound:@""
+                                 ];
+    
+    [[NIMSDK sharedSDK].userManager requestFriend:request completion:^(NSError *error) {
+        if (!error) {
+            success(successText);
+            
+            [weakSelf sendCustomNotificationContent:msg andSessionID:userId andApnsContent:apnsContent AndData:apnsPayload shouldBeCounted:YES];
+            // [self refresh];
+        }else{
+            err(failedText);
+        }
+    }];
 }
 //发送自定义通知
 - (void)sendCustomNotificationContent:(NSString *)content andSessionID:(NSString *)sessionID andApnsContent:(NSString *)strApns AndData:(NSDictionary *)dict shouldBeCounted:(BOOL)isCounted{
@@ -331,7 +343,7 @@
 
 - (void)refresh
 {
-[self getAllContactFriends];
+    [self getAllContactFriends];
 }
 
 
