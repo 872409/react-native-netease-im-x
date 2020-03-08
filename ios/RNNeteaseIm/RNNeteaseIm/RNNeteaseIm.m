@@ -973,4 +973,48 @@ RCT_EXPORT_METHOD(setupWebViewUserAgent){
     return YES;
 }
 
+
+
+//x updateRemoteNotificationDisplayType
+RCT_EXPORT_METHOD(pushNotificationDisplayType: (int)type resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+    NIMPushNotificationSetting *setting =  [[[NIMSDK sharedSDK] apnsManager] currentSetting];
+    setting.type = type == 1?NIMPushNotificationDisplayTypeDetail:NIMPushNotificationDisplayTypeNoDetail;
+//    NSLog(@"pushNotificationDisplayType %d .type:%ld",type,setting.type);
+    [[[NIMSDK sharedSDK] apnsManager] updateApnsSetting:setting completion:^(NSError * _Nullable error) {
+//        NSLog(@"pushNotificationDisplayType %@",error);
+      if (!error) {
+           resolve(@YES);
+       }else{
+           reject(@"-1",@"error", nil);
+       }
+    }];
+}
+
+RCT_EXPORT_METHOD(pushNotificationDisable: (int)disable resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+    NIMPushNotificationSetting *setting =  [[[NIMSDK sharedSDK] apnsManager] currentSetting];
+    setting.noDisturbing = disable==1?YES:NO;
+    setting.noDisturbingStartH=0;
+    setting.noDisturbingStartM=0;
+    setting.noDisturbingEndH=23;
+    setting.noDisturbingEndM=59;
+    
+//    NSLog(@"pushNotificationDisable %d noDisturbing:%@",disable,setting.noDisturbing?@"YES":@"NO");
+    [[[NIMSDK sharedSDK] apnsManager] updateApnsSetting:setting completion:^(NSError * _Nullable error) {
+//        NSLog(@"pushNotificationDisable %@",error);
+      if (!error) {
+          resolve(@YES);
+       }else{
+           reject(@"-1",@"error", nil);
+       }
+    }];
+}
+
+RCT_EXPORT_METHOD(pushNotificationSetting:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+    NIMPushNotificationSetting *setting =  [[[NIMSDK sharedSDK] apnsManager] currentSetting];
+    NSMutableDictionary *payload = [[NSMutableDictionary alloc] init];
+    [payload setObject:[NSNumber numberWithInt:(int)setting.type] forKey:@"displayType"];
+    [payload setObject:[NSNumber numberWithBool:setting.noDisturbing] forKey:@"disable"];
+    resolve(payload);
+}
+
 @end

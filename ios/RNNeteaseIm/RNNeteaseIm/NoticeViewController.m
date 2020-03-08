@@ -39,6 +39,7 @@
     });
     return notVC;
 }
+
 -(void)initWithDelegate{
     [[[NIMSDK sharedSDK] systemNotificationManager] addDelegate:self];
     [[[NIMSDK sharedSDK] userManager] addDelegate:self];

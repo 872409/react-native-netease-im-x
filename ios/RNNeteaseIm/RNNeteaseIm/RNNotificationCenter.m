@@ -65,8 +65,15 @@
     [self checkTranferMessage:messages];
 }
 
+
+
 - (void)playMessageAudioTip
 {
+    
+    
+//    NIMPushNotificationSetting *setting =  [[[NIMSDK sharedSDK] apnsManager] currentSetting];
+//    setting.type
+
 //    UINavigationController *nav = [NTESMainTabController instance].selectedViewController;
 //    BOOL needPlay = YES;
 //    for (UIViewController *vc in nav.viewControllers) {
