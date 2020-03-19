@@ -205,10 +205,12 @@
             [dic setObject:[NSString stringWithFormat:@"%@", [object thumbPath]] forKey:@"mediaPath"];
             NSMutableDictionary *imgObj = [NSMutableDictionary dictionary];
             [imgObj setObject:[NSString stringWithFormat:@"%@", [object thumbPath] ] forKey:@"thumbPath"];
+            [imgObj setObject:[NSString stringWithFormat:@"%@", [object thumbUrl] ] forKey:@"thumbUrl"];
             [imgObj setObject:[NSString stringWithFormat:@"%@",[object url] ] forKey:@"url"];
             [imgObj setObject:[NSString stringWithFormat:@"%@",[object displayName] ] forKey:@"displayName"];
             [imgObj setObject:[NSString stringWithFormat:@"%f",[object size].height] forKey:@"imageHeight"];
             [imgObj setObject:[NSString stringWithFormat:@"%f",[object size].width] forKey:@"imageWidth"];
+            [imgObj setObject:[NSString stringWithFormat:@"%lld",[object fileLength] ] forKey:@"size"];
             [dic setObject:imgObj forKey:@"extend"];
         }else if(message.messageType == NIMMessageTypeAudio){
             [dic setObject:@"voice" forKey:@"msgType"];
@@ -641,7 +643,7 @@
     
     NSString *content = [self jsonStringWithDictionary:mOptions];
     NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
-    notifi.sendToOnlineUsersOnly = YES;
+    notifi.sendToOnlineUsersOnly = NO;
     
     NSString *apns = [options jsonString:@"apns"];
     if (apns.length) {
@@ -738,9 +740,36 @@
     
 }
 
+
+-(void)sendCustomMessage:(NSDictionary *)options{
+    NSString *sessionId = [options objectForKey:@"sessionId"];
+    NSInteger sessionType = [options jsonInteger:@"sessionType"];
+    NSInteger msgType = [options jsonInteger:@"msgType"];
+    NSDictionary *data = [options jsonDict:@"data"];
+    NSString *apns = [options objectForKey:@"apns"];
+//    NSString *apns_data = [options objectForKey:@"apns_data"];
+    
+    NIMSession *session = [NIMSession session:sessionId type:sessionType];
+    [self sendCustomMessage:msgType data:data toSession:session apns:apns];
+
+}
+
+
+-(void)sendCardMessage:(NSDictionary *)options{
+    NSString *sessionId = [options objectForKey:@"sessionId"];
+    NSInteger sessionType = [options jsonInteger:@"sessionType"];
+    NSDictionary *data = [options jsonDict:@"data"];
+    NSString *apns = [options objectForKey:@"apns"];
+    
+    NIMSession *session = [NIMSession session:sessionId type:sessionType];
+    [self sendCustomMessage:CustomMessgeTypeBusinessCard data:data toSession:session apns:apns];
+
+}
+
+
 //发送名片
-- (void)sendCardMessage:(NSString *)type sessionId:(NSString *)sessionId name:(NSString *)name imgPath:(NSString *)strImgPath{
-    if ([type isEqualToString:@"个人名片"]) {
+- (void)sendCardMessage:(int)type sessionId:(NSString *)sessionId name:(NSString *)name imgPath:(NSString *)strImgPath{
+    if (type == 0) {
         NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:sessionId];
         NIMUserInfo *userInfo = user.userInfo;
         name = userInfo.nickName ? userInfo.nickName : name;
@@ -749,7 +778,7 @@
         NIMTeam *team = [[[NIMSDK sharedSDK] teamManager]teamById:sessionId];
         name = team.teamName ? team.teamName : name;
     }
-    NSDictionary *dict = @{@"type":type,@"name":name,@"imgPath":strImgPath,@"sessionId":sessionId};
+    NSDictionary *dict = @{@"type":[NSNumber numberWithInt:(int)type],@"name":name,@"imgPath":strImgPath,@"sessionId":sessionId};
     [self sendCustomMessage:CustomMessgeTypeBusinessCard data:dict apns:@""];
 }
 
@@ -1143,10 +1172,12 @@
         [dic2 setObject:[NSString stringWithFormat:@"%@", [object thumbPath]] forKey:@"mediaPath"];
         NSMutableDictionary *imgObj = [NSMutableDictionary dictionary];
         [imgObj setObject:[NSString stringWithFormat:@"%@", [object thumbPath] ] forKey:@"thumbPath"];
+        [imgObj setObject:[NSString stringWithFormat:@"%@", [object thumbUrl] ] forKey:@"thumbUrl"];
         [imgObj setObject:[NSString stringWithFormat:@"%@",[object url] ] forKey:@"url"];
         [imgObj setObject:[NSString stringWithFormat:@"%@",[object displayName] ] forKey:@"displayName"];
         [imgObj setObject:[NSString stringWithFormat:@"%f",[object size].height] forKey:@"imageHeight"];
         [imgObj setObject:[NSString stringWithFormat:@"%f",[object size].width] forKey:@"imageWidth"];
+        [imgObj setObject:[NSString stringWithFormat:@"%lld",[object fileLength] ] forKey:@"size"];
         [dic2 setObject:imgObj forKey:@"extend"];
     }else if(message.messageType == NIMMessageTypeAudio){
         [dic2 setObject:@"voice" forKey:@"msgType"];

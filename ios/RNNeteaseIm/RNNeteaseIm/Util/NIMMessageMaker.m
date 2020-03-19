@@ -63,7 +63,7 @@
             text = [NSString stringWithFormat:@"[红包]%@", [attachment.dataDict objectForKey:@"comments"]];
             break;
         case CustomMessgeTypeRTCCall:
-            text = @"RTC_CALL";
+            text = @"rtc_call";
             break;
         case CustomMessgeTypeBankTransfer:
             text = [NSString stringWithFormat:@"[转账]%@", [attachment.dataDict objectForKey:@"comments"]];
@@ -118,7 +118,7 @@
 {
     NIMImageObject *imageObject = [[NIMImageObject alloc] initWithImage:image];
     NIMImageOption *option  = [[NIMImageOption alloc] init];
-    option.compressQuality  = 0.7;
+    option.compressQuality  = 1;
     imageObject.option      = option;
     return [NIMMessageMaker generateImageMessage:imageObject andeSession:session apns:apns];
 }

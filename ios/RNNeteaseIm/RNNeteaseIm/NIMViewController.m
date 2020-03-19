@@ -487,11 +487,14 @@
                 break;
             case CustomMessgeTypeBusinessCard: //名片
             {
-                if([message.from isEqualToString:[NIMSDK sharedSDK].loginManager.currentAccount]){//如果是自己
-                    text = [NSString stringWithFormat:@"你推荐了%@", [obj.dataDict objectForKey:@"name"]];
-                }else{
-                    text = [NSString stringWithFormat:@"向你推荐了%@", [obj.dataDict objectForKey:@"name"]];
-                }
+                text = @"card";
+                [options setObject:[NSString stringWithFormat:@"%d",CustomMessgeTypeBusinessCard] forKey:@"msgType"];
+                [options addEntriesFromDictionary:obj.dataDict];
+//                if([message.from isEqualToString:[NIMSDK sharedSDK].loginManager.currentAccount]){//如果是自己
+//                    text = [NSString stringWithFormat:@"你推荐了%@", [obj.dataDict objectForKey:@"name"]];
+//                }else{
+//                    text = [NSString stringWithFormat:@"向你推荐了%@", [obj.dataDict objectForKey:@"name"]];
+//                }
             }
                 break;
             case CustomMessgeTypeCustom: //自定义

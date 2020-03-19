@@ -14,8 +14,8 @@
     NSString *strType = @"";
     switch (self.custType) {
         case CustomMessgeTypeRTCCall:
-                strType = @"rtc_call";
-                break;
+            strType = @"rtc_call";
+            break;
         case CustomMessgeTypeRedpacket:
             strType = @"redpacket";
             break;
