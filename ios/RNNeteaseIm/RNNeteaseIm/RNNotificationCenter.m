@@ -109,15 +109,20 @@
 #pragma mark -- NIMChatManagerDelegate
 - (void)onRecvRevokeMessageNotification:(NIMRevokeMessageNotification *)notification
 {
-    NSString * tip = [[ConversationViewController initWithConversationViewController] tipOnMessageRevoked:notification];
-    NIMMessage *tipMessage = [[ConversationViewController initWithConversationViewController] msgWithTip:tip];
+//    NSString * tip = [[ConversationViewController initWithConversationViewController] tipOnMessageRevoked:notification];
+//    NSDictionary * optipns = [[ConversationViewController initWithConversationViewController] tipOnMessageRevoked:notification];
+    NSMutableDictionary *options = [[ConversationViewController initWithConversationViewController] tipOnMessageRevoked:notification.message session:notification.session isSelf:NO];
+    NIMMessage *tipMessage = [[ConversationViewController initWithConversationViewController] msgWithTip:[options objectForKey:@"tipMsg"]];
     tipMessage.timestamp = notification.timestamp;
     NIMMessage *deleMess = notification.message;
     if (deleMess) {
+        
         NSDictionary *deleteDict = @{@"msgId":deleMess.messageId};
         [NIMModel initShareMD].deleteMessDict = deleteDict;
     }
-
+    [options setObject:deleMess.messageId forKey:@"msgId"];
+    
+    tipMessage.localExt = options;
     // saveMessage 方法执行成功后会触发 onRecvMessages: 回调，但是这个回调上来的 NIMMessage 时间为服务器时间，和界面上的时间有一定出入，所以要提前先在界面上插入一个和被删消息的界面时间相符的 Tip, 当触发 onRecvMessages: 回调时，组件判断这条消息已经被插入过了，就会忽略掉。
     [[NIMSDK sharedSDK].conversationManager saveMessage:tipMessage
                                              forSession:notification.session

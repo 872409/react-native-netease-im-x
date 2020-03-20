@@ -89,7 +89,8 @@ typedef void(^Errors)(id erro);
 - (void)updateAudioMessagePlayStatus:(NSString *)messageID;
 
 //获得撤回内容
-- (NSString *)tipOnMessageRevoked:(id)message;
+//- (NSDictionary *)tipOnMessageRevoked:(id)message;
+- (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf;
 //更具提示生成撤回消息
 - (NIMMessage *)msgWithTip:(NSString *)tip;
 //重发消息

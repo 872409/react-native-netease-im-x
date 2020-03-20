@@ -147,6 +147,34 @@
 }
 
 
+-(NSDictionary *)getTipMessageExtend:(NIMMessage *)message{
+    NSMutableDictionary *extend = [NSMutableDictionary dictionary];
+    [extend setObject:message.text==nil?@"":message.text forKey:@"tipMsg"];
+//    NSMutableDictionary *options = [NSMutableDictionary dictionary];
+    NSString *tipType = @"";
+    
+    if (message.remoteExt!=nil) {
+      [extend setObject:message.remoteExt forKey:@"options"];
+      NSString *_tipType = [message.remoteExt objectForKey:@"tipType"];
+      if (_tipType!= nil){
+          tipType =_tipType;
+      }
+    }
+    
+    
+    if (message.localExt!=nil) {
+       [extend setObject:message.localExt forKey:@"options"];
+       NSString *_tipType = [message.localExt objectForKey:@"tipType"];
+        if (_tipType!= nil){
+            tipType =_tipType;
+        }
+    }
+    
+   [extend setObject:tipType forKey:@"tipType"];
+//   [extend setObject:options forKey:@"options"];
+    return extend ;
+}
+
 -(NSMutableArray *)setTimeArr:(NSArray *)messageArr{
     NSMutableArray *sourcesArr = [NSMutableArray array];
     for (NIMMessage *message in messageArr) {
@@ -272,8 +300,7 @@
             
         }else if(message.messageType == NIMMessageTypeTip){//提醒类消息
             [dic setObject:@"notification" forKey:@"msgType"];
-            NSMutableDictionary *notiObj = [NSMutableDictionary dictionary];
-            [notiObj setObject:message.text forKey:@"tipMsg"];
+            NSDictionary *notiObj = [self getTipMessageExtend:message];
             [dic setObject:notiObj forKey:@"extend"];
         }else if (message.messageType == NIMMessageTypeNotification) {
             [dic setObject:@"notification" forKey:@"msgType"];
@@ -1242,8 +1269,16 @@
         
     }else if(message.messageType == NIMMessageTypeTip){//提醒类消息
         [dic2 setObject:@"notification" forKey:@"msgType"];
-        NSMutableDictionary *notiObj = [NSMutableDictionary dictionary];
-        [notiObj setObject:message.text forKey:@"tipMsg"];
+//        NSMutableDictionary *notiObj = [NSMutableDictionary dictionary];
+//        [notiObj setObject:message.text forKey:@"tipMsg"];
+//        [notiObj setObject:@{@"local":message.localExt,@"remote":message.remoteExt} forKey:@"options"];
+//
+//        NSMutableDictionary *options = [NSMutableDictionary dictionary];
+//        [options setObject:message.localExt!=nil?message.localExt:@"" forKey:@"local"];
+//        [options setObject:message.remoteExt!=nil?message.remoteExt:@"" forKey:@"remote"];
+//        [notiObj setObject:options forKey:@"options"];
+        
+        NSDictionary *notiObj = [self getTipMessageExtend:message];
         [dic2 setObject:notiObj forKey:@"extend"];
     }else if (message.messageType == NIMMessageTypeNotification) {
         [dic2 setObject:@"notification" forKey:@"msgType"];
@@ -1428,19 +1463,25 @@
     //    __weak typeof(self) weakSelf = self;
     [[NIMSDK sharedSDK].chatManager revokeMessage:currentmessage completion:^(NSError * _Nullable error) {
         if (error) {
+             
             if (error.code == NIMRemoteErrorCodeDomainExpireOld) {
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"发送时间超过2分钟的消息，不能被撤回" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-                [alert show];
+                succe(@"expired");
+//                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"发送时间超过2分钟的消息，不能被撤回" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+//                [alert show];
             }else{
+                succe(@"error");
                 DDLogError(@"revoke message eror code %zd",error.code);
                 NSLog(@"消息撤回失败，请重试");
             }
         }
         else
         {
-            succe(@"撤回成功");
-            NSString * tip = [self tipOnMessageRevoked:currentmessage];
-            NIMMessage *tipMessage = [self msgWithTip:tip];
+            succe(@"succeed");
+            NSMutableDictionary *options = [self tipOnMessageRevoked:currentmessage session:self._session isSelf:YES];
+            NIMMessage *tipMessage = [self msgWithTip:[options objectForKey:@"tipMsg"]];
+            [options setObject:messageId forKey:@"msgId"];
+            
+            tipMessage.localExt = options;
             tipMessage.timestamp = currentmessage.timestamp;
             
             NSDictionary *deleteDict = @{@"msgId":messageId};
@@ -1479,45 +1520,80 @@
     return message;
 }
 
-- (NSString *)tipOnMessageRevoked:(id)message
+- (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf
 {
-    NSString *fromUid = nil;
-    NIMSession *session = nil;
+//    NSString *fromUid = nil;
+//    NIMSession *session = nil;
+    NSMutableDictionary *options = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *format = [[NSMutableDictionary alloc] init];
     
-    if ([message isKindOfClass:[NIMMessage class]])
-    {
-        fromUid = [(NIMMessage *)message from];
-        session = [(NIMMessage *)message session];
-    }
-    else if([message isKindOfClass:[NIMRevokeMessageNotification class]])
-    {
-        fromUid = [(NIMRevokeMessageNotification *)message fromUserId];
-        session = [(NIMRevokeMessageNotification *)message session];
-    }
-    else
-    {
-        assert(0);
-    }
+//    if ([message isKindOfClass:[NIMMessage class]])
+//    {
+//        fromUid = [(NIMMessage *)message from];
+//        session = [(NIMMessage *)message session];
+//    }
+//    else if([message isKindOfClass:[NIMRevokeMessageNotification class]])
+//    {
+//        fromUid = [(NIMRevokeMessageNotification *)message fromUserId];
+//        session = [(NIMRevokeMessageNotification *)message session];
+//    }
+//    else
+//    {
+//        assert(0);
+//    }
     
-    BOOL isFromMe = [fromUid isEqualToString:[[NIMSDK sharedSDK].loginManager currentAccount]];
-    NSString *tip = @"你";
-    if (!isFromMe) {
-        switch (session.sessionType) {
-            case NIMSessionTypeP2P:
-                tip = @"对方";
-                break;
-            case NIMSessionTypeTeam:{
+    
+    NSString *tipMsg = @"notification_";
+    [options setObject:@"notification" forKey:@"messageType"];
+    [options setObject:@"revoke" forKey:@"tipType"];
+    
+    
+//    [options setObject:fromUid forKey:@"fromUid"];
+    [options setObject:[NSString stringWithFormat:@"%zd",session.sessionType] forKey:@"sessionType"];
+    [options setObject:session.sessionId forKey:@"sessionId"];
+    
+//    BOOL isFromMe = [fromUid isEqualToString:[[NIMSDK sharedSDK].loginManager currentAccount]];
+    
+    
+    switch (session.sessionType) {
+        case NIMSessionTypeP2P:
+            [options setObject:@"p2p" forKey:@"notificationType"];
+            
+             if (!isSelf) {
+                 [options setObject:@"p2p_revoked" forKey:@"operationType"];
+                 tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"p2p_revoked" ];
+             }
+             else{
+                [options setObject:@"you_revoked" forKey:@"operationType"];
+                tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"you_revoked" ];
+             }
+            
+            break;
+        case NIMSessionTypeTeam:{
+            [options setObject:@"team" forKey:@"notificationType"];
+            
+            if (!isSelf) {
                 NIMKitInfoFetchOption *option = [[NIMKitInfoFetchOption alloc] init];
                 option.session = session;
-                NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:fromUid option:option];
-                tip = info.showName;
+                NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:message.from option:option];
+                [options setObject:@"member_revoked" forKey:@"operationType"];
+                [format setObject:info.showName forKey:@"source"];
+                tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"member_revoked" ];
             }
-                break;
-            default:
-                break;
+            else{
+                [options setObject:@"you_revoked" forKey:@"operationType"];
+                tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"you_revoked" ];
+            }
+
         }
+            break;
+        default:
+            break;
     }
-    return [NSString stringWithFormat:@"%@撤回了一条消息",tip];
+    
+    [options setObject:format forKey:@"format"];
+    [options setObject:tipMsg forKey:@"tipMsg"];
+    return options;
 }
 //麦克风权限
 - (void)onTouchVoiceSucc:(Success)succ Err:(Errors)err{
