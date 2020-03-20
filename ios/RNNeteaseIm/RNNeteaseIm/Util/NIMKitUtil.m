@@ -131,11 +131,11 @@
     if (text == nil) {
         switch (message.messageType) {
             case NIMMessageTypeNotification:
-                [result setObject:@"notification" forKey:@"messageType"];
+                [result setObject:@"notification" forKey:@"msgType"];
                 text =  [NIMKitUtil notificationMessage2:message result:result];
                 break;
             case NIMMessageTypeTip:
-                [result setObject:@"tip" forKey:@"messageType"];
+                [result setObject:@"tip" forKey:@"msgType"];
                 text = message.text;
                 break;
             default:

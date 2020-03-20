@@ -147,7 +147,7 @@
 }
 
 
--(NSDictionary *)getTipMessageExtend:(NIMMessage *)message{
++ (NSMutableDictionary *)getTipMessageExtend:(NIMMessage *)message{
     NSMutableDictionary *extend = [NSMutableDictionary dictionary];
     [extend setObject:message.text==nil?@"":message.text forKey:@"tipMsg"];
 //    NSMutableDictionary *options = [NSMutableDictionary dictionary];
@@ -300,7 +300,7 @@
             
         }else if(message.messageType == NIMMessageTypeTip){//提醒类消息
             [dic setObject:@"notification" forKey:@"msgType"];
-            NSDictionary *notiObj = [self getTipMessageExtend:message];
+            NSDictionary *notiObj = [ConversationViewController getTipMessageExtend:message];
             [dic setObject:notiObj forKey:@"extend"];
         }else if (message.messageType == NIMMessageTypeNotification) {
             [dic setObject:@"notification" forKey:@"msgType"];
@@ -1278,7 +1278,7 @@
 //        [options setObject:message.remoteExt!=nil?message.remoteExt:@"" forKey:@"remote"];
 //        [notiObj setObject:options forKey:@"options"];
         
-        NSDictionary *notiObj = [self getTipMessageExtend:message];
+        NSDictionary *notiObj = [ConversationViewController getTipMessageExtend:message];
         [dic2 setObject:notiObj forKey:@"extend"];
     }else if (message.messageType == NIMMessageTypeNotification) {
         [dic2 setObject:@"notification" forKey:@"msgType"];
@@ -1482,7 +1482,7 @@
             [options setObject:messageId forKey:@"msgId"];
             
             tipMessage.localExt = options;
-            tipMessage.timestamp = currentmessage.timestamp;
+            tipMessage.timestamp = currentmessage.timestamp+1;
             
             NSDictionary *deleteDict = @{@"msgId":messageId};
             [NIMModel initShareMD].deleteMessDict = deleteDict;
@@ -1544,7 +1544,7 @@
     
     
     NSString *tipMsg = @"notification_";
-    [options setObject:@"notification" forKey:@"messageType"];
+    [options setObject:@"notification" forKey:@"msgType"];
     [options setObject:@"revoke" forKey:@"tipType"];
     
     
@@ -1560,6 +1560,10 @@
             [options setObject:@"p2p" forKey:@"notificationType"];
             
              if (!isSelf) {
+                 NIMKitInfoFetchOption *option = [[NIMKitInfoFetchOption alloc] init];
+                 option.session = session;
+                 NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:message.from option:option];
+                 [format setObject:info.showName forKey:@"source"];
                  [options setObject:@"p2p_revoked" forKey:@"operationType"];
                  tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"p2p_revoked" ];
              }

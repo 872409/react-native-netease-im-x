@@ -95,4 +95,5 @@ typedef void(^Errors)(id erro);
 - (NIMMessage *)msgWithTip:(NSString *)tip;
 //重发消息
 - (void)resendMessage:(NSString *)messageID;
++ (NSMutableDictionary *)getTipMessageExtend:(NIMMessage *)message;
 @end

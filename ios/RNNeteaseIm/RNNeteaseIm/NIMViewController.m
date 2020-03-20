@@ -9,6 +9,7 @@
 #import "NIMViewController.h"
 #import "ContactViewController.h"
 #import "DWCustomAttachmentDecoder.h"
+#import "ConversationViewController.h"
 
 @interface NIMViewController ()<NIMLoginManagerDelegate,NIMConversationManagerDelegate>{
     //    BOOL isLoginFailed;
@@ -421,16 +422,20 @@
             text = @"[位置]";
             break;
         case NIMMessageTypeNotification:{
-            [options setObject:@"notification" forKey:@"messageType"];
+            [options setObject:@"notification" forKey:@"msgType"];
             return [self notificationMessageContent:lastMessage options:options];
         }
         case NIMMessageTypeFile:
             text = @"[文件]";
             break;
         case NIMMessageTypeTip:
-            [options setObject:@"tip" forKey:@"messageType"];
-            text = lastMessage.text;
-            break;
+            [options setObject:@"notification" forKey:@"msgType"];
+//            NSMutableDictionary *extend = [ConversationViewController getTipMessageExtend:lastMessage];
+            [options addEntriesFromDictionary:[ConversationViewController getTipMessageExtend:lastMessage]];
+            return lastMessage.text;
+//            [options setObject:@"tip" forKey:@"messageType"];
+//            text = lastMessage.text;
+//            break;
         case NIMMessageTypeCustom:{
             text = [self getCustomType:lastMessage options:options];
         }
