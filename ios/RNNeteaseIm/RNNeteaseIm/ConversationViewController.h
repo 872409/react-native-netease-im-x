@@ -90,7 +90,7 @@ typedef void(^Errors)(id erro);
 
 //获得撤回内容
 //- (NSDictionary *)tipOnMessageRevoked:(id)message;
-- (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf;
+- (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf fromName:(NSString *)fromName;
 //更具提示生成撤回消息
 - (NIMMessage *)msgWithTip:(NSString *)tip;
 //重发消息

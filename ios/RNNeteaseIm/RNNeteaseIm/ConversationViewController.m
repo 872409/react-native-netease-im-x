@@ -1209,7 +1209,11 @@
     }else if(message.messageType == NIMMessageTypeAudio){
         [dic2 setObject:@"voice" forKey:@"msgType"];
         NIMAudioObject *object = message.messageObject;
-        [dic2 setObject:[NSString stringWithFormat:@"%@",object.path] forKey:@"mediaPath"];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:object.path]) {
+            [dic2 setObject:[NSString stringWithFormat:@"%@",object.path] forKey:@"mediaPath"];
+        }
+        
+//        [dic2 setObject:[NSString stringWithFormat:@"%@",object.path] forKey:@"mediaPath"];
         [dic2 setObject:[NSString stringWithFormat:@"%@",object.url] forKey:@"url"];
         [dic2 setObject:[NSNumber numberWithInteger:object.duration] forKey:@"duration"];
         NSMutableDictionary *voiceObj = [NSMutableDictionary dictionary];
@@ -1477,7 +1481,7 @@
         else
         {
             succe(@"succeed");
-            NSMutableDictionary *options = [self tipOnMessageRevoked:currentmessage session:self._session isSelf:YES];
+            NSMutableDictionary *options = [self tipOnMessageRevoked:currentmessage session:self._session isSelf:YES fromName:@""];
             NIMMessage *tipMessage = [self msgWithTip:[options objectForKey:@"tipMsg"]];
             [options setObject:messageId forKey:@"msgId"];
             
@@ -1520,7 +1524,7 @@
     return message;
 }
 
-- (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf
+- (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf fromName:(NSString *)fromName
 {
 //    NSString *fromUid = nil;
 //    NIMSession *session = nil;
@@ -1562,10 +1566,13 @@
              if (!isSelf) {
                  NIMKitInfoFetchOption *option = [[NIMKitInfoFetchOption alloc] init];
                  option.session = session;
-                 NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:message.from option:option];
-                 [format setObject:info.showName forKey:@"source"];
+                 NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:fromName option:option];
+//                 NSLog(@"info %@ %@",info.showName,tipMsg);
+                 [format setObject:info!=nil?info.showName:@"" forKey:@"source"];
                  [options setObject:@"p2p_revoked" forKey:@"operationType"];
                  tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"p2p_revoked" ];
+                 
+                  
              }
              else{
                 [options setObject:@"you_revoked" forKey:@"operationType"];
@@ -1581,7 +1588,9 @@
                 option.session = session;
                 NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:message.from option:option];
                 [options setObject:@"member_revoked" forKey:@"operationType"];
-                [format setObject:info.showName forKey:@"source"];
+//                [format setObject:info.showName forKey:@"source"];
+                [format setObject:info!=nil?info.showName:@"" forKey:@"source"];
+//                [format setObject:fromName forKey:@"source"];
                 tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"member_revoked" ];
             }
             else{

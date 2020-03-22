@@ -65,35 +65,50 @@
                    session:(NIMSession *)session
                     option:(NIMKitInfoFetchOption *)option
 {
+    if(userId==nil){
+           return nil;
+    }
+    
     BOOL needFetchInfo = NO;
     NIMSessionType sessionType = session.sessionType;
     NIMKitInfo *info = [[NIMKitInfo alloc] init];
     info.infoId = userId;
     info.showName = userId; //默认值
+    
+   
+    
     switch (sessionType) {
         case NIMSessionTypeP2P:
         case NIMSessionTypeTeam:
         {
             NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:userId];
-            NIMUserInfo *userInfo = user.userInfo;
-            NIMTeamMember *member = nil;
-            if (sessionType == NIMSessionTypeTeam)
-            {
-                member = [[NIMSDK sharedSDK].teamManager teamMember:userId
-                                                             inTeam:session.sessionId];
+           
+            if(user!=nil){
+//                NSLog(@"infoByUser !nil :%@",user);
+                NIMUserInfo *userInfo = user.userInfo;
+                NIMTeamMember *member = nil;
+                if (sessionType == NIMSessionTypeTeam)
+                {
+                    member = [[NIMSDK sharedSDK].teamManager teamMember:userId
+                                                                 inTeam:session.sessionId];
+                }
+                NSString *name = [self nickname:user
+                                     memberInfo:member
+                                         option:option];
+                if (name)
+                {
+                    info.showName = name;
+                }
+                info.avatarUrlString = userInfo.thumbAvatarUrl;
+                info.avatarImage = self.defaultUserAvatar;
+                
+                if (userInfo == nil)
+                {
+                    needFetchInfo = YES;
+                }
             }
-            NSString *name = [self nickname:user
-                                 memberInfo:member
-                                     option:option];
-            if (name)
-            {
-                info.showName = name;
-            }
-            info.avatarUrlString = userInfo.thumbAvatarUrl;
-            info.avatarImage = self.defaultUserAvatar;
-            
-            if (userInfo == nil)
-            {
+            else{
+//                NSLog(@"infoByUser is nil :%@",user);
                 needFetchInfo = YES;
             }
         }
@@ -108,8 +123,10 @@
     
     if (needFetchInfo)
     {
+        NSLog(@"requestUserIds:%@ :%@",userId,info.showName);
         [self.request requestUserIds:@[userId]];
     }
+    
     return info;
 }
 
@@ -245,14 +262,22 @@
 
 - (void)requestUserIds:(NSArray *)userIds
 {
-    for (NSString *userId in userIds)
-    {
-        if (![_requstUserIdArray containsObject:userId])
-        {
-            [_requstUserIdArray addObject:userId];
-        }
+    NSLog(@"requestUserIds:%@",userIds);
+    @try {
+        for (NSString *userId in userIds)
+           {
+               if (![_requstUserIdArray containsObject:userId])
+               {
+                   [_requstUserIdArray addObject:userId];
+               }
+           }
+           [self request];
+    } @catch (NSException *exception) {
+        
+    } @finally {
+        
     }
-    [self request];
+   
 }
 
 
