@@ -49,6 +49,14 @@
             self.myBlock(2, NIMKick);
         }
 }
+
+-(void)setAutoLoginFailed:(NSString *)Failed{
+        _autoLoginFailed = Failed;
+        if (self.myBlock) {
+            self.myBlock(18, Failed);
+        }
+}
+
 //通信录列表
 -(void)setContactList:(NSMutableDictionary *)contactList{
     if (_contactList != contactList) {

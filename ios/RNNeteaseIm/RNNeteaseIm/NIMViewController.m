@@ -143,7 +143,7 @@
 }
 
 - (void)onAutoLoginFailed:(NSError *)error{
-
+    [NIMModel initShareMD].NIMKick = @"2";
     NSLog(@"自动登录失败");
 }
 
