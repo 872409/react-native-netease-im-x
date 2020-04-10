@@ -2,7 +2,11 @@ package com.netease.im.login;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Parcel;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.netease.im.IMApplication;
 import com.netease.im.ReactCache;
@@ -24,6 +28,10 @@ import com.netease.nimlib.sdk.msg.constant.SystemMessageType;
 import com.netease.nimlib.sdk.msg.model.CustomNotification;
 import com.netease.nimlib.sdk.msg.model.SystemMessage;
 
+import java.util.prefs.Preferences;
+
+import static android.content.Context.MODE_PRIVATE;
+
 /**
  * Created by dowin on 2017/4/28.
  */
@@ -35,7 +43,9 @@ public class LoginService {
     // 自己的用户帐号
     private String account;
     private String token;
+    private LoginInfo loginInfo;
     private AbortableFuture<LoginInfo> loginInfoFuture;
+    private Context context;
 
     private LoginService() {
 
@@ -63,11 +73,45 @@ public class LoginService {
     }
 
     public LoginInfo getLoginInfo(Context context) {
-        LoginInfo info = new LoginInfo(account, token);
-        return info;
+        Log.w("LoginInfo", "getLoginInfo");
+        if (this.context == null) {
+            this.context = context;
+        }
+        if (this.account == null || this.token == null) {
+            SharedPreferences preferences = context.getSharedPreferences("im", MODE_PRIVATE);
+            if (preferences.contains("LAST_ACCOUNT")) {
+                this.loginInfo = new LoginInfo(preferences.getString("LAST_ACCOUNT", ""), preferences.getString("LAST_ACCOUNT_TOKEN", ""));
+//                Log.w("LoginInfo", info.getAccount());
+//                Log.w("LoginInfo", info.getToken());
+                this.account = this.loginInfo.getAccount();
+                this.token = this.loginInfo.getToken();
+            }
+        }
+
+        if (this.loginInfo == null) {
+            this.loginInfo = new LoginInfo("", "");
+        }
+
+        return this.loginInfo;
     }
 
     void initLogin(LoginInfo loginInfo) {
+        this.account = loginInfo.getAccount();
+        this.token = loginInfo.getToken();
+        this.loginInfo = loginInfo;
+
+
+        SharedPreferences preferences = this.context.getSharedPreferences("im", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("LAST_ACCOUNT", loginInfo.getAccount());
+        editor.putString("LAST_ACCOUNT_TOKEN", loginInfo.getToken());
+        editor.apply();
+        editor.commit();
+
+//        Log.w("LoginInfo", loginInfo.getAccount());
+//        Log.w("LoginInfo", loginInfo.getToken());
+//        Log.w("LoginInfo", preferences.getString("LAST_ACCOUNT", "empty"));
+
 
     }
 

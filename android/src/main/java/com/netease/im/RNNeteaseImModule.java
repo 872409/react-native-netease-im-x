@@ -190,7 +190,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      * @param promise
      */
     @ReactMethod
-    public void autoLogin(String contactId, String token, final Promise promise) {
+    public void autoLogin(String contactId, String token, String forced, final Promise promise) {
         LogUtil.w(TAG, "_id:" + contactId);
         LogUtil.w(TAG, "t:" + token);
 //        LogUtil.w(TAG, "md5:" + MD5.getStringMD5(token));

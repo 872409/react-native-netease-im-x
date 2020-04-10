@@ -154,6 +154,7 @@ public class ReactCache {
                 String fromAccount = contact.getFromAccount();
                 map.putString("fromAccount", fromAccount);
 
+                //TODO: 修改这里的数据结构
                 String content = contact.getContent();
                 switch (contact.getMsgType()) {
                     case text:
