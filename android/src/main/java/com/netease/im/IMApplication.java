@@ -6,7 +6,9 @@ import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.location.LocationProvider;
 import android.os.Environment;
+
 import androidx.annotation.DrawableRes;
+
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -181,7 +183,7 @@ public class IMApplication {
 
 
         // 推送配置
-        if(miPushConfig!=null) {
+        if (miPushConfig != null) {
             MixPushConfig pushConfig = new MixPushConfig();
             pushConfig.xmAppId = miPushConfig.xmAppId;
             pushConfig.xmAppKey = miPushConfig.xmAppKey;
@@ -244,6 +246,7 @@ public class IMApplication {
         public String makeTicker(String nick, IMMessage message) {
             return null; // 采用SDK默认文案
         }
+
         @Override
         public String makeRevokeMsgTip(String revokeAccount, IMMessage item) {
             return MessageUtil.getRevokeTipContent(item, revokeAccount);
@@ -300,7 +303,7 @@ public class IMApplication {
                     return;
                 }
 
-                MessageHelper.getInstance().onRevokeMessage(message.getMessage());
+                MessageHelper.getInstance().onRevokeMessage(message.getMessage(), false, message.getRevokeAccount());
             }
         }, true);
     }

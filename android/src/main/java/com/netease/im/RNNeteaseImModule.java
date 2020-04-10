@@ -26,6 +26,7 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
 import com.netease.im.common.ResourceUtil;
 import com.netease.im.contact.BlackListObserver;
 import com.netease.im.contact.FriendListService;
@@ -54,6 +55,7 @@ import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
 import com.netease.nimlib.sdk.ResponseCode;
+import com.netease.nimlib.sdk.StatusBarNotificationConfig;
 import com.netease.nimlib.sdk.auth.AuthService;
 import com.netease.nimlib.sdk.auth.LoginInfo;
 import com.netease.nimlib.sdk.friend.FriendService;
@@ -1181,7 +1183,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      * @param promise
      */
     @ReactMethod
-    public void sendTextMessage(String content, ReadableArray atUserIds, final Promise promise) {
+    public void sendTextMessage(String content, ReadableArray atUserIds, String apns, final Promise promise) {
         LogUtil.w(TAG, "sendTextMessage" + content);
 
         List<String> atUserIdList = array2ListString(atUserIds);
@@ -1209,7 +1211,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
 //    file, // 图片文件对象
 //    displayName // 文件显示名字，如果第三方 APP 不关注，可以为 null
     @ReactMethod
-    public void sendImageMessage(String file, String displayName, final Promise promise) {
+    public void sendImageMessage(String file, String displayName, String apns, final Promise promise) {
         sessionService.sendImageMessage(file, displayName, new SessionService.OnSendMessageListener() {
             @Override
             public int onResult(int code, IMMessage message) {
@@ -1222,7 +1224,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
 //    file, // 音频文件
 //    duration // 音频持续时间，单位是ms
     @ReactMethod
-    public void sendAudioMessage(String file, String duration, final Promise promise) {
+    public void sendAudioMessage(String file, String duration, String apns, final Promise promise) {
         long durationL = 0;
         try {
             durationL = Long.parseLong(duration);
@@ -1244,7 +1246,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
 //    height, // 视频高度
 //    displayName // 视频显示名，可为空
     @ReactMethod
-    public void sendVideoMessage(String file, String duration, int width, int height, String displayName, final Promise promise) {
+    public void sendVideoMessage(String file, String duration, int width, int height, String displayName, String apns, final Promise promise) {
         sessionService.sendVideoMessage(file, duration, width, height, displayName, new SessionService.OnSendMessageListener() {
             @Override
             public int onResult(int code, IMMessage message) {
@@ -1413,19 +1415,21 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
                     @Override
                     public int onResult(int code, IMMessage message) {
                         if (code == ResponseCode.RES_SUCCESS) {
-                            promise.resolve("" + code);
+                            promise.resolve("succeed");
                         } else if (code == ResponseCode.RES_OVERDUE) {
-                            showTip(R.string.revoke_failed);
+                            promise.resolve("expired");
                         } else {
-                            promise.reject("" + code, "");
+                            promise.reject("error", "");
                         }
                         return 0;
                     }
                 });
                 if (result == 0) {
-                    showTip("请选择消息");
+                    promise.reject("-1", "请选择消息");
+//                    showTip("请选择消息");
                 } else if (result == 1) {
-                    showTip("该类型消息不支持撤销");
+//                    showTip("该类型消息不支持撤销");
+                    promise.reject("-2", "该类型消息不支持撤销");
                 }
                 return 0;
             }
@@ -1565,6 +1569,16 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
         } else {
             promise.reject("-1", "");
         }
+    }
+
+    //TODO
+    @ReactMethod
+    public void pushNotificationSetting(final Promise promise) {
+        StatusBarNotificationConfig config = IMApplication.getNotificationConfig();
+        WritableMap map = new WritableNativeMap();
+        map.putBoolean("disable", false);
+        map.putInt("displayType", config.hideContent ? 2 : 1);
+        promise.resolve(map);
     }
 
     @ReactMethod

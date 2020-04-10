@@ -107,6 +107,23 @@ public class ReactCache {
         }
     }
 
+    public static WritableMap getTipMessageExtend(IMMessage lastMessage) {
+        WritableMap map = Arguments.createMap();
+        map.putString("tipMsg", lastMessage.getContent());
+
+        Map<String, Object> extension = lastMessage.getLocalExtension();
+        if (extension == null) {
+            extension = lastMessage.getRemoteExtension();
+        }
+
+        if (extension != null) {
+            map.putString("tipType", extension.containsKey("tipType") ? extension.get("tipType").toString() : "");
+            map.putMap("options", Arguments.makeNativeMap(extension));
+        }
+
+        return map;
+    }
+
     public static Object createRecentList(List<RecentContact> recents, int unreadNum) {
         LogUtil.w(TAG, "size:" + (recents == null ? 0 : recents.size()));
         // recents参数即为最近联系人列表（最近会话列表）
@@ -120,6 +137,7 @@ public class ReactCache {
                 map = Arguments.createMap();
                 String contactId = contact.getContactId();
                 unreadNumTotal += contact.getUnreadCount();
+
                 map.putString("contactId", contactId);
                 map.putString("unreadCount", String.valueOf(contact.getUnreadCount()));
                 String name = "";
@@ -153,6 +171,20 @@ public class ReactCache {
 
                 String fromAccount = contact.getFromAccount();
                 map.putString("fromAccount", fromAccount);
+                map.putString("account", contactId);
+
+                List<String> uuids = new ArrayList<>();
+                uuids.add(contact.getRecentMessageId());
+                List<IMMessage> messages = NIMClient.getService(MsgService.class).queryMessageListByUuidBlock(uuids);
+                IMMessage lastMessage = messages.size() > 0 ? messages.get(0) : null;
+
+                WritableMap options = null;
+
+
+                if (lastMessage != null) {
+                    map.putString(MessageConstant.Message.IS_OUTGOING, Integer.toString(lastMessage.getDirect().getValue()));
+                }
+
 
                 //TODO: 修改这里的数据结构
                 String content = contact.getContent();
@@ -173,14 +205,12 @@ public class ReactCache {
                         content = "[位置]";
                         break;
                     case tip:
-                        List<String> uuids = new ArrayList<>();
-                        uuids.add(contact.getRecentMessageId());
-                        List<IMMessage> messages = NIMClient.getService(MsgService.class).queryMessageListByUuidBlock(uuids);
-                        if (messages != null && messages.size() > 0) {
-                            content = messages.get(0).getContent();
-                        }
+                        map.putString("msgType", "notification");
+                        content = lastMessage != null ? lastMessage.getContent() : "";
+                        options = ReactCache.getTipMessageExtend(lastMessage);
                         break;
                     case notification:
+                        map.putString("msgType", "notification");
                         if (sessionType == SessionTypeEnum.Team && team != null) {
                             content = TeamNotificationHelper.getTeamNotificationText(contact.getContactId(),
                                     contact.getFromAccount(),
@@ -190,7 +220,8 @@ public class ReactCache {
                     default:
                         break;
                 }
-                map.putString("time", TimeUtil.getTimeShowString(contact.getTime(), true));
+//                map.putString("time", TimeUtil.getTimeShowString(contact.getTime(), true));
+                map.putString("timestamp", contact.getTime() + "");
 
 
                 String fromNick = "";
@@ -289,6 +320,11 @@ public class ReactCache {
                 }
                 content = teamNick + content;
                 map.putString("content", content);
+
+                if (options != null) {
+                    map.putMap("content_extend", options);
+                }
+
                 array.pushMap(map);
             }
 //            LogUtil.w(TAG, array + "");
@@ -904,6 +940,7 @@ public class ReactCache {
 
         MsgAttachment attachment = item.getAttachment();
         String text = "";
+        WritableMap extend = null;
 
         if (attachment != null) {
             if (item.getMsgType() == MsgTypeEnum.image) {
@@ -957,7 +994,9 @@ public class ReactCache {
                 }
                 itemMap.putMap(MESSAGE_EXTEND, locationObj);
             } else if (item.getMsgType() == MsgTypeEnum.notification) {
+                itemMap.putString(MessageConstant.Message.MSG_TYPE, "notification");
                 if (item.getSessionType() == SessionTypeEnum.Team) {
+                    //TODO XXXX
                     text = TeamNotificationHelper.getTeamNotificationText(item, item.getSessionId());
                 } else {
                     text = item.getContent();
@@ -1026,22 +1065,28 @@ public class ReactCache {
             text = item.getContent();
 
         } else if (item.getMsgType() == MsgTypeEnum.tip) {
-            if (TextUtils.isEmpty(item.getContent())) {
-                Map<String, Object> content = item.getRemoteExtension();
-                if (content != null && !content.isEmpty()) {
-                    text = (String) content.get("content");
-                }
-                content = item.getLocalExtension();
-                if (content != null && !content.isEmpty()) {
-                    text = (String) content.get("content");
-                }
-                if (TextUtils.isEmpty(text)) {
-                    text = "未知通知提醒";
-                }
-            } else {
-                text = item.getContent();
-            }
+//            if (TextUtils.isEmpty(item.getContent())) {
+//                Map<String, Object> content = item.getRemoteExtension();
+//                if (content != null && !content.isEmpty()) {
+//                    text = (String) content.get("content");
+//                }
+//                content = item.getLocalExtension();
+//                if (content != null && !content.isEmpty()) {
+//                    text = (String) content.get("content");
+//                }
+//                if (TextUtils.isEmpty(text)) {
+//                    text = "未知通知提醒";
+//                }
+//            } else {
+//                text = item.getContent();
+//            }
+            itemMap.putString(MessageConstant.Message.MSG_TYPE, "notification");
+            extend = ReactCache.getTipMessageExtend(item);
 
+        }
+
+        if (extend != null) {
+            itemMap.putMap(MESSAGE_EXTEND, extend);
         }
         itemMap.putString(MessageConstant.Message.MSG_TEXT, text);
 

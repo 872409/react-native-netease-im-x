@@ -855,7 +855,7 @@ public class SessionService {
                 if (code == ResponseCode.RES_SUCCESS) {
                     deleteItem(selectMessage, false);
                     revokMessage(selectMessage);
-                    MessageHelper.getInstance().onRevokeMessage(selectMessage);
+                    MessageHelper.getInstance().onRevokeMessage(selectMessage, true,"");
                 }
                 if (onSendMessageListener != null) {
                     onSendMessageListener.onResult(code, selectMessage);

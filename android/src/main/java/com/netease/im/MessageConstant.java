@@ -31,7 +31,7 @@ public class MessageConstant {
         public final static String SEND_DRAFT = "send_draft";
         public final static String SEND_FAILE = "send_failed";
         public final static String SEND_SENDING = "send_going";
-        public final static String SEND_SUCCESS = "send_succed";
+        public final static String SEND_SUCCESS = "send_succeed";
         public final static String RECEIVE_READ = "receive_read";
         public final static String RECEIVE_UNREAD = "receive_unread";
     }
@@ -43,6 +43,8 @@ public class MessageConstant {
         public static final String IS_OUTGOING = "isOutgoing";
         public static final String TIME_STRING = "timeString";
         public static final String MSG_TEXT = "text";
+        public static final String MSG_OPTIONS = "options";
+        public static final String MSG_Extend = "extend";
         public static final String STATUS = "status";
 
         public static final String FROM_USER = "fromUser";
@@ -120,7 +122,7 @@ public class MessageConstant {
 
     }
 
-    public static class Card{
+    public static class Card {
         public final static String type = "type";
         public final static String name = "name";
         public final static String imgPath = "imgPath";

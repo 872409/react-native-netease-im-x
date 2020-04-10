@@ -191,6 +191,7 @@
             [fromUser setObject:[NSString stringWithFormat:@"%@",messageUser.userId] forKey:@"name"];
         }
         [fromUser setObject:[NSString stringWithFormat:@"%@", message.from] forKey:@"_id"];
+        [fromUser setObject:[NSString stringWithFormat:@"%@", message.from] forKey:@"id"];
         NSArray *key = [fromUser allKeys];
         for (NSString *tem  in key) {
             if ([[fromUser objectForKey:tem] isEqualToString:@"(null)"]) {
@@ -1157,6 +1158,8 @@
         [fromUser setObject:[NSString stringWithFormat:@"%@",user.userId] forKey:@"name"];
     }
     [fromUser setObject:[NSString stringWithFormat:@"%@", message.from] forKey:@"_id"];
+    [fromUser setObject:[NSString stringWithFormat:@"%@", message.from] forKey:@"id"];
+    
     NSArray *key = [fromUser allKeys];
     for (NSString *tem  in key) {
         if ([[fromUser objectForKey:tem] isEqualToString:@"(null)"]) {
@@ -1188,7 +1191,7 @@
     }
     [dic2 setObject: [NSNumber numberWithBool:message.isOutgoingMsg] forKey:@"isOutgoing"];
     [dic2 setObject:[NSString stringWithFormat:@"%f", message.timestamp] forKey:@"timeString"];
-    [dic2 setObject:[NSNumber numberWithBool:NO] forKey:@"isShowTime"];
+//    [dic2 setObject:[NSNumber numberWithBool:NO] forKey:@"isShowTime"];
     [dic2 setObject:[NSString stringWithFormat:@"%@", message.messageId] forKey:@"msgId"];
     [dic2 setObject:fromUser forKey:@"fromUser"];
     if (message.messageType == NIMMessageTypeText) {
@@ -1481,7 +1484,7 @@
         else
         {
             succe(@"succeed");
-            NSMutableDictionary *options = [self tipOnMessageRevoked:currentmessage session:self._session isSelf:YES fromName:@""];
+            NSMutableDictionary *options = [self tipOnMessageRevoked:currentmessage session:self._session isSelf:YES messageFromUserId:@""];
             NIMMessage *tipMessage = [self msgWithTip:[options objectForKey:@"tipMsg"]];
             [options setObject:messageId forKey:@"msgId"];
             
@@ -1524,7 +1527,7 @@
     return message;
 }
 
-- (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf fromName:(NSString *)fromName
+- (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf messageFromUserId:(NSString *)messageFromUserId
 {
 //    NSString *fromUid = nil;
 //    NIMSession *session = nil;
@@ -1566,7 +1569,7 @@
              if (!isSelf) {
                  NIMKitInfoFetchOption *option = [[NIMKitInfoFetchOption alloc] init];
                  option.session = session;
-                 NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:fromName option:option];
+                 NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:messageFromUserId option:option];
 //                 NSLog(@"info %@ %@",info.showName,tipMsg);
                  [format setObject:info!=nil?info.showName:@"" forKey:@"source"];
                  [options setObject:@"p2p_revoked" forKey:@"operationType"];

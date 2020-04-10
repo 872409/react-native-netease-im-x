@@ -115,7 +115,8 @@
     }
 //    NSString * tip = [[ConversationViewController initWithConversationViewController] tipOnMessageRevoked:notification];
 //    NSDictionary * optipns = [[ConversationViewController initWithConversationViewController] tipOnMessageRevoked:notification];
-    NSMutableDictionary *options = [[ConversationViewController initWithConversationViewController] tipOnMessageRevoked:notification.message session:notification.session isSelf:NO fromName:notification.messageFromUserId];
+    NSMutableDictionary *options = [[ConversationViewController initWithConversationViewController] tipOnMessageRevoked:notification.message session:notification.session isSelf:NO messageFromUserId:notification.messageFromUserId];
+    
     NIMMessage *tipMessage = [[ConversationViewController initWithConversationViewController] msgWithTip:[options objectForKey:@"tipMsg"]];
     tipMessage.timestamp = notification.timestamp;
     NIMMessage *deleMess = notification.message;

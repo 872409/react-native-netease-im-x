@@ -3,6 +3,7 @@ package com.netease.im;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
@@ -12,8 +13,8 @@ import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
 
 
-
 import java.util.Iterator;
+import java.util.Map;
 
 public class ReactNativeJson {
     public static WritableMap convertJsonToMap(JSONObject jsonObject) throws JSONException {
@@ -27,13 +28,13 @@ public class ReactNativeJson {
                 map.putMap(key, convertJsonToMap((JSONObject) value));
             } else if (value instanceof JSONArray) {
                 map.putArray(key, convertJsonToArray((JSONArray) value));
-            } else if (value instanceof  Boolean) {
+            } else if (value instanceof Boolean) {
                 map.putBoolean(key, (Boolean) value);
-            } else if (value instanceof  Integer) {
+            } else if (value instanceof Integer) {
                 map.putInt(key, (Integer) value);
-            } else if (value instanceof  Double) {
+            } else if (value instanceof Double) {
                 map.putDouble(key, (Double) value);
-            } else if (value instanceof String)  {
+            } else if (value instanceof String) {
                 map.putString(key, (String) value);
             } else {
                 map.putString(key, value.toString());
@@ -49,15 +50,15 @@ public class ReactNativeJson {
             Object value = jsonArray.get(i);
             if (value instanceof JSONObject) {
                 array.pushMap(convertJsonToMap((JSONObject) value));
-            } else if (value instanceof  JSONArray) {
+            } else if (value instanceof JSONArray) {
                 array.pushArray(convertJsonToArray((JSONArray) value));
-            } else if (value instanceof  Boolean) {
+            } else if (value instanceof Boolean) {
                 array.pushBoolean((Boolean) value);
-            } else if (value instanceof  Integer) {
+            } else if (value instanceof Integer) {
                 array.pushInt((Integer) value);
-            } else if (value instanceof  Double) {
+            } else if (value instanceof Double) {
                 array.pushDouble((Double) value);
-            } else if (value instanceof String)  {
+            } else if (value instanceof String) {
                 array.pushString((String) value);
             } else {
                 array.pushString(value.toString());
@@ -120,4 +121,7 @@ public class ReactNativeJson {
         }
         return array;
     }
+
+
+
 }
