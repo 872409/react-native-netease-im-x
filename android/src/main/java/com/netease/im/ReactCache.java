@@ -1,6 +1,7 @@
 package com.netease.im;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
@@ -115,17 +116,18 @@ public class ReactCache {
         if (extension == null) {
             extension = lastMessage.getRemoteExtension();
         }
-
+        Log.e(TAG, "getTipMessageExtend:" + (extension != null ? extension.size() : "extension is null"));
         if (extension != null) {
             map.putString("tipType", extension.containsKey("tipType") ? extension.get("tipType").toString() : "");
             map.putMap("options", Arguments.makeNativeMap(extension));
         }
 
+
         return map;
     }
 
     public static Object createRecentList(List<RecentContact> recents, int unreadNum) {
-        LogUtil.w(TAG, "size:" + (recents == null ? 0 : recents.size()));
+//        LogUtil.w(TAG, "size:" + (recents == null ? 0 : recents.size()));
         // recents参数即为最近联系人列表（最近会话列表）
         WritableMap writableMap = Arguments.createMap();
         WritableArray array = Arguments.createArray();
@@ -134,6 +136,8 @@ public class ReactCache {
 
             WritableMap map;
             for (RecentContact contact : recents) {
+
+
                 map = Arguments.createMap();
                 String contactId = contact.getContactId();
                 unreadNumTotal += contact.getUnreadCount();
@@ -188,6 +192,8 @@ public class ReactCache {
 
                 //TODO: 修改这里的数据结构
                 String content = contact.getContent();
+//                LogUtil.w(TAG + " Recent", contact.getMsgType().toString());
+//                LogUtil.w(TAG + " Recent", contact.getContent());
                 switch (contact.getMsgType()) {
                     case text:
                         content = contact.getContent();
@@ -221,7 +227,7 @@ public class ReactCache {
                         break;
                 }
 //                map.putString("time", TimeUtil.getTimeShowString(contact.getTime(), true));
-                map.putString("timestamp", contact.getTime() + "");
+                map.putString("timestamp", (contact.getTime() / 1000) + "");
 
 
                 String fromNick = "";
@@ -250,74 +256,78 @@ public class ReactCache {
                         }
                     }
                 }
+
                 CustomAttachment attachment = null;
-                try {
-                    if (contact.getMsgType() == MsgTypeEnum.custom) {
+                if (contact.getMsgType() == MsgTypeEnum.custom) {
+                    try {
                         attachment = (CustomAttachment) contact.getAttachment();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (attachment != null) {
-                    map.putString("custType", attachment.getType());
-                    switch (attachment.getType()) {
-                        case CustomAttachmentType.RTCCall:
-                            if (attachment instanceof DefaultCustomAttachment) {
-                                content = CustomAttachmentType.RTCCall;
-                            }
-                            break;
-                        case CustomAttachmentType.RedPacket:
-                            if (attachment instanceof RedPacketAttachement) {
-                                content = "[红包] " + ((RedPacketAttachement) attachment).getComments();
-                            }
-                            break;
-                        case CustomAttachmentType.BankTransfer:
-                            if (attachment instanceof BankTransferAttachment) {
-                                content = "[转账] " + ((BankTransferAttachment) attachment).getComments();
-                            }
-                            break;
-                        case CustomAttachmentType.LinkUrl:
-                            if (attachment instanceof LinkUrlAttachment) {
-                                content = ((LinkUrlAttachment) attachment).getTitle();
-                            }
-                            break;
-                        case CustomAttachmentType.AccountNotice:
-                            if (attachment instanceof AccountNoticeAttachment) {
-                                content = ((AccountNoticeAttachment) attachment).getTitle();
-                            }
-                            break;
-                        case CustomAttachmentType.RedPacketOpen:
-                            if (attachment instanceof RedPacketOpenAttachement) {
-                                teamNick = "";
-                                RedPacketOpenAttachement rpOpen = (RedPacketOpenAttachement) attachment;
-                                if (sessionType == SessionTypeEnum.Team && !rpOpen.isSelf()) {
-                                    content = "";
-                                } else {
-                                    content = rpOpen.getTipMsg(false);
-                                }
-                            }
-                            break;
-                        case CustomAttachmentType.Card:
-                            if (attachment instanceof CardAttachment) {
-                                String str;
-                                if (fromAccount.equals(LoginService.getInstance().getAccount())) {
-                                    str = "推荐了";
-                                } else {
-                                    str = "向你推荐了";
-                                }
-                                content = str + ((CardAttachment) attachment).getName();
-                            }
-                            break;
-                        default:
-                            if (attachment instanceof DefaultCustomAttachment) {
-                                content = ((DefaultCustomAttachment) attachment).getDigst();
-                                if (TextUtils.isEmpty(content)) {
-                                    content = "[未知消息]";
-                                }
-                            }
-                            break;
+
+                    if (attachment != null) {
+                        map.putString("custType", attachment.getType());
+                        options = ReactNativeJson.convertJsonToMap(attachment.packData());
+//                    switch (attachment.getType()) {
+//                        case CustomAttachmentType.RTCCall:
+//                            if (attachment instanceof DefaultCustomAttachment) {
+//                                content = CustomAttachmentType.RTCCall;
+//                            }
+//                            break;
+//                        case CustomAttachmentType.RedPacket:
+//                            if (attachment instanceof RedPacketAttachement) {
+//                                content = "[红包] " + ((RedPacketAttachement) attachment).getComments();
+//                            }
+//                            break;
+//                        case CustomAttachmentType.BankTransfer:
+//                            if (attachment instanceof BankTransferAttachment) {
+//                                content = "[转账] " + ((BankTransferAttachment) attachment).getComments();
+//                            }
+//                            break;
+//                        case CustomAttachmentType.LinkUrl:
+//                            if (attachment instanceof LinkUrlAttachment) {
+//                                content = ((LinkUrlAttachment) attachment).getTitle();
+//                            }
+//                            break;
+//                        case CustomAttachmentType.AccountNotice:
+//                            if (attachment instanceof AccountNoticeAttachment) {
+//                                content = ((AccountNoticeAttachment) attachment).getTitle();
+//                            }
+//                            break;
+//                        case CustomAttachmentType.RedPacketOpen:
+//                            if (attachment instanceof RedPacketOpenAttachement) {
+//                                teamNick = "";
+//                                RedPacketOpenAttachement rpOpen = (RedPacketOpenAttachement) attachment;
+//                                if (sessionType == SessionTypeEnum.Team && !rpOpen.isSelf()) {
+//                                    content = "";
+//                                } else {
+//                                    content = rpOpen.getTipMsg(false);
+//                                }
+//                            }
+//                            break;
+//                        case CustomAttachmentType.Card:
+//                            if (attachment instanceof CardAttachment) {
+//                                String str;
+//                                if (fromAccount.equals(LoginService.getInstance().getAccount())) {
+//                                    str = "推荐了";
+//                                } else {
+//                                    str = "向你推荐了";
+//                                }
+//                                content = str + ((CardAttachment) attachment).getName();
+//                            }
+//                            break;
+//                        default:
+//                            if (attachment instanceof DefaultCustomAttachment) {
+//                                content = ((DefaultCustomAttachment) attachment).getDigst();
+//                                if (TextUtils.isEmpty(content)) {
+//                                    content = "[未知消息]";
+//                                }
+//                            }
+//                            break;
+//                    }
                     }
                 }
+
                 content = teamNick + content;
                 map.putString("content", content);
 
@@ -825,32 +835,31 @@ public class ReactCache {
                     e.printStackTrace();
                 }
                 if (attachment != null) {
-                    switch (attachment.getType()) {
-                        case CustomAttachmentType.RedPacket:
-                            type = MessageConstant.MsgType.RED_PACKET;
-                            break;
-
-                        case CustomAttachmentType.BankTransfer:
-                            type = MessageConstant.MsgType.BANK_TRANSFER;
-                            break;
-                        case CustomAttachmentType.AccountNotice:
-                            type = MessageConstant.MsgType.ACCOUNT_NOTICE;
-                            break;
-                        case CustomAttachmentType.LinkUrl:
-                            type = MessageConstant.MsgType.LINK;
-                            break;
-                        case CustomAttachmentType.RedPacketOpen:
-                            type = MessageConstant.MsgType.RED_PACKET_OPEN;
-                            break;
-                        case CustomAttachmentType.Card:
-                            type = MessageConstant.MsgType.CARD;
-                            break;
-                        default:
-                            type = MessageConstant.MsgType.CUSTON;
-                            break;
-                    }
-                } else {
-                    type = MessageConstant.MsgType.CUSTON;
+                    type = attachment.getType();
+//                    switch (attachment.getType()) {
+//                        case CustomAttachmentType.RedPacket:
+//                            type = MessageConstant.MsgType.RED_PACKET;
+//                            break;
+//
+//                        case CustomAttachmentType.BankTransfer:
+//                            type = MessageConstant.MsgType.BANK_TRANSFER;
+//                            break;
+//                        case CustomAttachmentType.AccountNotice:
+//                            type = MessageConstant.MsgType.ACCOUNT_NOTICE;
+//                            break;
+//                        case CustomAttachmentType.LinkUrl:
+//                            type = MessageConstant.MsgType.LINK;
+//                            break;
+//                        case CustomAttachmentType.RedPacketOpen:
+//                            type = MessageConstant.MsgType.RED_PACKET_OPEN;
+//                            break;
+//                        case CustomAttachmentType.Card:
+//                            type = MessageConstant.MsgType.CARD;
+//                            break;
+//                        default:
+//                            type = MessageConstant.MsgType.CUSTON;
+//                            break;
+//                    }
                 }
                 break;
             default:
@@ -1002,57 +1011,60 @@ public class ReactCache {
                     text = item.getContent();
                 }
             } else if (item.getMsgType() == MsgTypeEnum.custom) {//自定义消息
+
                 try {
                     CustomAttachment customAttachment = (CustomAttachment) attachment;
+                    itemMap.putString("custType", customAttachment.getType());
+                    itemMap.putMap(MESSAGE_EXTEND, ReactNativeJson.convertJsonToMap(customAttachment.packData()));
 
-                    switch (customAttachment.getType()) {
-                        case CustomAttachmentType.RedPacket:
-                            if (attachment instanceof RedPacketAttachement) {
-                                RedPacketAttachement redPackageAttachement = (RedPacketAttachement) attachment;
-                                itemMap.putMap(MESSAGE_EXTEND, redPackageAttachement.toReactNative());
-                            }
-                            break;
-
-                        case CustomAttachmentType.BankTransfer:
-                            if (attachment instanceof BankTransferAttachment) {
-                                BankTransferAttachment bankTransferAttachment = (BankTransferAttachment) attachment;
-                                itemMap.putMap(MESSAGE_EXTEND, bankTransferAttachment.toReactNative());
-                            }
-                            break;
-                        case CustomAttachmentType.AccountNotice:
-                            if (attachment instanceof AccountNoticeAttachment) {
-                                AccountNoticeAttachment accountNoticeAttachment = (AccountNoticeAttachment) attachment;
-                                itemMap.putMap(MESSAGE_EXTEND, accountNoticeAttachment.toReactNative());
-                            }
-                            break;
-                        case CustomAttachmentType.LinkUrl:
-                            if (attachment instanceof LinkUrlAttachment) {
-                                LinkUrlAttachment linkUrlAttachment = (LinkUrlAttachment) attachment;
-                                itemMap.putMap(MESSAGE_EXTEND, linkUrlAttachment.toReactNative());
-                            }
-                            break;
-                        case CustomAttachmentType.RedPacketOpen:
-                            if (attachment instanceof RedPacketOpenAttachement) {
-                                RedPacketOpenAttachement rpOpen = (RedPacketOpenAttachement) attachment;
-//                                if (!rpOpen.isSelf()) {
-//                                    return null;
-//                                }
-                                itemMap.putMap(MESSAGE_EXTEND, rpOpen.toReactNative());
-                            }
-                            break;
-                        case CustomAttachmentType.Card:
-                            if (attachment instanceof CardAttachment) {
-                                CardAttachment cardAttachment = (CardAttachment) attachment;
-                                itemMap.putMap(MESSAGE_EXTEND, cardAttachment.toReactNative());
-                            }
-                            break;
-                        default:
-                            if (attachment instanceof DefaultCustomAttachment) {
-                                DefaultCustomAttachment defaultCustomAttachment = (DefaultCustomAttachment) attachment;
-                                itemMap.putMap(MESSAGE_EXTEND, defaultCustomAttachment.toReactNative());
-                            }
-                            break;
-                    }
+//                    switch (customAttachment.getType()) {
+//                        case CustomAttachmentType.RedPacket:
+//                            if (attachment instanceof RedPacketAttachement) {
+//                                RedPacketAttachement redPackageAttachement = (RedPacketAttachement) attachment;
+//                                itemMap.putMap(MESSAGE_EXTEND, redPackageAttachement.toReactNative());
+//                            }
+//                            break;
+//
+//                        case CustomAttachmentType.BankTransfer:
+//                            if (attachment instanceof BankTransferAttachment) {
+//                                BankTransferAttachment bankTransferAttachment = (BankTransferAttachment) attachment;
+//                                itemMap.putMap(MESSAGE_EXTEND, bankTransferAttachment.toReactNative());
+//                            }
+//                            break;
+//                        case CustomAttachmentType.AccountNotice:
+//                            if (attachment instanceof AccountNoticeAttachment) {
+//                                AccountNoticeAttachment accountNoticeAttachment = (AccountNoticeAttachment) attachment;
+//                                itemMap.putMap(MESSAGE_EXTEND, accountNoticeAttachment.toReactNative());
+//                            }
+//                            break;
+//                        case CustomAttachmentType.LinkUrl:
+//                            if (attachment instanceof LinkUrlAttachment) {
+//                                LinkUrlAttachment linkUrlAttachment = (LinkUrlAttachment) attachment;
+//                                itemMap.putMap(MESSAGE_EXTEND, linkUrlAttachment.toReactNative());
+//                            }
+//                            break;
+//                        case CustomAttachmentType.RedPacketOpen:
+//                            if (attachment instanceof RedPacketOpenAttachement) {
+//                                RedPacketOpenAttachement rpOpen = (RedPacketOpenAttachement) attachment;
+////                                if (!rpOpen.isSelf()) {
+////                                    return null;
+////                                }
+//                                itemMap.putMap(MESSAGE_EXTEND, rpOpen.toReactNative());
+//                            }
+//                            break;
+//                        case CustomAttachmentType.Card:
+//                            if (attachment instanceof CardAttachment) {
+//                                CardAttachment cardAttachment = (CardAttachment) attachment;
+//                                itemMap.putMap(MESSAGE_EXTEND, cardAttachment.toReactNative());
+//                            }
+//                            break;
+//                        default:
+//                            if (attachment instanceof DefaultCustomAttachment) {
+//                                DefaultCustomAttachment defaultCustomAttachment = (DefaultCustomAttachment) attachment;
+//                                itemMap.putMap(MESSAGE_EXTEND, defaultCustomAttachment.toReactNative());
+//                            }
+//                            break;
+//                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.netease.im.login.LoginService;
 import com.netease.im.session.extension.BankTransferAttachment;
+import com.netease.im.session.extension.CustomAttachmentType;
 import com.netease.im.session.extension.RedPacketAttachement;
 import com.netease.im.uikit.cache.TeamDataCache;
 import com.netease.nimlib.sdk.msg.constant.AttachStatusEnum;
@@ -15,12 +16,34 @@ import com.netease.nimlib.sdk.robot.model.RobotAttachment;
 import com.netease.nimlib.sdk.team.constant.TeamMemberType;
 import com.netease.nimlib.sdk.team.model.TeamMember;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by dowin on 2017/6/14.
  */
 
 public class MessageUtil {
 
+
+
+//
+//    public static void setupMessagePushBody(IMMessage message, NIMSession session) {
+//        Map payloadData = new HashMap();
+//        payloadData.put("sessionId", session.sessionId);
+//        payloadData.put("sessionType", session.sessionType.getValue());
+//        message.setPushPayload(MessageUtil.makePushPayload("", payloadData, ""));
+//    }
+//
+//    public static Map makePushPayload(String type, Map payloadData, String sound) {
+//
+//        Map payload = new HashMap();
+//        payload.put("sound", sound != null && sound.length() > 0 ? sound : "default");
+//        payload.put("type", type);
+//        payload.put("payload", payloadData);
+//
+//        return payload;
+//    }
 
     public static boolean shouldIgnore(IMMessage message) {//TODO;
         if (message.getDirect() == MsgDirectionEnum.In

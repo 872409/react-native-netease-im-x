@@ -330,9 +330,12 @@
         }else if (message.messageType == NIMMessageTypeCustom) {
             NIMCustomObject *customObject = message.messageObject;
             DWCustomAttachment *obj = customObject.attachment;
-            NSLog(@"NIMMessageTypeCustom：customObject %@ obj:%@",customObject,obj);
+//            NSLog(@"NIMMessageTypeCustom：customObject %@ obj:%@",customObject,obj);
             if (obj) {
-                NSLog(@"NIMMessageTypeCustom：custType %ld dataDict:%@",obj.custType,obj.dataDict);
+                //NSLog(@"NIMMessageTypeCustom：custType %ld dataDict:%@",obj.custType,obj.dataDict);
+                [dic setObject:[NSNumber numberWithInteger:obj.custType] forKey:@"custType"];
+                [dic setObject:obj.dataDict forKey:@"extend"];
+                
                 switch (obj.custType) {
                     case CustomMessgeTypeRTCCall: //rtc_call
                     {

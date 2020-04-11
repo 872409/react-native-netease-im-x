@@ -42,7 +42,7 @@ public class RedPacketAttachement extends CustomAttachment {
     }
 
     @Override
-    protected JSONObject packData() {
+    public JSONObject packData() {
         JSONObject object = new JSONObject();
         object.put(KEY_TYPE, redPacketType);
         object.put(KEY_COMMENTS, comments);

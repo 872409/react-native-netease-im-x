@@ -48,7 +48,7 @@ public class RedPacketOpenAttachement extends CustomAttachment {
     }
 
     @Override
-    protected JSONObject packData() {
+    public JSONObject packData() {
         JSONObject data = new JSONObject();
         data.put(KEY_SEND_ID, sendId);
         data.put(KEY_OPEN_ID, openId);

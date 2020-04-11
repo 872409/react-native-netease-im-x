@@ -17,6 +17,11 @@ public class NIMSession {
         return session;
     }
 
+    public static NIMSession make(String sessionId, int sessionType) {
+        NIMSession session = new NIMSession(sessionId, SessionTypeEnum.typeOfValue(sessionType));
+        return session;
+    }
+
     public static NIMSession makeFromIMMessage(IMMessage imMessage) {
         NIMSession session = new NIMSession(imMessage.getSessionId(), imMessage.getSessionType());
         return session;

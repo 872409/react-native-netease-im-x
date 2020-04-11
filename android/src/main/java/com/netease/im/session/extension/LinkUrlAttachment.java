@@ -33,7 +33,7 @@ public class LinkUrlAttachment extends CustomAttachment{
     }
 
     @Override
-    protected JSONObject packData() {
+    public JSONObject packData() {
         JSONObject object = new JSONObject();
         object.put(KEY_TITLE,title);
         object.put(KEY_DESCRIBE,describe);

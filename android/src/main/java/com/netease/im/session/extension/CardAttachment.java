@@ -48,7 +48,7 @@ public class CardAttachment extends CustomAttachment {
     }
 
     @Override
-    protected JSONObject packData() {
+    public JSONObject packData() {
         JSONObject object = new JSONObject();
         object.put(MessageConstant.Card.type, cardType);
         object.put(MessageConstant.Card.name, name);

@@ -1224,14 +1224,8 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
 //    file, // 音频文件
 //    duration // 音频持续时间，单位是ms
     @ReactMethod
-    public void sendAudioMessage(String file, String duration, String apns, final Promise promise) {
-        long durationL = 0;
-        try {
-            durationL = Long.parseLong(duration);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-        sessionService.sendAudioMessage(file, durationL, new SessionService.OnSendMessageListener() {
+    public void sendAudioMessage(String file, int duration, String apns, final Promise promise) {
+        sessionService.sendAudioMessage(file, duration, new SessionService.OnSendMessageListener() {
             @Override
             public int onResult(int code, IMMessage message) {
                 return 0;
@@ -1246,8 +1240,18 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
 //    height, // 视频高度
 //    displayName // 视频显示名，可为空
     @ReactMethod
-    public void sendVideoMessage(String file, String duration, int width, int height, String displayName, String apns, final Promise promise) {
+    public void sendVideoMessage(String file, int duration, int width, int height, String displayName, String apns, final Promise promise) {
         sessionService.sendVideoMessage(file, duration, width, height, displayName, new SessionService.OnSendMessageListener() {
+            @Override
+            public int onResult(int code, IMMessage message) {
+                return 0;
+            }
+        });
+    }
+
+    @ReactMethod
+    public void sendCustomMessage(ReadableMap msg, final Promise promise) {
+        sessionService.sendCustomMessage(msg, new SessionService.OnSendMessageListener() {
             @Override
             public int onResult(int code, IMMessage message) {
                 return 0;

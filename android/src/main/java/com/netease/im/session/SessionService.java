@@ -16,6 +16,7 @@ import com.facebook.react.common.MapBuilder;
 import com.netease.im.IMApplication;
 import com.netease.im.MessageConstant;
 import com.netease.im.MessageUtil;
+import com.netease.im.NIMSession;
 import com.netease.im.ReactCache;
 import com.netease.im.ReactNativeJson;
 import com.netease.im.login.LoginService;
@@ -707,20 +708,15 @@ public class SessionService {
 //        long duration = mediaPlayer == null ? 0 : mediaPlayer.getDuration();
 //        int height = mediaPlayer == null ? 0 : mediaPlayer.getVideoHeight();
 //        int width = mediaPlayer == null ? 0 : mediaPlayer.getVideoWidth();
-    public void sendVideoMessage(String file, String duration, int width, int height, String displayName, OnSendMessageListener onSendMessageListener) {
+    public void sendVideoMessage(String file, int duration, int width, int height, String displayName, OnSendMessageListener onSendMessageListener) {
 
 
 //        String filename = md5 + "." + FileUtil.getExtensionName(file);
         file = Uri.parse(file).getPath();
         String md5 = TextUtils.isEmpty(displayName) ? MD5.getStreamMD5(file) : displayName;
         File f = new File(file);
-        long durationL = 0;
-        try {
-            durationL = Long.parseLong(duration);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-        IMMessage message = MessageBuilder.createVideoMessage(sessionId, sessionTypeEnum, f, durationL, width, height, md5);
+
+        IMMessage message = MessageBuilder.createVideoMessage(sessionId, sessionTypeEnum, f, duration, width, height, md5);
         sendMessageSelf(message, onSendMessageListener, false);
     }
 
@@ -738,6 +734,24 @@ public class SessionService {
             e.printStackTrace();
         }
         IMMessage message = MessageBuilder.createLocationMessage(sessionId, sessionTypeEnum, lat, lon, address);
+        sendMessageSelf(message, onSendMessageListener, false);
+    }
+
+    public void sendCustomMessage(ReadableMap msg, OnSendMessageListener onSendMessageListener) {
+        NIMSession session = NIMSession.make(msg.getString("sessionId"), msg.getInt("sessionType"));
+        int msgType = msg.getInt("msgType");
+        String apns = msg.getString("apns");
+        ReadableMap data = msg.getMap("data");
+
+        CustomMessageConfig config = new CustomMessageConfig();
+        DefaultCustomAttachment attachment = new DefaultCustomAttachment(msgType + "");
+        attachment.setDigst(msgType + "");
+        attachment.setContent(ReactNativeJson.convertMapToJson(data).toJSONString());
+
+        config.enablePush = msg.hasKey("enablePush") ? msg.getBoolean("enablePush") : true;
+        config.enableUnreadCount = msg.hasKey("enableUnreadCount") ? msg.getBoolean("enableUnreadCount") : true;
+
+        IMMessage message = MessageBuilder.createCustomMessage(session.sessionId, session.sessionType, apns, attachment, config);
         sendMessageSelf(message, onSendMessageListener, false);
     }
 
@@ -855,7 +869,7 @@ public class SessionService {
                 if (code == ResponseCode.RES_SUCCESS) {
                     deleteItem(selectMessage, false);
                     revokMessage(selectMessage);
-                    MessageHelper.getInstance().onRevokeMessage(selectMessage, true,"");
+                    MessageHelper.getInstance().onRevokeMessage(selectMessage, true, "");
                 }
                 if (onSendMessageListener != null) {
                     onSendMessageListener.onResult(code, selectMessage);

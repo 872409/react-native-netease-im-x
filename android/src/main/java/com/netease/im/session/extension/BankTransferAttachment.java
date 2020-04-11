@@ -31,7 +31,7 @@ public class BankTransferAttachment extends CustomAttachment {
     }
 
     @Override
-    protected JSONObject packData() {
+    public JSONObject packData() {
         JSONObject object = new JSONObject();
         object.put(KEY_AMOUNT, amount);
         object.put(KEY_COMMENTS, comments);

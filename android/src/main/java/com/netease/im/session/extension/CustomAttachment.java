@@ -30,9 +30,10 @@ public abstract class CustomAttachment implements MsgAttachment {
         return type;
     }
 
+
     protected abstract void parseData(JSONObject data);
-    protected abstract JSONObject packData();
-    protected abstract WritableMap toReactNative();
+    public abstract JSONObject packData();
+    public abstract WritableMap toReactNative();
 
 //    protected abstract WritableMap packReactNative();
 //    protected abstract void packReactNative(ReadableMap map);

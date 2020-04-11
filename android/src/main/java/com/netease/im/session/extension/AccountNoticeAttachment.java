@@ -44,7 +44,7 @@ public class AccountNoticeAttachment extends CustomAttachment {
     }
 
     @Override
-    protected JSONObject packData() {
+    public JSONObject packData() {
 
         JSONObject object = new JSONObject();
         object.put(KEY_TITLE, title);

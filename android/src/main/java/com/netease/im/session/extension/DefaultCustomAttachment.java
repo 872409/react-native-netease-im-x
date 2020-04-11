@@ -24,7 +24,7 @@ public class DefaultCustomAttachment extends CustomAttachment {
     }
 
     @Override
-    protected JSONObject packData() {
+    public JSONObject packData() {
         JSONObject data = null;
         try {
             data = JSONObject.parseObject(content);
