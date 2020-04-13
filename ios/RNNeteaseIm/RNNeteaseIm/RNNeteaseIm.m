@@ -474,9 +474,13 @@ RCT_EXPORT_METHOD(sendBankTransferMessage:(NSString *)amount comments:(NSString 
 //    [[ConversationViewController initWithConversationViewController] sendCardMessage:type sessionId:sessionId name:name imgPath:imgPath];
 //}
 
+////X
+//RCT_EXPORT_METHOD(sendRTCCallNotice:(NSDictionary *)options){
+//    [[ConversationViewController initWithConversationViewController] sendRTCCallNotice:options];
+//}
 //X
-RCT_EXPORT_METHOD(sendRTCCallNotice:(NSDictionary *)options){
-    [[ConversationViewController initWithConversationViewController] sendRTCCallNotice:options];
+RCT_EXPORT_METHOD(sendCustomNotice:(NSDictionary *)options payload:(NSDictionary *)payload){
+    [[ConversationViewController initWithConversationViewController] sendCustomNotice:options payload:payload];
 }
 //X
 RCT_EXPORT_METHOD(saveRTCCallMessage:(NSDictionary *)options){

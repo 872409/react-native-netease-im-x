@@ -25,7 +25,7 @@
     NSString *_sessionID;
     NSString *_type;
     NSInteger _index;
-//    NIMSession *_session;
+    //    NIMSession *_session;
     NSMutableArray *_sessionArr;
     
 }
@@ -85,7 +85,7 @@
     _sessionID = sessionID;
     _type = type;
     self._session = [NIMSession session:_sessionID type:[_type integerValue]];
-//    _session = [NIMSession session:_sessionID type:[_type integerValue]];
+    //    _session = [NIMSession session:_sessionID type:[_type integerValue]];
     _sessionArr = [NSMutableArray array];
     [self addListener];
 }
@@ -150,28 +150,28 @@
 + (NSMutableDictionary *)getTipMessageExtend:(NIMMessage *)message{
     NSMutableDictionary *extend = [NSMutableDictionary dictionary];
     [extend setObject:message.text==nil?@"":message.text forKey:@"tipMsg"];
-//    NSMutableDictionary *options = [NSMutableDictionary dictionary];
+    //    NSMutableDictionary *options = [NSMutableDictionary dictionary];
     NSString *tipType = @"";
     
     if (message.remoteExt!=nil) {
-      [extend setObject:message.remoteExt forKey:@"options"];
-      NSString *_tipType = [message.remoteExt objectForKey:@"tipType"];
-      if (_tipType!= nil){
-          tipType =_tipType;
-      }
-    }
-    
-    
-    if (message.localExt!=nil) {
-       [extend setObject:message.localExt forKey:@"options"];
-       NSString *_tipType = [message.localExt objectForKey:@"tipType"];
+        [extend setObject:message.remoteExt forKey:@"options"];
+        NSString *_tipType = [message.remoteExt objectForKey:@"tipType"];
         if (_tipType!= nil){
             tipType =_tipType;
         }
     }
     
-   [extend setObject:tipType forKey:@"tipType"];
-//   [extend setObject:options forKey:@"options"];
+    
+    if (message.localExt!=nil) {
+        [extend setObject:message.localExt forKey:@"options"];
+        NSString *_tipType = [message.localExt objectForKey:@"tipType"];
+        if (_tipType!= nil){
+            tipType =_tipType;
+        }
+    }
+    
+    [extend setObject:tipType forKey:@"tipType"];
+    //   [extend setObject:options forKey:@"options"];
     return extend ;
 }
 
@@ -259,11 +259,15 @@
             [dic setObject:[NSString stringWithFormat:@"%@",object.url ] forKey:@"videoUrl"];
             [dic setObject:[NSString stringWithFormat:@"%@", object.displayName ] forKey:@"displayName"];
             [dic setObject:[NSString stringWithFormat:@"%@", object.coverUrl ] forKey:@"coverUrl"];
-            [dic setObject:[NSString stringWithFormat:@"%f",object.coverSize.height ] forKey:@"coverSizeHeight"];
-            [dic setObject:[NSString stringWithFormat:@"%f", object.coverSize.width ] forKey:@"coverSizeWidth"];
             [dic setObject:[NSString stringWithFormat:@"%ld",object.duration ] forKey:@"duration"];
             [dic setObject:[NSString stringWithFormat:@"%lld",object.fileLength] forKey:@"fileLength"];
             NSMutableDictionary *videoObj = [NSMutableDictionary dictionary];
+            
+            [videoObj setObject:[NSString stringWithFormat:@"%f",object.coverSize.height ] forKey:@"coverSizeHeight"];
+            [videoObj setObject:[NSString stringWithFormat:@"%f", object.coverSize.width ] forKey:@"coverSizeWidth"];
+            [videoObj setObject:[NSString stringWithFormat:@"%@", object.displayName ] forKey:@"displayName"];
+            [videoObj setObject:[NSString stringWithFormat:@"%ld",object.duration ] forKey:@"duration"];
+            [videoObj setObject:[NSString stringWithFormat:@"%lld",object.fileLength] forKey:@"fileLength"];
             [videoObj setObject:[NSString stringWithFormat:@"%@",object.url ] forKey:@"videoUrl"];
             [videoObj setObject:[NSString stringWithFormat:@"%@", object.coverUrl ] forKey:@"coverUrl"];
             [dic setObject:videoObj forKey:@"extend"];
@@ -330,30 +334,30 @@
         }else if (message.messageType == NIMMessageTypeCustom) {
             NIMCustomObject *customObject = message.messageObject;
             DWCustomAttachment *obj = customObject.attachment;
-//            NSLog(@"NIMMessageTypeCustom：customObject %@ obj:%@",customObject,obj);
+            //            NSLog(@"NIMMessageTypeCustom：customObject %@ obj:%@",customObject,obj);
             if (obj) {
                 //NSLog(@"NIMMessageTypeCustom：custType %ld dataDict:%@",obj.custType,obj.dataDict);
-                [dic setObject:[NSNumber numberWithInteger:obj.custType] forKey:@"custType"];
+                [dic setObject:obj.custTypeStr forKey:@"custType"];
                 [dic setObject:obj.dataDict forKey:@"extend"];
                 
                 switch (obj.custType) {
                     case CustomMessgeTypeRTCCall: //rtc_call
                     {
-                        [dic setObject:obj.dataDict forKey:@"extend"];
+                        //                        [dic setObject:obj.dataDict forKey:@"extend"];
                         //                        [dic setObject:@"redpacket" forKey:@"custType"];
-                        [dic setObject:@"rtc_call" forKey:@"msgType"];
+                        [dic setObject:@"rtcCall" forKey:@"msgType"];
                     }
                         break;
                     case CustomMessgeTypeRedpacket: //红包
                     {
-                        [dic setObject:obj.dataDict forKey:@"extend"];
+                        //                        [dic setObject:obj.dataDict forKey:@"extend"];
                         //                        [dic setObject:@"redpacket" forKey:@"custType"];
                         [dic setObject:@"redpacket" forKey:@"msgType"];
                     }
                         break;
                     case CustomMessgeTypeBankTransfer: //转账
                     {
-                        [dic setObject:obj.dataDict  forKey:@"extend"];
+                        //                        [dic setObject:obj.dataDict  forKey:@"extend"];
                         //                        [dic setObject:@"transfer" forKey:@"custType"];
                         [dic setObject:@"transfer" forKey:@"msgType"];
                     }
@@ -377,29 +381,29 @@
                         [dic setObject:[NSString stringWithFormat:@"%d",message.isRemoteRead] forKey:@"isRemoteRead"];
                         //                        [dic setObject:[NSString stringWithFormat:@"%ld", message.messageType] forKey:@"msgType"];
                         if (obj.custType == CustomMessgeTypeAccountNotice) {
-                            [dic setObject:obj.dataDict  forKey:@"extend"];
+                            //                            [dic setObject:obj.dataDict  forKey:@"extend"];
                             [dic setObject:@"account_notice" forKey:@"msgType"];
                         }else{
-                            [dic setObject:obj.dataDict  forKey:@"extend"];
+                            //                            [dic setObject:obj.dataDict  forKey:@"extend"];
                             [dic setObject:@"url" forKey:@"msgType"];
                         }
                     }
                         break;
                     case CustomMessgeTypeBusinessCard://名片
                     {
-                        [dic setObject:obj.dataDict  forKey:@"extend"];
+                        //                        [dic setObject:obj.dataDict  forKey:@"extend"];
                         [dic setObject:@"card" forKey:@"msgType"];
                     }
                         break;
                     case CustomMessgeTypeCustom://自定义
                     {
-                        [dic setObject:obj.dataDict  forKey:@"extend"];
+                        //                        [dic setObject:obj.dataDict  forKey:@"extend"];
                         [dic setObject:@"custom" forKey:@"msgType"];
                     }
                         break;
                     default:
                     {
-                        [dic setObject:obj.dataDict  forKey:@"extend"];
+                        //                        [dic setObject:obj.dataDict  forKey:@"extend"];
                         [dic setObject:@"unknown" forKey:@"msgType"];
                     }
                         break;
@@ -524,7 +528,7 @@
     setting.shouldBeCounted = false;
     message.setting = setting;
     message.apnsContent = apns;
-
+    
     
     if ([self isFriendToSendMessage:message toSession:session]) {
         [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:session error:nil];
@@ -615,12 +619,12 @@
 
 //发送RTC消息
 -(void)saveRTCCallMessage:(NSDictionary *)options{
-     
+    
     NSString *sessionId = [options objectForKey:@"sessionId"];
     NSDictionary *data = [options jsonDict:@"data"];
     
     NIMSession *session = [NIMSession session:sessionId type:NIMSessionTypeP2P];
-   
+    
     NIMMessage *message;
     DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
     obj.custType = CustomMessgeTypeRTCCall;
@@ -632,68 +636,91 @@
     
     NSString *from = [options objectForKey:@"from"];
     if (from != nil) {
-         message.from = from;
+        message.from = from;
     }
     
     id counted = [options objectForKey:@"counted"];
     
     if (counted != nil && ([counted isKindOfClass:[NSString class]] ||
-    [counted isKindOfClass:[NSNumber class]])) {
+                           [counted isKindOfClass:[NSNumber class]])) {
         setting.shouldBeCounted = [counted boolValue];
     }
     else{
         setting.shouldBeCounted = false;
     }
-   
+    
     
     if ([self isFriendToSendMessage:message toSession:session]) {
         [[NIMSDK sharedSDK].conversationManager saveMessage:message forSession:session completion:nil];
     }
 }
 
+-(void)sendCustomNotice:(NSDictionary *)options payload:(NSDictionary *)payload{
+     NSLog(@"sendCustomNotice: options: %@ payload: %@",options,payload);
+    
+    NIMSession *session = [NIMSession session:[options jsonString:@"sessionId"] type:[options jsonInteger:@"sessionType"]];
+ 
+    NSString *content = [self jsonStringWithDictionary:payload];
+    NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
+    notifi.sendToOnlineUsersOnly = [options jsonBool:@"sendToOnlineUsersOnly"];
+    
+    NIMCustomSystemNotificationSetting *setting = [[NIMCustomSystemNotificationSetting alloc]init];
+    setting.shouldBeCounted = [options jsonBool:@"shouldBeCounted"];
+    setting.apnsEnabled = [options jsonBool:@"apnsEnabled"];
+    setting.apnsWithPrefix = [options jsonBool:@"apnsWithPrefix"];
+    
+    notifi.apnsContent = [options jsonString:@"apns"];
+    
+    NSString *apns_sound = [options jsonString:@"apns_sound"];
+    notifi.apnsPayload = [NIMMessageMaker makeApnsPayload:[options jsonString:@"apnsType"] payloadData:payload sound:apns_sound];
+    notifi.setting = setting;
+    
+    [[NIMSDK sharedSDK].systemNotificationManager sendCustomNotification:notifi toSession:session completion:nil];//发送自定义通知
+}
 
 -(void)sendRTCCallNotice:(NSDictionary *)options{
+//    [self sendCustomNotice:@{} payload:[options objectForKey:@"data"]];
     NSMutableDictionary *mOptions = [options mutableCopy];
     NIMSession *session = [NIMSession session:[options jsonString:@"sessionId"] type:[options jsonInteger:@"sessionType"]];
-    
+
     NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
     [mOptions setObject:[NSString stringWithFormat:@"%d",CustomMessgeTypeRTCCall] forKey:@"type"];
     [mOptions setObject:[NSString stringWithFormat:@"%f",timestamp] forKey:@"timestamp"];
-    
-//    NSDictionary *dataDict = @{
-//        @"type":[NSString stringWithFormat:@"%d",CustomMessgeTypeRTCCall],
-//        @"timestamp":[NSString stringWithFormat:@"%f",timestamp],
-//        @"sessionId":sessionId,
-//        @"sessionType":[NSString stringWithFormat:@"%zd",sessionType],
-//        @"data":@{
-//                @"channelName":channelName,
-//                @"callType":[NSString stringWithFormat:@"%ld",callType],
-//                @"msg":msg
-//        }
-//    };
-    
+
+    //    NSDictionary *dataDict = @{
+    //        @"type":[NSString stringWithFormat:@"%d",CustomMessgeTypeRTCCall],
+    //        @"timestamp":[NSString stringWithFormat:@"%f",timestamp],
+    //        @"sessionId":sessionId,
+    //        @"sessionType":[NSString stringWithFormat:@"%zd",sessionType],
+    //        @"data":@{
+    //                @"channelName":channelName,
+    //                @"callType":[NSString stringWithFormat:@"%ld",callType],
+    //                @"msg":msg
+    //        }
+    //    };
+
     NSString *content = [self jsonStringWithDictionary:mOptions];
     NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
     notifi.sendToOnlineUsersOnly = NO;
-    
+
     NSString *apns = [options jsonString:@"apns"];
     if (apns.length) {
-        
+
         //        notifi.sendToOnlineUsersOnly = NO;
         NIMCustomSystemNotificationSetting *setting = [[NIMCustomSystemNotificationSetting alloc]init];
         setting.shouldBeCounted = YES;
         setting.apnsEnabled = YES;
         setting.apnsWithPrefix = YES;
-        
+
         notifi.apnsContent = apns;
-        
+
         NSString *apns_sound = [options jsonString:@"apns_sound"];
         notifi.apnsPayload = [NIMMessageMaker makeApnsPayload:APNsTypeRTCMsg payloadData:mOptions sound:apns_sound];
         notifi.setting = setting;
     }
-    
-    NSLog(@"mOptions:%@ apns %@,options %@,notifi %@",mOptions,apns,options,notifi);
-    
+
+    //    NSLog(@"mOptions:%@ apns %@,options %@,notifi %@",mOptions,apns,options,notifi);
+
     [[NIMSDK sharedSDK].systemNotificationManager sendCustomNotification:notifi toSession:session completion:nil];//发送自定义通知
 }
 
@@ -778,11 +805,11 @@
     NSInteger msgType = [options jsonInteger:@"msgType"];
     NSDictionary *data = [options jsonDict:@"data"];
     NSString *apns = [options objectForKey:@"apns"];
-//    NSString *apns_data = [options objectForKey:@"apns_data"];
+    //    NSString *apns_data = [options objectForKey:@"apns_data"];
     
     NIMSession *session = [NIMSession session:sessionId type:sessionType];
     [self sendCustomMessage:msgType data:data toSession:session apns:apns];
-
+    
 }
 
 
@@ -794,7 +821,7 @@
     
     NIMSession *session = [NIMSession session:sessionId type:sessionType];
     [self sendCustomMessage:CustomMessgeTypeBusinessCard data:data toSession:session apns:apns];
-
+    
 }
 
 
@@ -1101,22 +1128,42 @@
 #pragma mark - NIMSystemNotificationManagerDelegate
 - (void)onReceiveCustomSystemNotification:(NIMCustomSystemNotification *)notification
 {
-    NSLog(@"onReceiveCustomSystemNotification:%@,sendToOnlineUsersOnly:%s",notification,notification.sendToOnlineUsersOnly?"YES":"NO");
-//
-//    if (!notification.sendToOnlineUsersOnly) {
-//        return;
-//    }
+   
     
-    NSData *data = [[notification content] dataUsingEncoding:NSUTF8StringEncoding];
-    if (data) {
+    //
+    //    if (!notification.sendToOnlineUsersOnly) {
+    //        return;
+    //    }
+    
+    NSLog(@"onReceiveCustomSystemNotification apnsPayload:%@,content:%@",notification.apnsPayload,notification.content);
+    
+//    NSData *data = [[notification content] dataUsingEncoding:NSUTF8StringEncoding];
+     
+    NSDictionary *apnsPayload = notification.apnsPayload;
+    if (apnsPayload) {
         
         
-        NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:data
-                                                                    options:NSJSONReadingMutableContainers
-                                                                      error:nil];
         
+//        NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:data     options:NSJSONReadingMutableContainers      error:nil];
+        
+        NSMutableDictionary *notice = [[NSMutableDictionary alloc] initWithDictionary:apnsPayload copyItems:YES];
+        NSData *payloadData = [[notice objectForKey:@"payload"] dataUsingEncoding:NSUTF8StringEncoding];
+        
+        [notice setObject:[NSJSONSerialization JSONObjectWithData:payloadData     options:NSJSONReadingMutableContainers      error:nil]  forKey:@"payload"];
+        
+        NSLog(@"onReceiveCustomSystemNotification notice:%@",notice);
+//        [notice setObject:[apnsPayload objectForKey:@"payload"] forKey:@"payload"];
+        
+        [notice setObject:[NSString stringWithFormat:@"%lf",notification.timestamp] forKey:@"timestamp"];
+        [notice setObject:[NSString stringWithFormat:@"%lld",notification.notificationId] forKey:@"notificationId"];
+        
+        
+//        NSLog(@"onReceiveCustomSystemNotification: sessionType %zd",[dict jsonInteger:@"sessionType"]);
+//        NSLog(@"onReceiveCustomSystemNotification:%@,dict:%@",notification,dict);
+//
         NIMKitInfo *sourceMember;
-        if([dict jsonInteger:@"sessionType"] == NIMSessionTypeP2P){
+        
+        if([notification receiverType] == NIMSessionTypeP2P){
             sourceMember = [[NIMKit sharedKit] infoByUser:notification.sender option:nil];
         }
         else{
@@ -1125,15 +1172,29 @@
         
         if (sourceMember!=nil) {
             NSString *avatar = sourceMember.avatarUrlString!=nil && sourceMember.avatarUrlString.length>0?sourceMember.avatarUrlString:@"";
-            [dict setObject:@{@"name":[sourceMember showName],@"avatar":avatar,@"contactId":sourceMember.infoId} forKey:@"sender"];
+            [notice setObject:@{
+                @"receiver":@"receiver",
+                @"receiverType":[NSString stringWithFormat:@"%zd",notification.receiverType],
+                @"name":[sourceMember showName],
+                @"avatar":avatar,
+                @"contactId":sourceMember.infoId
+            } forKey:@"sender"];
         }
         else{
-            [dict setObject:notification.sender forKey:@"sender_id"];
+//            [notice setObject:notification.sender forKey:@"sender_id"];
+            [notice setObject:@{
+                @"receiver":@"receiver",
+                @"receiverType":[NSString stringWithFormat:@"%zd",notification.receiverType],
+                @"name":@"",
+                @"avatar":@"",
+                @"contactId":notification.sender
+            } forKey:@"sender"];
         }
-        NSLog(@"dict:%@",dict);
+        
+//        NSLog(@"dict:%@",notice);
         
         NIMModel *model = [NIMModel initShareMD];
-        model.customNotify = dict;
+        model.customNotify = notice;
         
         
         
@@ -1194,7 +1255,7 @@
     }
     [dic2 setObject: [NSNumber numberWithBool:message.isOutgoingMsg] forKey:@"isOutgoing"];
     [dic2 setObject:[NSString stringWithFormat:@"%f", message.timestamp] forKey:@"timeString"];
-//    [dic2 setObject:[NSNumber numberWithBool:NO] forKey:@"isShowTime"];
+    //    [dic2 setObject:[NSNumber numberWithBool:NO] forKey:@"isShowTime"];
     [dic2 setObject:[NSString stringWithFormat:@"%@", message.messageId] forKey:@"msgId"];
     [dic2 setObject:fromUser forKey:@"fromUser"];
     if (message.messageType == NIMMessageTypeText) {
@@ -1219,7 +1280,7 @@
             [dic2 setObject:[NSString stringWithFormat:@"%@",object.path] forKey:@"mediaPath"];
         }
         
-//        [dic2 setObject:[NSString stringWithFormat:@"%@",object.path] forKey:@"mediaPath"];
+        //        [dic2 setObject:[NSString stringWithFormat:@"%@",object.path] forKey:@"mediaPath"];
         [dic2 setObject:[NSString stringWithFormat:@"%@",object.url] forKey:@"url"];
         [dic2 setObject:[NSNumber numberWithInteger:object.duration] forKey:@"duration"];
         NSMutableDictionary *voiceObj = [NSMutableDictionary dictionary];
@@ -1238,7 +1299,11 @@
         [dic2 setObject:[NSString stringWithFormat:@"%f", object.coverSize.width ] forKey:@"coverSizeWidth"];
         [dic2 setObject:[NSString stringWithFormat:@"%ld",object.duration ] forKey:@"duration"];
         [dic2 setObject:[NSString stringWithFormat:@"%lld",object.fileLength] forKey:@"fileLength"];
+        
         NSMutableDictionary *videoObj = [NSMutableDictionary dictionary];
+        [videoObj setObject:[NSString stringWithFormat:@"%@", object.displayName ] forKey:@"displayName"];
+        [videoObj setObject:[NSString stringWithFormat:@"%ld",object.duration ] forKey:@"duration"];
+        [videoObj setObject:[NSString stringWithFormat:@"%lld",object.fileLength] forKey:@"fileLength"];
         [videoObj setObject:[NSString stringWithFormat:@"%@",object.url ] forKey:@"videoUrl"];
         [videoObj setObject:[NSString stringWithFormat:@"%@", object.coverUrl ] forKey:@"coverUrl"];
         [dic2 setObject:videoObj forKey:@"extend"];
@@ -1279,14 +1344,14 @@
         
     }else if(message.messageType == NIMMessageTypeTip){//提醒类消息
         [dic2 setObject:@"notification" forKey:@"msgType"];
-//        NSMutableDictionary *notiObj = [NSMutableDictionary dictionary];
-//        [notiObj setObject:message.text forKey:@"tipMsg"];
-//        [notiObj setObject:@{@"local":message.localExt,@"remote":message.remoteExt} forKey:@"options"];
-//
-//        NSMutableDictionary *options = [NSMutableDictionary dictionary];
-//        [options setObject:message.localExt!=nil?message.localExt:@"" forKey:@"local"];
-//        [options setObject:message.remoteExt!=nil?message.remoteExt:@"" forKey:@"remote"];
-//        [notiObj setObject:options forKey:@"options"];
+        //        NSMutableDictionary *notiObj = [NSMutableDictionary dictionary];
+        //        [notiObj setObject:message.text forKey:@"tipMsg"];
+        //        [notiObj setObject:@{@"local":message.localExt,@"remote":message.remoteExt} forKey:@"options"];
+        //
+        //        NSMutableDictionary *options = [NSMutableDictionary dictionary];
+        //        [options setObject:message.localExt!=nil?message.localExt:@"" forKey:@"local"];
+        //        [options setObject:message.remoteExt!=nil?message.remoteExt:@"" forKey:@"remote"];
+        //        [notiObj setObject:options forKey:@"options"];
         
         NSDictionary *notiObj = [ConversationViewController getTipMessageExtend:message];
         [dic2 setObject:notiObj forKey:@"extend"];
@@ -1323,11 +1388,13 @@
         
         if (obj) {
             NSLog(@"NIMMessageTypeCustom：custType %ld dataDict:%@",obj.custType,obj.dataDict);
+            //            [dic2 setObject:[NSNumber numberWithInteger:obj.custType] forKey:@"custType"];
+            [dic2 setObject:obj.custTypeStr forKey:@"custType"];
             switch (obj.custType) {
                 case CustomMessgeTypeRTCCall: //rtc_call
                 {
                     [dic2 setObject:obj.dataDict forKey:@"extend"];
-                    [dic2 setObject:@"rtc_call" forKey:@"msgType"];
+                    [dic2 setObject:@"rtcCall" forKey:@"msgType"];
                 }
                     break;
                 case CustomMessgeTypeRedpacket: //红包
@@ -1473,11 +1540,11 @@
     //    __weak typeof(self) weakSelf = self;
     [[NIMSDK sharedSDK].chatManager revokeMessage:currentmessage completion:^(NSError * _Nullable error) {
         if (error) {
-             
+            
             if (error.code == NIMRemoteErrorCodeDomainExpireOld) {
                 succe(@"expired");
-//                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"发送时间超过2分钟的消息，不能被撤回" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-//                [alert show];
+                //                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"发送时间超过2分钟的消息，不能被撤回" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                //                [alert show];
             }else{
                 succe(@"error");
                 DDLogError(@"revoke message eror code %zd",error.code);
@@ -1532,25 +1599,25 @@
 
 - (NSMutableDictionary *)tipOnMessageRevoked:(NIMMessage*)message session:(NIMSession*)session isSelf:(BOOL) isSelf messageFromUserId:(NSString *)messageFromUserId
 {
-//    NSString *fromUid = nil;
-//    NIMSession *session = nil;
+    //    NSString *fromUid = nil;
+    //    NIMSession *session = nil;
     NSMutableDictionary *options = [[NSMutableDictionary alloc] init];
     NSMutableDictionary *format = [[NSMutableDictionary alloc] init];
     
-//    if ([message isKindOfClass:[NIMMessage class]])
-//    {
-//        fromUid = [(NIMMessage *)message from];
-//        session = [(NIMMessage *)message session];
-//    }
-//    else if([message isKindOfClass:[NIMRevokeMessageNotification class]])
-//    {
-//        fromUid = [(NIMRevokeMessageNotification *)message fromUserId];
-//        session = [(NIMRevokeMessageNotification *)message session];
-//    }
-//    else
-//    {
-//        assert(0);
-//    }
+    //    if ([message isKindOfClass:[NIMMessage class]])
+    //    {
+    //        fromUid = [(NIMMessage *)message from];
+    //        session = [(NIMMessage *)message session];
+    //    }
+    //    else if([message isKindOfClass:[NIMRevokeMessageNotification class]])
+    //    {
+    //        fromUid = [(NIMRevokeMessageNotification *)message fromUserId];
+    //        session = [(NIMRevokeMessageNotification *)message session];
+    //    }
+    //    else
+    //    {
+    //        assert(0);
+    //    }
     
     
     NSString *tipMsg = @"notification_";
@@ -1558,32 +1625,32 @@
     [options setObject:@"revoke" forKey:@"tipType"];
     
     
-//    [options setObject:fromUid forKey:@"fromUid"];
+    //    [options setObject:fromUid forKey:@"fromUid"];
     [options setObject:[NSString stringWithFormat:@"%zd",session.sessionType] forKey:@"sessionType"];
     [options setObject:session.sessionId forKey:@"sessionId"];
     
-//    BOOL isFromMe = [fromUid isEqualToString:[[NIMSDK sharedSDK].loginManager currentAccount]];
+    //    BOOL isFromMe = [fromUid isEqualToString:[[NIMSDK sharedSDK].loginManager currentAccount]];
     
     
     switch (session.sessionType) {
         case NIMSessionTypeP2P:
             [options setObject:@"p2p" forKey:@"notificationType"];
             
-             if (!isSelf) {
-                 NIMKitInfoFetchOption *option = [[NIMKitInfoFetchOption alloc] init];
-                 option.session = session;
-                 NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:messageFromUserId option:option];
-//                 NSLog(@"info %@ %@",info.showName,tipMsg);
-                 [format setObject:info!=nil?info.showName:@"" forKey:@"source"];
-                 [options setObject:@"p2p_revoked" forKey:@"operationType"];
-                 tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"p2p_revoked" ];
-                 
-                  
-             }
-             else{
+            if (!isSelf) {
+                NIMKitInfoFetchOption *option = [[NIMKitInfoFetchOption alloc] init];
+                option.session = session;
+                NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:messageFromUserId option:option];
+                //                 NSLog(@"info %@ %@",info.showName,tipMsg);
+                [format setObject:info!=nil?info.showName:@"" forKey:@"source"];
+                [options setObject:@"p2p_revoked" forKey:@"operationType"];
+                tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"p2p_revoked" ];
+                
+                
+            }
+            else{
                 [options setObject:@"you_revoked" forKey:@"operationType"];
                 tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"you_revoked" ];
-             }
+            }
             
             break;
         case NIMSessionTypeTeam:{
@@ -1594,16 +1661,16 @@
                 option.session = session;
                 NIMKitInfo *info = [[NIMKit sharedKit] infoByUser:message.from option:option];
                 [options setObject:@"member_revoked" forKey:@"operationType"];
-//                [format setObject:info.showName forKey:@"source"];
+                //                [format setObject:info.showName forKey:@"source"];
                 [format setObject:info!=nil?info.showName:@"" forKey:@"source"];
-//                [format setObject:fromName forKey:@"source"];
+                //                [format setObject:fromName forKey:@"source"];
                 tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"member_revoked" ];
             }
             else{
                 [options setObject:@"you_revoked" forKey:@"operationType"];
                 tipMsg  = [NSString stringWithFormat:@"%@%@",tipMsg,@"you_revoked" ];
             }
-
+            
         }
             break;
         default:

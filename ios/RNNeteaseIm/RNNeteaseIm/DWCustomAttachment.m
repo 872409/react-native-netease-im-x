@@ -14,7 +14,7 @@
     NSString *strType = @"";
     switch (self.custType) {
         case CustomMessgeTypeRTCCall:
-            strType = @"rtc_call";
+            strType = @"rtcCall";
             break;
         case CustomMessgeTypeRedpacket:
             strType = @"redpacket";
@@ -35,14 +35,18 @@
             strType = @"card";
             break;
         case CustomMessgeTypeCustom:
-            strType = @"custom";
+            strType = self.custTypeStr;
             break;
         default:
-            strType = @"unknown";
+            strType = self.custTypeStr;
             break;
     }
     
-    NSDictionary *dict = @{@"msgtype" : strType,@"data":self.dataDict};
+    if(strType == nil || [strType length]==0){
+        strType = [NSString stringWithFormat:@"%zd",self.custType];
+    }
+    
+    NSDictionary *dict = @{@"msgtype" : strType ,@"data":self.dataDict};
     NSData *data = [NSJSONSerialization dataWithJSONObject:dict
                                                    options:0
                                                      error:nil];

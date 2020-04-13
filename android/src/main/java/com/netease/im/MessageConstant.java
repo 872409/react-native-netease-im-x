@@ -100,8 +100,11 @@ public class MessageConstant {
         public final static String DISPLAY_NAME = "displayName";
         public final static String DURATION = "duration";
         public final static String THUMB_PATH = "thumbPath";
+        public final static String MediaPath = "mediaPath";
         public final static String PATH = "path";
         public final static String URL = "url";
+        public final static String VideoUrl = "videoUrl";
+        public final static String CoverUrl = "coverUrl";
 
         public final static String SIZE = "size";
     }

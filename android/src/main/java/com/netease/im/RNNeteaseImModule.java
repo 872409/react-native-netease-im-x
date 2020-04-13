@@ -693,9 +693,15 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
 
     //TODO:X
     @ReactMethod
-    public void sendRTCCallNotice(ReadableMap options) {
-        SessionUtil.sendCustomNotification(options);
+    public void sendCustomNotice(ReadableMap options, ReadableMap payload) {
+        SessionUtil.sendCustomNotification(options, payload);
     }
+
+//    //TODO:X
+//    @ReactMethod
+//    public void sendRTCCallNotice(ReadableMap options) {
+//        SessionUtil.sendCustomNotification(options);
+//    }
 
     //TODO:X
     @ReactMethod
@@ -713,11 +719,13 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     @ReactMethod
     public void sendRTCCallMessage(ReadableMap options) {
         String sessionId = options.getString("sessionId");
+        String anps = options.getString("anps");
         int sessionTypeInt = options.getInt("sessionType");
+        boolean counted = options.getBoolean("counted");
         SessionTypeEnum sessionType = SessionUtil.getSessionType(sessionTypeInt);
         String content = ReactNativeJson.convertMapToJson(options.getMap("data")).toJSONString();
 
-        sessionService.sendRTCCallMessage(sessionId, sessionType, content, new SessionService.OnSendMessageListener() {
+        sessionService.sendRTCCallMessage(sessionId, sessionType, content, anps, counted, new SessionService.OnSendMessageListener() {
             @Override
             public int onResult(int code, IMMessage message) {
                 return 0;

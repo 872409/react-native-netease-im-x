@@ -37,7 +37,9 @@ public class ReactNativeJson {
             } else if (value instanceof String) {
                 map.putString(key, (String) value);
             } else {
-                map.putString(key, value.toString());
+                if (value != null) {
+                    map.putString(key, value.toString());
+                }
             }
         }
         return map;
@@ -61,7 +63,9 @@ public class ReactNativeJson {
             } else if (value instanceof String) {
                 array.pushString((String) value);
             } else {
-                array.pushString(value.toString());
+                if (value != null) {
+                    array.pushString(value.toString());
+                }
             }
         }
         return array;
@@ -69,6 +73,10 @@ public class ReactNativeJson {
 
     public static JSONObject convertMapToJson(ReadableMap readableMap) throws JSONException {
         JSONObject object = new JSONObject();
+        if (readableMap == null) {
+            return object;
+        }
+
         ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
         while (iterator.hasNextKey()) {
             String key = iterator.nextKey();
@@ -121,7 +129,6 @@ public class ReactNativeJson {
         }
         return array;
     }
-
 
 
 }

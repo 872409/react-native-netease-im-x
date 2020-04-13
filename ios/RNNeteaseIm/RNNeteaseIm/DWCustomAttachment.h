@@ -11,5 +11,6 @@
 
 @interface DWCustomAttachment : NSObject<NIMCustomAttachment>
 @property (assign, nonatomic) NSInteger custType;
+@property (nonatomic,strong) NSString *custTypeStr;
 @property (strong, nonatomic) NSDictionary *dataDict;
 @end

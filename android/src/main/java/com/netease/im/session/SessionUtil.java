@@ -12,6 +12,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.facebook.react.bridge.ReadableMap;
 import com.netease.im.IMApplication;
+import com.netease.im.ReactCache;
+import com.netease.im.ReactExtendsion;
 import com.netease.im.ReactNativeJson;
 import com.netease.im.login.LoginService;
 import com.netease.im.session.extension.RedPacketOpenAttachement;
@@ -27,6 +29,7 @@ import com.netease.nimlib.sdk.msg.model.CustomMessageConfig;
 import com.netease.nimlib.sdk.msg.model.CustomNotification;
 import com.netease.nimlib.sdk.msg.model.CustomNotificationConfig;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
+import com.netease.nimlib.sdk.uinfo.model.NimUserInfo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -116,8 +119,9 @@ public class SessionUtil {
     }
 
     public static void receiver(NotificationManager manager, CustomNotification customNotification) {
-        LogUtil.w("SessionUtil", customNotification.getContent());
+//        LogUtil.w("SessionUtil content", customNotification.getContent());
         Map<String, Object> map = customNotification.getPushPayload();
+        LogUtil.w("SessionUtil payload", ReactNativeJson.convertMapToJson(ReactExtendsion.makeHashMap2WritableMap(map)).toJSONString());
         if (map != null && map.containsKey("type")) {
             String type = (String) map.get("type");
             if (SessionUtil.CUSTOM_Notification.equals(type)) {
@@ -131,35 +135,67 @@ public class SessionUtil {
                 builder.setSmallIcon(IMApplication.getNotify_msg_drawable_id());
                 manager.notify((int) System.currentTimeMillis(), builder.build());
             }
-        } else {
-            String content = customNotification.getContent();
-            if (!TextUtils.isEmpty(content)) {
-                JSONObject object = JSON.parseObject(content);
-                JSONObject data = object.getJSONObject("data");
 
-                JSONObject dict = data.getJSONObject("dict");
-                String sendId = dict.getString("sendId");
-                String openId = dict.getString("openId");
-                String hasRedPacket = dict.getString("hasRedPacket");
-                String serialNo = dict.getString("serialNo");
+            map.put("timestamp", customNotification.getTime());
+            map.put("notificationId", "");
 
-//                String timestamp = data.getString("timestamp");
-                long t = customNotification.getTime() / 1000;
-//                try {
-//                    t = Long.parseLong(timestamp);
-//                } catch (NumberFormatException e) {
-//                    t = System.currentTimeMillis() / 1000;
-//                    e.printStackTrace();
-//                }
-//                LogUtil.w("timestamp","timestamp:"+timestamp);
-//                LogUtil.w("timestamp","t:"+t);
-//                LogUtil.w("timestamp",""+data);
-                String sessionId = data.getString("sessionId");
-                String sessionType = data.getString("sessionType");
-                final String id = sessionId;//getSessionType(sessionType) == SessionTypeEnum.P2P ? openId :
-                sendRedPacketOpenLocal(id, getSessionType(sessionType), sendId, openId, hasRedPacket, serialNo, t);
+            Map<String, Object> sender = new HashMap<>();
+            sender.put("contactId", customNotification.getFromAccount());
+            sender.put("sessionId", customNotification.getSessionId());
+            sender.put("sessionType", customNotification.getSessionType().getValue());
+
+            if (customNotification.getSessionType() == SessionTypeEnum.P2P) {
+                String contactId = customNotification.getFromAccount();
+                NimUserInfo userInfo = NimUserInfoCache.getInstance().getUserInfo(contactId);
+
+                if (userInfo != null) {
+                    sender.put("name", userInfo.getName());
+                    sender.put("avatar", userInfo.getAvatar());
+                } else {
+                    sender.put("name", "");
+                    sender.put("avatar", "");
+                }
+//                sender.put("contactId", contactId);
             }
+
+            map.put("sender", sender);
+
+            ReactCache.emit(ReactCache.observeCustomNotice, ReactExtendsion.makeHashMap2WritableMap(map));
+
         }
+//        else {
+//            String content = customNotification.getContent();
+//            if (!TextUtils.isEmpty(content)) {
+//                JSONObject object = JSON.parseObject(content);
+//                if (object == null) {
+//                    return;
+//                }
+//
+//                JSONObject data = object.getJSONObject("data");
+//
+//                JSONObject dict = data.getJSONObject("dict");
+////                String sendId = customNotification.getSessionId();
+////                String openId = dict.getString("openId");
+////                String hasRedPacket = dict.getString("hasRedPacket");
+////                String serialNo = dict.getString("serialNo");
+//
+////                String timestamp = data.getString("timestamp");
+////                long t = customNotification.getTime() / 1000;
+////                try {
+////                    t = Long.parseLong(timestamp);
+////                } catch (NumberFormatException e) {
+////                    t = System.currentTimeMillis() / 1000;
+////                    e.printStackTrace();
+////                }
+////                LogUtil.w("timestamp","timestamp:"+timestamp);
+////                LogUtil.w("timestamp","t:"+t);
+////                LogUtil.w("timestamp",""+data);
+////                String sessionId = data.getString("sessionId");
+////                String sessionType = data.getString("sessionType");
+////                final String id = sessionId;//getSessionType(sessionType) == SessionTypeEnum.P2P ? openId :
+////                sendRedPacketOpenLocal(id, getSessionType(sessionType), sendId, openId, hasRedPacket, serialNo, t);
+//            }
+//        }
 
     }
 
@@ -188,9 +224,10 @@ public class SessionUtil {
 
     /**
      * //TODO:X
+     *
      * @param options
      */
-    public static void sendCustomNotification(ReadableMap options) {
+    public static void sendCustomNotification(ReadableMap options, ReadableMap payload) {
 
         String sessionId = options.getString("sessionId");
         int sessionTypeInt = options.getInt("sessionType");
@@ -200,15 +237,24 @@ public class SessionUtil {
         notification.setSessionId(sessionId);
         notification.setSessionType(sessionType);
 
-        String content = ReactNativeJson.convertMapToJson(options).toJSONString();
+        CustomNotificationConfig config = new CustomNotificationConfig();
+        config.enablePush = options.getBoolean("apnsEnabled");
+        config.enableUnreadCount = options.getBoolean("shouldBeCounted");
+        config.enablePushNick = options.getBoolean("apnsWithPrefix");
+        notification.setConfig(config);
 
+        String content = ReactNativeJson.convertMapToJson(payload).toJSONString();
         notification.setContent(content);
-        notification.setSendToOnlineUserOnly(false);
-        notification.setApnsText(content);
+        notification.setSendToOnlineUserOnly(options.getBoolean("sendToOnlineUsersOnly"));
+        notification.setApnsText(options.getString("apns"));
+
+        String apns_sound = options.hasKey("apns_sound") ? options.getString("apns_sound") : "default";
+        String apnsType = options.hasKey("apnsType") ? options.getString("apnsType") : "";
 
         Map<String, Object> pushPayload = new HashMap<>();
-        pushPayload.put("type", sessionTypeInt);
-        pushPayload.put("content", content);
+        pushPayload.put("type", apnsType == null ? "" : apnsType);
+        pushPayload.put("sound", apns_sound == null ? "" : apns_sound);
+        pushPayload.put("payload", content);
         notification.setPushPayload(pushPayload);
 
         NIMClient.getService(MsgService.class).sendCustomNotification(notification);

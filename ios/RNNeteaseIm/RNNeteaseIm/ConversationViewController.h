@@ -51,6 +51,7 @@ typedef void(^Errors)(id erro);
 
 //X
 -(void)sendRTCCallNotice:(NSDictionary *)options;
+-(void)sendCustomNotice:(NSDictionary *)options payload:(NSDictionary *)payload;
 //x
 -(void)saveRTCCallMessage:(NSDictionary *)options;
 //x

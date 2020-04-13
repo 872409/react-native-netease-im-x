@@ -253,6 +253,7 @@
             [dic setObject:[NSString stringWithFormat:@"%@",recent.lastMessage.session.sessionId] forKey:@"account"];
             //消息类型
             [dic setObject:[NSString stringWithFormat:@"%zd", recent.lastMessage.messageType] forKey:@"msgType"];
+            
             //消息状态
             [dic setObject:[NSString stringWithFormat:@"%zd", recent.lastMessage.deliveryState] forKey:@"msgStatus"];
             //消息ID
@@ -395,6 +396,11 @@
         if (msgType!=nil) {
             [messageDic setObject:msgType forKey:@"msgType"];
         }
+        
+        NSString *custType = [options objectForKey:@"custType"];
+        if (custType!=nil) {
+            [messageDic setObject:custType forKey:@"custType"];
+        }
     }
 
 }
@@ -456,13 +462,15 @@
     DWCustomAttachment *obj = customObject.attachment;
     NSString *text = @"[未知消息]";
     if (obj) {
+        [options setObject: obj.custTypeStr forKey:@"custType"];
+        [options addEntriesFromDictionary:obj.dataDict];
         switch (obj.custType) {
             case CustomMessgeTypeRTCCall: //通话
             {
-                text = @"rtc_call";
+                text = @"rtcCall";
                 [options setObject:[NSString stringWithFormat:@"%d",CustomMessgeTypeRTCCall] forKey:@"msgType"];
 //                [options setObject:obj.dataDict forKey:@"extend"];
-                [options addEntriesFromDictionary:obj.dataDict];
+//                [options addEntriesFromDictionary:obj.dataDict];
             }
                 break;
             case CustomMessgeTypeRedpacket: //红包
@@ -494,7 +502,7 @@
             {
                 text = @"card";
                 [options setObject:[NSString stringWithFormat:@"%d",CustomMessgeTypeBusinessCard] forKey:@"msgType"];
-                [options addEntriesFromDictionary:obj.dataDict];
+                
 //                if([message.from isEqualToString:[NIMSDK sharedSDK].loginManager.currentAccount]){//如果是自己
 //                    text = [NSString stringWithFormat:@"你推荐了%@", [obj.dataDict objectForKey:@"name"]];
 //                }else{

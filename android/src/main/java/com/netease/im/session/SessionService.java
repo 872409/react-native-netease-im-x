@@ -764,10 +764,10 @@ public class SessionService {
         sendMessageSelf(message, onSendMessageListener, false);
     }
 
-    public void sendRTCCallMessage(String sessionId, SessionTypeEnum sessionType, String content, OnSendMessageListener onSendMessageListener) {
+    public void sendRTCCallMessage(String sessionId, SessionTypeEnum sessionType, String content, String push, boolean counted, OnSendMessageListener onSendMessageListener) {
         CustomMessageConfig config = new CustomMessageConfig();
-        config.enableUnreadCount = false;
-        config.enablePush = false;
+        config.enableUnreadCount = counted;
+        config.enablePush = push.length() > 0;
         DefaultCustomAttachment attachment = new DefaultCustomAttachment(CustomAttachmentType.RTCCall);
         attachment.setDigst(CustomAttachmentType.RTCCall);
         attachment.setContent(content);

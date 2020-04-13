@@ -25,7 +25,7 @@
             NSInteger custType = 0;
             if ([strType isEqualToString:@"redpacket"]) {//红包
                 custType = CustomMessgeTypeRedpacket;
-            }else if([strType isEqualToString:@"rtc_call"]){//转账
+            }else if([strType isEqualToString:@"rtcCall"]){//转账
                 custType = CustomMessgeTypeRTCCall;
             }else if([strType isEqualToString:@"transfer"]){//转账
                 custType = CustomMessgeTypeBankTransfer;
@@ -45,6 +45,7 @@
             NSDictionary *dataDict = [self jsonDict:@"data" andDict:dict];
             DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
             obj.custType = custType;
+            obj.custTypeStr = strType;
             obj.dataDict = dataDict;
             attachment = obj;
         }

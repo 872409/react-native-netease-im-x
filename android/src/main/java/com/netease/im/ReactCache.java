@@ -982,15 +982,17 @@ public class ReactCache {
                 WritableMap videoDic = Arguments.createMap();
                 if (attachment instanceof VideoAttachment) {
                     VideoAttachment videoAttachment = (VideoAttachment) attachment;
-                    videoDic.putString(MessageConstant.MediaFile.URL, videoAttachment.getUrl());
-                    videoDic.putString(MessageConstant.MediaFile.PATH, videoAttachment.getPath());
+                    videoDic.putString(MessageConstant.MediaFile.CoverUrl, videoAttachment.getThumbUrl());
+                    videoDic.putString(MessageConstant.MediaFile.VideoUrl, videoAttachment.getUrl());
+                    videoDic.putString(MessageConstant.MediaFile.MediaPath, videoAttachment.getPath());
+//                    videoDic.putString(MessageConstant.MediaFile.PATH, videoAttachment.getPath());
                     videoDic.putString(MessageConstant.MediaFile.DISPLAY_NAME, videoAttachment.getDisplayName());
                     videoDic.putString(MessageConstant.MediaFile.HEIGHT, Integer.toString(videoAttachment.getHeight()));
                     videoDic.putString(MessageConstant.MediaFile.WIDTH, Integer.toString(videoAttachment.getWidth()));
                     videoDic.putString(MessageConstant.MediaFile.DURATION, Long.toString(videoAttachment.getDuration()));
                     videoDic.putString(MessageConstant.MediaFile.SIZE, Long.toString(videoAttachment.getSize()));
 
-                    videoDic.putString(MessageConstant.MediaFile.THUMB_PATH, videoAttachment.getThumbPath());
+//                    videoDic.putString(MessageConstant.MediaFile.THUMB_PATH, videoAttachment.getThumbPath());
                 }
                 itemMap.putMap(MESSAGE_EXTEND, videoDic);
             } else if (item.getMsgType() == MsgTypeEnum.location) {

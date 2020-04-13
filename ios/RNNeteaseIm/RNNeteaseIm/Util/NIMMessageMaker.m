@@ -58,12 +58,17 @@
     customObject.attachment           = attachment;
     message.messageObject             = customObject;
     NSString *text = @"";
+    
+    if(attachment.custTypeStr == nil || [attachment.custTypeStr length]==0){
+        attachment.custTypeStr = [NSString stringWithFormat:@"%zd",attachment.custType];
+    }
+    
     switch (attachment.custType) {
         case CustomMessgeTypeRedpacket:
             text = [NSString stringWithFormat:@"[红包]%@", [attachment.dataDict objectForKey:@"comments"]];
             break;
         case CustomMessgeTypeRTCCall:
-            text = @"rtc_call";
+            text = @"rtcCall";
             break;
         case CustomMessgeTypeBankTransfer:
             text = [NSString stringWithFormat:@"[转账]%@", [attachment.dataDict objectForKey:@"comments"]];
@@ -93,7 +98,7 @@
         }
             break;
         default:
-            text = @"发来了一条未知消息";
+            text = attachment.custTypeStr;
             break;
     }
     message.apnsContent = apns;
