@@ -715,7 +715,7 @@ public class SessionService {
         file = Uri.parse(file).getPath();
         String md5 = TextUtils.isEmpty(displayName) ? MD5.getStreamMD5(file) : displayName;
         File f = new File(file);
-
+        LogUtil.w(TAG, "sendVideoMessage path:" + f.getPath() + "-size:" + FileUtil.formatFileSize(f.length()));
         IMMessage message = MessageBuilder.createVideoMessage(sessionId, sessionTypeEnum, f, duration, width, height, md5);
         sendMessageSelf(message, onSendMessageListener, false);
     }
@@ -947,7 +947,7 @@ public class SessionService {
         getMsgService().sendMessage(message, resend).setCallback(new RequestCallback<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-
+                LogUtil.w(TAG, "onSuccess:");
             }
 
             @Override

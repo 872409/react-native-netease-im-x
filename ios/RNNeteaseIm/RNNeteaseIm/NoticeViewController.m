@@ -257,9 +257,23 @@
         default:
             break;
     }
+    NSString *verifyResult =@"";
+    if(noti.handleStatus!=NotificationHandleTypePending){
+        if(noti.handleStatus == NotificationHandleTypeOk){
+            verifyResult = @"passed";
+        }
+        else if(noti.handleStatus == NotificationHandleTypeNo){
+                  verifyResult = @"declined";
+        }
+        else{
+                  verifyResult = @"expired";
+        }
+    }
+    
+    
     [dic setObject:[NSString stringWithFormat:@"%d",isVerify] forKey:@"isVerify"];
     [dic setObject:[NSString stringWithFormat:@"%@",verifyText] forKey:@"verifyText"];
-    [dic setObject:[NSString stringWithFormat:@"%@",verifyText] forKey:@"verifyResult"];
+    [dic setObject:[NSString stringWithFormat:@"%@",verifyResult] forKey:@"verifyResult"];
     [dic setObject:@"" forKey:@"messageId"];
     [dic setObject:[NSString stringWithFormat:@"%ld",noti.type] forKey:@"type"];
     [dic setObject:notificationType forKey:@"notificationType"];

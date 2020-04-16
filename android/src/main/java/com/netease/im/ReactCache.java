@@ -7,6 +7,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.netease.im.common.ImageLoaderKit;
 import com.netease.im.login.LoginService;
@@ -218,9 +219,11 @@ public class ReactCache {
                     case notification:
                         map.putString("msgType", "notification");
                         if (sessionType == SessionTypeEnum.Team && team != null) {
-                            content = TeamNotificationHelper.getTeamNotificationText(contact.getContactId(),
+//                            content =
+                            options = TeamNotificationHelper.getTeamNotificationOptions(contact.getContactId(),
                                     contact.getFromAccount(),
                                     (NotificationAttachment) contact.getAttachment());
+                            content = options.getString("tipMsg");
                         }
                         break;
                     default:
@@ -548,6 +551,9 @@ public class ReactCache {
             NimUserInfoCache nimUserInfoCache = NimUserInfoCache.getInstance();
             for (SystemMessage message : sysItems) {
                 WritableMap map = Arguments.createMap();
+                WritableMap extend = Arguments.createMap();
+                WritableMap options = Arguments.createMap();
+
                 boolean verify = isVerifyMessageNeedDeal(message);
                 map.putString("messageId", Long.toString(message.getMessageId()));
                 map.putString("type", Integer.toString(message.getType().getValue()));
@@ -555,57 +561,92 @@ public class ReactCache {
                 map.putString("fromAccount", message.getFromAccount());
                 String avatar = nimUserInfoCache.getAvatar(message.getFromAccount());
                 map.putString("avatar", avatar);
+                map.putString("content", message.getContent());
                 map.putString("avatarLocal", ImageLoaderKit.getMemoryCachedAvatar(avatar));
                 map.putString("name", nimUserInfoCache.getUserDisplayNameEx(message.getFromAccount()));//alias
-                map.putString("time", Long.toString(message.getTime() / 1000));
+                map.putString("timestamp", Long.toString(message.getTime() / 1000));
                 map.putString("isVerify", boolean2String(verify));
                 map.putString("status", Integer.toString(message.getStatus().getValue()));
-                map.putString("verifyText", getVerifyNotificationText(message));
+                getVerifyNotificationText(options, message);
+//                map.putString("verifyText", getVerifyNotificationText(options, message));
                 map.putString("verifyResult", "");
                 if (verify) {
                     if (message.getStatus() != SystemMessageStatus.init) {
                         map.putString("verifyResult", getVerifyNotificationDealResult(message));
                     }
                 }
+
+                if (options.hasKey("notificationType")) {
+                    map.putString("notificationType", options.getString("notificationType"));
+                }
+
+                extend.putMap("options", options);
+                map.putMap("extend", extend);
                 writableArray.pushMap(map);
             }
         }
         return writableArray;
     }
 
-    private static String getVerifyNotificationText(SystemMessage message) {
-        StringBuilder sb = new StringBuilder();
+    private static void getVerifyNotificationText(WritableMap options, SystemMessage message) {
+        String notificationType = "";
+        String operationType = "";
+        WritableMap format = Arguments.createMap();
+//        StringBuilder sb = new StringBuilder();
         String fromAccount = NimUserInfoCache.getInstance().getUserDisplayNameYou(message.getFromAccount());
+        format.putString("accountName", fromAccount);
         Team team = TeamDataCache.getInstance().getTeamById(message.getTargetId());
         if (team == null && message.getAttachObject() instanceof Team) {
             team = (Team) message.getAttachObject();
+
         }
         String teamName = team == null ? message.getTargetId() : team.getName();
 
+        if (teamName != null) {
+            notificationType = "team";
+            format.putString("group", teamName);
+        }
+
+
         if (message.getType() == SystemMessageType.TeamInvite) {
-            sb.append("邀请").append("你").append("加入群 ").append(teamName);
+            operationType = "Invite";
+
+//            sb.append("邀请").append("你").append("加入群 ").append(teamName);
         } else if (message.getType() == SystemMessageType.DeclineTeamInvite) {
-            sb.append(fromAccount).append("拒绝了群 ").append(teamName).append(" 邀请");
+            operationType = "InviteRejct";
+//            sb.append(fromAccount).append("拒绝了群 ").append(teamName).append(" 邀请");
         } else if (message.getType() == SystemMessageType.ApplyJoinTeam) {
-            sb.append("申请加入群 ").append(teamName);
+            operationType = "Apply";
+//            sb.append("申请加入群 ").append(teamName);
         } else if (message.getType() == SystemMessageType.RejectTeamApply) {
-            sb.append(fromAccount).append("拒绝了你加入群 ").append(teamName).append("的申请");
+            operationType = "ApplyReject";
+//            sb.append(fromAccount).append("拒绝了你加入群 ").append(teamName).append("的申请");
         } else if (message.getType() == SystemMessageType.AddFriend) {
+            notificationType = "friendAdd";
             AddFriendNotify attachData = (AddFriendNotify) message.getAttachObject();
             if (attachData != null) {
                 if (attachData.getEvent() == AddFriendNotify.Event.RECV_ADD_FRIEND_DIRECT) {
-                    sb.append("已添加你为好友");
+                    operationType = "add";
+//                    sb.append("已添加你为好友");
                 } else if (attachData.getEvent() == AddFriendNotify.Event.RECV_AGREE_ADD_FRIEND) {
-                    sb.append("通过了你的好友请求");
+                    operationType = "verify";
+//                    sb.append("通过了你的好友请求");
                 } else if (attachData.getEvent() == AddFriendNotify.Event.RECV_REJECT_ADD_FRIEND) {
-                    sb.append("拒绝了你的好友请求");
+                    operationType = "reject";
+//                    sb.append("拒绝了你的好友请求");
                 } else if (attachData.getEvent() == AddFriendNotify.Event.RECV_ADD_FRIEND_VERIFY_REQUEST) {
-                    sb.append(TextUtils.isEmpty(message.getContent()) ? "请求添加好友" : message.getContent());
+                    operationType = "request";
+                    String content = message.getContent();
+                    format.putString("content", TextUtils.isEmpty(content) ? "[request]" : content);
+//                    sb.append(TextUtils.isEmpty(message.getContent()) ? "请求添加好友" : message.getContent());
                 }
             }
         }
 
-        return sb.toString();
+        options.putString("notificationType", notificationType);
+        options.putString("operationType", operationType);
+
+//        return sb.toString();
     }
 
     /**
@@ -633,15 +674,20 @@ public class ReactCache {
 
     private static String getVerifyNotificationDealResult(SystemMessage message) {
         if (message.getStatus() == SystemMessageStatus.passed) {
-            return "已同意";
+            return "passed";
+//            return "已同意";
         } else if (message.getStatus() == SystemMessageStatus.declined) {
-            return "已拒绝";
+            return "declined";
+//            return "已拒绝";
         } else if (message.getStatus() == SystemMessageStatus.ignored) {
-            return "已忽略";
+            return "ignored";
+//            return "已忽略";
         } else if (message.getStatus() == SystemMessageStatus.expired) {
-            return "已过期";
+            return "expired";
+//            return "已过期";
         } else {
-            return "未处理";
+            return "unhandled";
+//            return "未处理";
         }
     }
 
@@ -892,6 +938,13 @@ public class ReactCache {
 
     final static String MESSAGE_EXTEND = MessageConstant.Message.EXTEND;
 
+    public static String wrapLocalFile(String filePath) {
+        if (filePath == null) {
+            return null;
+        }
+        return "file://" + filePath;
+    }
+
     /**
      * <br/>uuid 消息ID
      * <br/>sessionId 会话id
@@ -957,11 +1010,11 @@ public class ReactCache {
                 if (attachment instanceof ImageAttachment) {
                     ImageAttachment imageAttachment = (ImageAttachment) attachment;
                     if (item.getDirect() == MsgDirectionEnum.Out) {
-                        imageObj.putString(MessageConstant.MediaFile.THUMB_PATH, imageAttachment.getPath());
+                        imageObj.putString(MessageConstant.MediaFile.THUMB_PATH, wrapLocalFile(imageAttachment.getPath()));
                     } else {
-                        imageObj.putString(MessageConstant.MediaFile.THUMB_PATH, imageAttachment.getThumbPath());
+                        imageObj.putString(MessageConstant.MediaFile.THUMB_PATH, wrapLocalFile(imageAttachment.getThumbPath()));
                     }
-                    imageObj.putString(MessageConstant.MediaFile.PATH, imageAttachment.getPath());
+                    imageObj.putString(MessageConstant.MediaFile.PATH, wrapLocalFile(imageAttachment.getPath()));
                     imageObj.putString(MessageConstant.MediaFile.URL, imageAttachment.getUrl());
                     imageObj.putString(MessageConstant.MediaFile.DISPLAY_NAME, imageAttachment.getDisplayName());
                     imageObj.putString(MessageConstant.MediaFile.HEIGHT, Integer.toString(imageAttachment.getHeight()));
@@ -972,8 +1025,8 @@ public class ReactCache {
                 WritableMap audioObj = Arguments.createMap();
                 if (attachment instanceof AudioAttachment) {
                     AudioAttachment audioAttachment = (AudioAttachment) attachment;
-                    audioObj.putString(MessageConstant.MediaFile.PATH, audioAttachment.getPath());
-                    audioObj.putString(MessageConstant.MediaFile.THUMB_PATH, audioAttachment.getThumbPath());
+                    audioObj.putString(MessageConstant.MediaFile.PATH, wrapLocalFile(audioAttachment.getPath()));
+                    audioObj.putString(MessageConstant.MediaFile.THUMB_PATH, wrapLocalFile(audioAttachment.getThumbPath()));
                     audioObj.putString(MessageConstant.MediaFile.URL, audioAttachment.getUrl());
                     audioObj.putString(MessageConstant.MediaFile.DURATION, Long.toString(audioAttachment.getDuration()));
                 }
@@ -982,9 +1035,9 @@ public class ReactCache {
                 WritableMap videoDic = Arguments.createMap();
                 if (attachment instanceof VideoAttachment) {
                     VideoAttachment videoAttachment = (VideoAttachment) attachment;
-                    videoDic.putString(MessageConstant.MediaFile.CoverUrl, videoAttachment.getThumbUrl());
+                    videoDic.putString(MessageConstant.MediaFile.CoverUrl, wrapLocalFile(videoAttachment.getThumbUrl()));
                     videoDic.putString(MessageConstant.MediaFile.VideoUrl, videoAttachment.getUrl());
-                    videoDic.putString(MessageConstant.MediaFile.MediaPath, videoAttachment.getPath());
+                    videoDic.putString(MessageConstant.MediaFile.MediaPath, wrapLocalFile(videoAttachment.getPath()));
 //                    videoDic.putString(MessageConstant.MediaFile.PATH, videoAttachment.getPath());
                     videoDic.putString(MessageConstant.MediaFile.DISPLAY_NAME, videoAttachment.getDisplayName());
                     videoDic.putString(MessageConstant.MediaFile.HEIGHT, Integer.toString(videoAttachment.getHeight()));
@@ -1008,7 +1061,13 @@ public class ReactCache {
                 itemMap.putString(MessageConstant.Message.MSG_TYPE, "notification");
                 if (item.getSessionType() == SessionTypeEnum.Team) {
                     //TODO XXXX
-                    text = TeamNotificationHelper.getTeamNotificationText(item, item.getSessionId());
+//                    text = TeamNotificationHelper.getTeamNotificationText(item, item.getSessionId());
+                    WritableMap options = TeamNotificationHelper.getTeamNotificationOptions(item.getSessionId(), item.getFromAccount(), (NotificationAttachment) item.getAttachment());
+                    extend = new WritableNativeMap();
+                    extend.putMap("options", options);
+                    if (options.hasKey("tipMsg")) {
+                        text = options.getString("tipMsg");
+                    }
                 } else {
                     text = item.getContent();
                 }

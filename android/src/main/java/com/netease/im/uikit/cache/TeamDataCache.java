@@ -401,7 +401,7 @@ public class TeamDataCache {
      */
     public String getTeamMemberDisplayNameYou(String tid, String account) {
         if (TextUtils.equals(account, LoginService.getInstance().getAccount())) {
-            return "你";
+            return "[you]";
         }
 
         return getDisplayNameWithoutMe(tid, account);
