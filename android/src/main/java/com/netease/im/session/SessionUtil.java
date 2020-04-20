@@ -10,7 +10,9 @@ import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
 import com.netease.im.IMApplication;
 import com.netease.im.ReactCache;
 import com.netease.im.ReactExtendsion;
@@ -21,6 +23,7 @@ import com.netease.im.uikit.cache.NimUserInfoCache;
 import com.netease.im.uikit.cache.TeamDataCache;
 import com.netease.im.uikit.common.util.log.LogUtil;
 import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.friend.constant.VerifyType;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
@@ -114,8 +117,23 @@ public class SessionUtil {
      * @param account
      * @param content
      */
-    public static void sendAddFriendNotification(String account, String content) {
-        sendCustomNotification(account, SessionTypeEnum.P2P, CUSTOM_Notification, content);
+    public static void sendAddFriendNotification(String fromId, String fromName, String account, String content, VerifyType verifyType) {
+        WritableMap options = Arguments.createMap();
+        options.putString("apns", content);
+        options.putString("sessionId", account);
+        options.putInt("sessionType", SessionTypeEnum.P2P.getValue());
+        options.putBoolean("apnsEnabled", true);
+        options.putBoolean("shouldBeCounted", true);
+        options.putBoolean("apnsWithPrefix", true);
+        options.putBoolean("sendToOnlineUsersOnly", false);
+
+        WritableMap payload = Arguments.createMap();
+        payload.putInt("operation", verifyType.getValue());
+        payload.putString("contactId", fromId);
+        payload.putString("name", fromName);
+        payload.putString("content", content);
+        sendCustomNotification(options, payload);
+//        sendCustomNotification(account, SessionTypeEnum.P2P, CUSTOM_Notification, content);
     }
 
     public static void receiver(NotificationManager manager, CustomNotification customNotification) {

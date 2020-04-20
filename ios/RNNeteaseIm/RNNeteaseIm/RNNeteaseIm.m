@@ -218,7 +218,7 @@ RCT_EXPORT_METHOD(addFriendWithType:(nonnull  NSString *)contactId verifyType:(n
 }
 
 //通过/拒绝对方好友请求
-RCT_EXPORT_METHOD(ackAddFriendRequest:(nonnull  NSString *)targetId accept:(nonnull  NSString * )accept msg:(nonnull  NSString * )msg timestamp:(nonnull  NSString * )timestamp resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
+RCT_EXPORT_METHOD(ackAddFriendRequest:(nonnull  NSString *)notificationId targetId:(nonnull  NSString *)targetId accept:(nonnull  NSString * )accept msg:(nonnull  NSString * )msg timestamp:(nonnull  NSString * )timestamp resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
     if ([accept isEqualToString:@"1"]) {
         [[NoticeViewController initWithNoticeViewController]onAccept:targetId timestamp:timestamp msg:msg sucess:^(id param) {
             resolve(param);
@@ -267,7 +267,7 @@ RCT_EXPORT_METHOD(deleteFriend:(nonnull  NSString *)contactId resolve:(RCTPromis
 //好友消息提醒开关
 RCT_EXPORT_METHOD(setMessageNotify:(nonnull NSString *)contactId needNotify:(nonnull NSString *)needNotify resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject){
     __weak typeof(self)weakSelf = self;
-    [[ConversationViewController initWithConversationViewController]muteMessage:contactId mute:needNotify Succ:^(id param) {
+    [[ConversationViewController initWithConversationViewController] muteMessage:contactId mute:needNotify Succ:^(id param) {
         resolve(param);
         [weakSelf updateMessageList];
     } Err:^(id erro) {
@@ -299,8 +299,9 @@ RCT_EXPORT_METHOD(stopSystemMsg){
     [[NoticeViewController initWithNoticeViewController] stopSystemMsg];
 }
 //删除系统消息一列
-RCT_EXPORT_METHOD(deleteSystemMessage:(nonnull  NSString *)targetId timestamp:(nonnull NSString *)timestamp){
-    [[NoticeViewController initWithNoticeViewController] deleteNotice:targetId timestamp:timestamp];
+RCT_EXPORT_METHOD(deleteSystemMessage:(nonnull  NSString *)notificationId){
+      int64_t _notificationId = [notificationId longLongValue];
+    [[NoticeViewController initWithNoticeViewController] deleteNotice:_notificationId];
 }
 //将系统消息标记为已读
 RCT_EXPORT_METHOD(setAllread){
@@ -310,6 +311,13 @@ RCT_EXPORT_METHOD(setAllread){
 RCT_EXPORT_METHOD(clearSystemMessages){
     [[NoticeViewController initWithNoticeViewController] deleAllNotic];
 }
+//清空系统信息
+RCT_EXPORT_METHOD(asReadSystemMessage:(nonnull  NSString *)notificationId){
+    int64_t _notificationId = [notificationId longLongValue];
+    [[NoticeViewController initWithNoticeViewController] setSystemMessageAsRead:_notificationId];
+//    [[NoticeViewController initWithNoticeViewController] setSystemMessageAsRead:_notificationId];
+}
+
 //会话开始
 RCT_EXPORT_METHOD(startSession:(nonnull  NSString *)sessionId type:(nonnull  NSString *)type){
     [[ConversationViewController initWithConversationViewController]startSession:sessionId withType:type];
@@ -480,7 +488,7 @@ RCT_EXPORT_METHOD(sendBankTransferMessage:(NSString *)amount comments:(NSString 
 //}
 //X
 RCT_EXPORT_METHOD(sendCustomNotice:(NSDictionary *)options payload:(NSDictionary *)payload){
-    [[ConversationViewController initWithConversationViewController] sendCustomNotice:options payload:payload];
+    [ConversationViewController sendCustomNotice:options payload:payload];
 }
 //X
 RCT_EXPORT_METHOD(saveRTCCallMessage:(NSDictionary *)options){

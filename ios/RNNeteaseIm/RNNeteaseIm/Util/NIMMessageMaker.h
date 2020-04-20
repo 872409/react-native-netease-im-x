@@ -13,7 +13,7 @@
 @class NIMKitLocationPoint;
 
 @interface NIMMessageMaker : NSObject
-
++ (NSString *)jsonStringWithDictionary:(NSDictionary *)dict;
 + (NIMMessage*_Nullable)msgWithText:(NSString*)text andApnsMembers:(NSArray *)members andeSession:(NIMSession *)session  apns:(nonnull  NSString *)apns;
 
 + (NIMMessage *_Nullable)msgWithAudio:(NSString *)filePath andeSession:(NIMSession *)session apns:(nonnull  NSString *)apns;

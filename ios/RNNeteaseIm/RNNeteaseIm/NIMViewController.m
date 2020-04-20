@@ -188,7 +188,8 @@
         //消息ID
         [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.messageId] forKey:@"messageId"];
 
-        [dic setObject:[NSString stringWithFormat:@"%d", recent.lastMessage.isOutgoingMsg] forKey:@"isOutgoing"];
+//        [dic setObject:[NSString stringWithFormat:@"%d", recent.lastMessage.isOutgoingMsg] forKey:@"isOutgoing"];
+        [dic setObject: [NSNumber numberWithBool:recent.lastMessage.isOutgoingMsg] forKey:@"isOutgoing"];
         //        [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.localExt] forKey:@"localExt"];
         //消息内容
         //        [dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent] ] forKey:@"content"];
@@ -259,7 +260,8 @@
             //消息ID
             [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.messageId] forKey:@"messageId"];
 //            [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.messageId] forKey:@"messageId3"];
-            [dic setObject:[NSString stringWithFormat:@"%d", recent.lastMessage.isOutgoingMsg] forKey:@"isOutgoing"];
+//            [dic setObject:[NSString stringWithFormat:@"%d", recent.lastMessage.isOutgoingMsg] forKey:@"isOutgoing"];
+              [dic setObject: [NSNumber numberWithBool:recent.lastMessage.isOutgoingMsg] forKey:@"isOutgoing"];
             //消息内容
             //[dic setObject:[NSString stringWithFormat:@"%@", [self contentForRecentSession:recent] ] forKey:@"content"];
 

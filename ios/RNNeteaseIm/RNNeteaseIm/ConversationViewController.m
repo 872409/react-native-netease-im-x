@@ -655,12 +655,12 @@
     }
 }
 
--(void)sendCustomNotice:(NSDictionary *)options payload:(NSDictionary *)payload{
++(void)sendCustomNotice:(NSDictionary *)options payload:(NSDictionary *)payload{
      NSLog(@"sendCustomNotice: options: %@ payload: %@",options,payload);
     
     NIMSession *session = [NIMSession session:[options jsonString:@"sessionId"] type:[options jsonInteger:@"sessionType"]];
  
-    NSString *content = [self jsonStringWithDictionary:payload];
+    NSString *content = [NIMMessageMaker jsonStringWithDictionary:payload];
     NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
     notifi.sendToOnlineUsersOnly = [options jsonBool:@"sendToOnlineUsersOnly"];
     
@@ -699,7 +699,7 @@
     //        }
     //    };
 
-    NSString *content = [self jsonStringWithDictionary:mOptions];
+    NSString *content = [NIMMessageMaker jsonStringWithDictionary:mOptions];
     NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
     notifi.sendToOnlineUsersOnly = NO;
 
@@ -783,7 +783,7 @@
     if(![sendId isEqualToString:strMyId]){
         NSDictionary *dataDict = @{@"type":@"2",@"data":@{@"dict":dict,@"timestamp":[NSString stringWithFormat:@"%f",timestamp],@"sessionId":self._session.sessionId,@"sessionType":[NSString stringWithFormat:@"%zd",self._session.sessionType]}};
         
-        NSString *content = [self jsonStringWithDictionary:dataDict];
+        NSString *content = [NIMMessageMaker jsonStringWithDictionary:dataDict];
         NIMSession *redSession = [NIMSession session:sendId type:NIMSessionTypeP2P];
         NIMCustomSystemNotification *notifi = [[NIMCustomSystemNotification alloc]initWithContent:content];
         notifi.sendToOnlineUsersOnly = NO;
@@ -840,20 +840,20 @@
     [self sendCustomMessage:CustomMessgeTypeBusinessCard data:dict apns:@""];
 }
 
-// dict字典转json字符串
-- (NSString *)jsonStringWithDictionary:(NSDictionary *)dict
-{
-    if (dict && 0 != dict.count)
-    {
-        NSError *error = nil;
-        // NSJSONWritingOptions 是"NSJSONWritingPrettyPrinted"的话有换位符\n；是"0"的话没有换位符\n。
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
-        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        return jsonString;
-    }
-    
-    return nil;
-}
+//// dict字典转json字符串
+//+ (NSString *)jsonStringWithDictionary:(NSDictionary *)dict
+//{
+//    if (dict && 0 != dict.count)
+//    {
+//        NSError *error = nil;
+//        // NSJSONWritingOptions 是"NSJSONWritingPrettyPrinted"的话有换位符\n；是"0"的话没有换位符\n。
+//        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
+//        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+//        return jsonString;
+//    }
+//
+//    return nil;
+//}
 
 
 //设置好友消息提醒
@@ -1147,6 +1147,13 @@
 //        NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:data     options:NSJSONReadingMutableContainers      error:nil];
         
         NSMutableDictionary *notice = [[NSMutableDictionary alloc] initWithDictionary:apnsPayload copyItems:YES];
+        NSLog(@"onReceiveCustomSystemNotification notice:%@ payload：%@",notice,[notice objectForKey:@"payload"]);
+        
+        if([notice objectForKey:@"payload"] == nil){
+            return;
+        }
+        
+        
         NSData *payloadData = [[notice objectForKey:@"payload"] dataUsingEncoding:NSUTF8StringEncoding];
         
         [notice setObject:[NSJSONSerialization JSONObjectWithData:payloadData     options:NSJSONReadingMutableContainers      error:nil]  forKey:@"payload"];
@@ -1725,14 +1732,14 @@
         }else{
             message.localExt = @{@"isFriend":@"NO"};
             [[NIMSDK sharedSDK].conversationManager saveMessage:message forSession:session completion:nil];
-            NSString *strSessionName = @"";
-            NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:strSessionId];
-            if ([user.alias length]) {
-                strSessionName = user.alias;
-            }else{
-                NIMUserInfo *userInfo = user.userInfo;
-                strSessionName = userInfo.nickName;
-            }
+//            NSString *strSessionName = @"";
+//            NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:strSessionId];
+//            if ([user.alias length]) {
+//                strSessionName = user.alias;
+//            }else{
+//                NIMUserInfo *userInfo = user.userInfo;
+//                strSessionName = userInfo.nickName;
+//            }
             
             //X
             //            NSString * tip = [NSString stringWithFormat:@"%@开启了朋友验证，你还不是他（她）朋友。请先发送朋友验证请求，对方验证通过后，才能聊天。发送朋友验证",strSessionName];

@@ -279,19 +279,20 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      * @param promise
      */
     @ReactMethod
-    public void addFriendWithType(final String contactId, String verifyType, String msg, final Promise promise) {
+    public void addFriendWithType(final String contactId, String verifyType, final String msg, final Promise promise) {
         VerifyType verifyTypeAdd = VerifyType.VERIFY_REQUEST;
         if ("1".equals(verifyType)) {
             verifyTypeAdd = VerifyType.DIRECT_ADD;
         }
-        LogUtil.w(TAG, "addFriend" + contactId);
+        LogUtil.w(TAG, "addFriend:" + contactId);
+        final VerifyType finalVerifyTypeAdd = verifyTypeAdd;
         NIMClient.getService(FriendService.class).addFriend(new AddFriendData(contactId, verifyTypeAdd, msg))
                 .setCallback(new RequestCallbackWrapper<Void>() {
                     @Override
                     public void onResult(int code, Void aVoid, Throwable throwable) {
                         if (code == ResponseCode.RES_SUCCESS) {
                             String name = NimUserInfoCache.getInstance().getUserName(LoginService.getInstance().getAccount());
-                            SessionUtil.sendAddFriendNotification(contactId, name + " 请求加为好友");
+                            SessionUtil.sendAddFriendNotification(LoginService.getInstance().getAccount(), name, contactId, msg, finalVerifyTypeAdd);
                             promise.resolve("" + code);
                         } else {
                             promise.reject("" + code, "");
@@ -300,30 +301,30 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
                 });
     }
 
-    /**
-     * 添加好友
-     *
-     * @param contactId
-     * @param msg       备注
-     * @param promise
-     */
-    @ReactMethod
-    public void addFriend(final String contactId, String msg, final Promise promise) {
-        LogUtil.w(TAG, "addFriend" + contactId);
-        NIMClient.getService(FriendService.class).addFriend(new AddFriendData(contactId, VerifyType.VERIFY_REQUEST, msg))
-                .setCallback(new RequestCallbackWrapper<Void>() {
-                    @Override
-                    public void onResult(int code, Void aVoid, Throwable throwable) {
-                        if (code == ResponseCode.RES_SUCCESS) {
-                            String name = NimUserInfoCache.getInstance().getUserName(LoginService.getInstance().getAccount());
-                            SessionUtil.sendAddFriendNotification(contactId, name + " 请求加为好友");
-                            promise.resolve("" + code);
-                        } else {
-                            promise.reject("" + code, "");
-                        }
-                    }
-                });
-    }
+//    /**
+//     * 添加好友
+//     *
+//     * @param contactId
+//     * @param msg       备注
+//     * @param promise
+//     */
+//    @ReactMethod
+//    public void addFriend(final String contactId, String msg, final Promise promise) {
+//        LogUtil.w(TAG, "addFriend" + contactId);
+//        NIMClient.getService(FriendService.class).addFriend(new AddFriendData(contactId, VerifyType.VERIFY_REQUEST, msg))
+//                .setCallback(new RequestCallbackWrapper<Void>() {
+//                    @Override
+//                    public void onResult(int code, Void aVoid, Throwable throwable) {
+//                        if (code == ResponseCode.RES_SUCCESS) {
+//                            String name = NimUserInfoCache.getInstance().getUserName(LoginService.getInstance().getAccount());
+//                            SessionUtil.sendAddFriendNotification(contactId, name + " 请求加为好友");
+//                            promise.resolve("" + code);
+//                        } else {
+//                            promise.reject("" + code, "");
+//                        }
+//                    }
+//                });
+//    }
 
     /**
      * 删除好友
@@ -517,13 +518,13 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      */
     @ReactMethod
     public void setTeamNotify(String teamId, String mute, final Promise promise) {
-
+        LogUtil.w(TAG, "setTeamNotify:" + teamId + ",mute:" + mute);
         TeamMessageNotifyTypeEnum typeEnum = TeamMessageNotifyTypeEnum.All;
-        if ("0".equals(mute)) {
+        if ("2".equals(mute)) {
             typeEnum = TeamMessageNotifyTypeEnum.Mute;
-        } else if ("1".equals(mute)) {
+        } else if ("0".equals(mute)) {
             typeEnum = TeamMessageNotifyTypeEnum.All;
-        } else if ("2".equals(mute)) {
+        } else if ("1".equals(mute)) {
             typeEnum = TeamMessageNotifyTypeEnum.Manager;
         }
         NIMClient.getService(TeamService.class).muteTeam(teamId, typeEnum)//!string2Boolean(mute)
@@ -2064,16 +2065,27 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     }
 
     /**
-     * 删除系统通知
+     * 已读系统通知
      *
-     * @param fromAccount
-     * @param timestamp
+     * @param notificationId
      * @param promise
      */
     @ReactMethod
-    public void deleteSystemMessage(String fromAccount, String timestamp, final Promise promise) {
+    public void asReadSystemMessage(String notificationId, final Promise promise) {
         if (sysMessageObserver != null)
-            sysMessageObserver.deleteSystemMessageById(fromAccount, true);
+            sysMessageObserver.asReadSystemMessageById(Long.parseLong(notificationId));
+    }
+
+    /**
+     * 删除系统通知
+     *
+     * @param notificationId
+     * @param promise
+     */
+    @ReactMethod
+    public void deleteSystemMessage(String notificationId, final Promise promise) {
+        if (sysMessageObserver != null)
+            sysMessageObserver.deleteSystemMessage(Long.parseLong(notificationId));
     }
 
     /**

@@ -187,7 +187,8 @@ public class ReactCache {
 
 
                 if (lastMessage != null) {
-                    map.putString(MessageConstant.Message.IS_OUTGOING, Integer.toString(lastMessage.getDirect().getValue()));
+//                    Log.w(TAG, "lastMessage:IS_OUTGOING:" + lastMessage.getDirect().name() + " Form:" + lastMessage.getFromAccount());
+                    map.putBoolean(MessageConstant.Message.IS_OUTGOING, lastMessage.getDirect() == MsgDirectionEnum.Out);
                 }
 
 
@@ -538,6 +539,7 @@ public class ReactCache {
             writableMap.putString("signature", userInfo.getSignature());
             writableMap.putString("gender", Integer.toString(userInfo.getGenderEnum().getValue()));
             writableMap.putString("email", userInfo.getEmail());
+            writableMap.putString("extension", userInfo.getExtension());
             writableMap.putString("birthday", userInfo.getBirthday());
             writableMap.putString("mobile", userInfo.getMobile());
         }
@@ -555,11 +557,12 @@ public class ReactCache {
                 WritableMap options = Arguments.createMap();
 
                 boolean verify = isVerifyMessageNeedDeal(message);
-                map.putString("messageId", Long.toString(message.getMessageId()));
+                map.putString("notificationId", Long.toString(message.getMessageId()));
                 map.putString("type", Integer.toString(message.getType().getValue()));
                 map.putString("targetId", message.getTargetId());
                 map.putString("fromAccount", message.getFromAccount());
                 String avatar = nimUserInfoCache.getAvatar(message.getFromAccount());
+                map.putBoolean("read", !message.isUnread());
                 map.putString("avatar", avatar);
                 map.putString("content", message.getContent());
                 map.putString("avatarLocal", ImageLoaderKit.getMemoryCachedAvatar(avatar));
@@ -761,6 +764,13 @@ public class ReactCache {
             writableMap.putString("mute", getMessageNotifyType(team.getMessageNotifyType()));
             writableMap.putString("memberCount", Integer.toString(team.getMemberCount()));
             writableMap.putString("memberLimit", Integer.toString(team.getMemberLimit()));
+
+            writableMap.putInt("inAllMuteMode", team.isAllMute() ? 1 : 0);
+            writableMap.putInt("notifyState", team.getMessageNotifyType().getValue());
+            writableMap.putInt("joinMode", team.getVerifyType().getValue());
+            writableMap.putInt("beInviteMode", team.getTeamBeInviteMode().getValue());
+            writableMap.putInt("teamUpdateMode", team.getTeamUpdateMode().getValue());
+            writableMap.putInt("inviteMode", team.getTeamInviteMode().getValue());
         }
         return writableMap;
     }
@@ -969,7 +979,8 @@ public class ReactCache {
         itemMap.putString(MessageConstant.Message.SESSION_ID, item.getSessionId());
         itemMap.putString(MessageConstant.Message.SESSION_TYPE, Integer.toString(item.getSessionType().getValue()));
 
-        itemMap.putString(MessageConstant.Message.IS_OUTGOING, Integer.toString(item.getDirect().getValue()));
+//        itemMap.putString(MessageConstant.Message.IS_OUTGOING, Integer.toString(item.getDirect().getValue()));
+        itemMap.putBoolean(MessageConstant.Message.IS_OUTGOING, item.getDirect() == MsgDirectionEnum.Out);
         itemMap.putString(MessageConstant.Message.STATUS, getMessageStatus(item.getStatus()));
         itemMap.putString(MessageConstant.Message.ATTACH_STATUS, Integer.toString(item.getAttachStatus().getValue()));
         itemMap.putString(MessageConstant.Message.IS_REMOTE_READ, boolean2String(receiveReceiptCheck(item)));

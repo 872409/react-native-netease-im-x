@@ -229,9 +229,12 @@ public class SysMessageObserver {
         }
 
         AddFriendNotify attachData = (AddFriendNotify) msg.getAttachObject();
+
         if (attachData == null) {
             return true; // 过滤
         }
+
+        Log.w(TAG, "addFriendVerifyFilter:" + attachData.getMsg() + "," + attachData.getAccount());
 
 //        if (attachData.getEvent() != AddFriendNotify.Event.RECV_ADD_FRIEND_VERIFY_REQUEST) {
 //            return false; // 不过滤
@@ -311,6 +314,19 @@ public class SysMessageObserver {
         }
     }
 
+    public void asReadSystemMessageById(long messageId) {
+
+        for (int i = sysItems.size() - 1; i >= 0; i--) {
+            SystemMessage msg = sysItems.get(i);
+            if (messageId == msg.getMessageId()) {
+                NIMClient.getService(SystemMessageService.class).setSystemMessageRead(msg.getMessageId());
+                msg.setUnread(false);
+                break;
+            }
+        }
+        refresh();
+    }
+
     public void deleteSystemMessage(long messageId) {
         if (firstLoad) {
             loadMessages(true);
@@ -323,6 +339,7 @@ public class SysMessageObserver {
                 break;
             }
         }
+        refresh();
     }
 
     public void acceptInvite(final long messageId, String targetId, String fromAccount, final boolean pass, String timestamp, final RequestCallbackWrapper<Void> callbackWrapper) {

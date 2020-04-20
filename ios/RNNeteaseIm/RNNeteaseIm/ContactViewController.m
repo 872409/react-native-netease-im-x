@@ -7,6 +7,7 @@
 //
 #import "NIMMessageMaker.h"
 #import "ContactViewController.h"
+#import "ConversationViewController.h"
 #import "NTESGroupedContacts.h"
 #import "NTESContactDataMember.h"
 //#import "NIMContactSelectViewController.h"
@@ -263,7 +264,7 @@
 }
 //添加好友
 -(void)adduserId:(NSString *)userId andVerifyType:(NSString *)strType andMag:(NSString *)msg Friends:(Error)err  Success:(Error )success{
-    __weak typeof(self)weakSelf = self;
+//    __weak typeof(self)weakSelf = self;
     NIMUserRequest *request = [[NIMUserRequest alloc] init];
     request.userId = userId;
     request.message = msg;
@@ -277,21 +278,41 @@
     NSString *myID = [NIMSDK sharedSDK].loginManager.currentAccount;
     NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:myID];
     NSString *apnsContent = [NSString stringWithFormat:@"%@ %@",user.userInfo.nickName,apnsText];
-    NSDictionary *apnsPayload = [NIMMessageMaker makeApnsPayload:APNsTypeContact
-                                                     payloadData:@{
-                                                         @"operation":strType,
-                                                         @"contactId":myID,
-                                                         @"name":user.userInfo.nickName,
-                                                         @"content":[NSString stringWithFormat:@"%@",msg]
-                                                     }
-                                 sound:@""
-                                 ];
+    
+    NSMutableDictionary *options = [[NSMutableDictionary alloc] init];
+    [options setObject:userId forKey:@"sessionId"];
+    [options setObject:@"true" forKey:@"shouldBeCounted"];
+    [options setObject:@"true" forKey:@"apnsEnabled"];
+    [options setObject:@"false" forKey:@"sendToOnlineUsersOnly"];
+    [options setObject:apnsContent forKey:@"apns"];
+    [options setObject:@"default" forKey:@"apns_sound"];
+    [options setObject:APNsTypeContact forKey:@"apnsType"];
+    [options setObject:[NSNumber numberWithInt:NIMSessionTypeP2P] forKey:@"sessionType"];
+    
+//    NSDictionary *apnsPayload = [NIMMessageMaker makeApnsPayload:APNsTypeContact
+//                                                     payloadData:@{
+//                                                         @"operation":strType,
+//                                                         @"contactId":myID,
+//                                                         @"name":user.userInfo.nickName,
+//                                                         @"content":[NSString stringWithFormat:@"%@",msg]
+//                                                     }
+//                                 sound:@""
+//                                 ];
+    
+    NSDictionary *payload = @{
+        @"operation":strType,
+        @"contactId":myID,
+        @"name":user.userInfo.nickName,
+        @"content":[NSString stringWithFormat:@"%@",msg]
+    };
     
     [[NIMSDK sharedSDK].userManager requestFriend:request completion:^(NSError *error) {
         if (!error) {
             success(successText);
+            [ConversationViewController sendCustomNotice:options payload:payload];
             
-            [weakSelf sendCustomNotificationContent:msg andSessionID:userId andApnsContent:apnsContent AndData:apnsPayload shouldBeCounted:YES];
+            
+//            [weakSelf sendCustomNotificationContent:msg andSessionID:userId andApnsContent:apnsContent AndData:apnsPayload shouldBeCounted:YES];
             // [self refresh];
         }else{
             err(failedText);

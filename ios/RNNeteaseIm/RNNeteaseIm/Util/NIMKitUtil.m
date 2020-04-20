@@ -351,7 +351,7 @@
                     [result setObject:@"apply_pass_invite" forKey:@"operationType"];
                     [result setObject:@{
                         @"source":source,
-                        @"target":targetText,
+                        @"firstTarget":targetText,
                         @"teamName":teamName
                     } forKey:@"format"];
                 }
@@ -362,7 +362,7 @@
                 [result setObject:@"transfer_owner" forKey:@"operationType"];
                 [result setObject:@{
                     @"source":source,
-                    @"target":targetText,
+                    @"firstTarget":targetText,
                     @"teamName":teamName
                 } forKey:@"format"];
                 break;
@@ -371,7 +371,7 @@
                 [result setObject:@"add_manager" forKey:@"operationType"];
                 [result setObject:@{
                     @"source":source,
-                    @"target":targetText,
+                    @"firstTarget":targetText,
                     @"teamName":teamName
                 } forKey:@"format"];
                 break;
@@ -380,7 +380,7 @@
                 [result setObject:@"remove_manager" forKey:@"operationType"];
                 [result setObject:@{
                     @"source":source,
-                    @"target":targetText,
+                    @"firstTarget":targetText,
                     @"teamName":teamName
                 } forKey:@"format"];
                 break;
@@ -389,7 +389,7 @@
                 [result setObject:@"accept_invitation" forKey:@"operationType"];
                 [result setObject:@{
                     @"source":source,
-                    @"target":targetText,
+                    @"firstTarget":targetText,
                     @"teamName":teamName
                 } forKey:@"format"];
                 
@@ -407,7 +407,7 @@
                     [result setObject:mute?@"enabled":@"disabled" forKey:@"operationTag"];
                     [result setObject:@{
                         @"source":source,
-                        @"target":str
+                        @"firstTarget":str
                     } forKey:@"format"];
                 }
             }

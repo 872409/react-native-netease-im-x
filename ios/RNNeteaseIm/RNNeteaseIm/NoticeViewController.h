@@ -21,8 +21,9 @@ static const NSInteger MaxNotificationCount = 20;
 @interface NoticeViewController : UIViewController
 +(instancetype)initWithNoticeViewController;
 -(void)initWithDelegate;
-- (void)stopSystemMsg;
--(void)deleteNotice:(NSString *)targetID timestamp:(NSString *)timestamp;
+-(void)stopSystemMsg;
+-(void)setSystemMessageAsRead:(int64_t)notificationId;
+-(void)deleteNotice:(int64_t)notificationId;
 -(void)deleAllNotic;
 -(void)setAllread;
 -(void)onAccept:(NSString *)targetID timestamp:(NSString *)timestamp msg:(NSString *)msg sucess:(Success)success error:(Errors)err;

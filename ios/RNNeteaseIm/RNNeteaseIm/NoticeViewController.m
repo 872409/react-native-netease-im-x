@@ -274,7 +274,7 @@
     [dic setObject:[NSString stringWithFormat:@"%d",isVerify] forKey:@"isVerify"];
     [dic setObject:[NSString stringWithFormat:@"%@",verifyText] forKey:@"verifyText"];
     [dic setObject:[NSString stringWithFormat:@"%@",verifyResult] forKey:@"verifyResult"];
-    [dic setObject:@"" forKey:@"messageId"];
+    [dic setObject:[NSString stringWithFormat:@"%lld",noti.notificationId] forKey:@"notificationId"];
     [dic setObject:[NSString stringWithFormat:@"%ld",noti.type] forKey:@"type"];
     [dic setObject:notificationType forKey:@"notificationType"];
     [dic setObject:[NSString stringWithFormat:@"%@",noti.targetID] forKey:@"targetId"];
@@ -283,6 +283,7 @@
     [dic setObject:[NSString stringWithFormat:@"%@",sourceMember.showName] forKey:@"name"];
     [dic setObject:[NSString stringWithFormat:@"%@",url] forKey:@"avatar"];
     [dic setObject:[NSString stringWithFormat:@"%ld",noti.handleStatus] forKey:@"status"];
+    [dic setObject:[NSNumber numberWithBool:noti.read] forKey:@"read"];
     [dic setObject:[NSString stringWithFormat:@"%f",noti.timestamp] forKey:@"timestamp"];
     
     [options setObject:notificationType forKey:@"notificationType"];
@@ -306,12 +307,24 @@
         
     }
 }
+-(void)setSystemMessageAsRead:(int64_t)notificationId{
+    for (int i = 0; i < self._notifications.count; i++) {
+         NIMSystemNotification *notices =self._notifications[i];
+           
+          if (notificationId == [notices notificationId]) {
+               [[[NIMSDK sharedSDK] systemNotificationManager] markNotificationsAsRead:notices];
+               break;
+           }
+       }
+       [self ReFrash];
+}
 //删除信息
--(void)deleteNotice:(NSString *)targetID timestamp:(NSString *)timestamp{
+-(void)deleteNotice:(int64_t )notificationId{
     for (int i = 0; i < self._notifications.count; i++) {
         NIMSystemNotification *notices =self._notifications[i];
-        if ([targetID isEqualToString:notices.sourceID]) {
+        if (notificationId == [notices notificationId]) {
             [[[NIMSDK sharedSDK] systemNotificationManager] deleteNotification:notices];
+             break;
         }
     }
     [self ReFrash];

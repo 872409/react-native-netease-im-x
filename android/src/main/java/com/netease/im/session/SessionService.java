@@ -940,7 +940,8 @@ public class SessionService {
                 config.enableUnreadCount = false;
                 message.setConfig(config);
                 getMsgService().saveMessageToLocal(message, true);
-                sendTipMessage(sessionId, sessionName + "开启了朋友验证，你还不是他(她)朋友。请先发送朋友验证请求，对方验证后，才能聊天。发送朋友验证", null, true, false);
+                sendTipMessage(sessionId, "not_friends_send_failed", null, true, false);
+//                sendTipMessage(sessionId, sessionName + "开启了朋友验证，你还不是他(她)朋友。请先发送朋友验证请求，对方验证后，才能聊天。发送朋友验证", null, true, false);
                 return;
             }
         }
@@ -958,7 +959,8 @@ public class SessionService {
                     map.put("resend", false);
                     message.setLocalExtension(map);
                     getMsgService().updateIMMessage(message);
-                    sendTipMessage(sessionId, "消息已发出，但被对方拒收了。", null, true, false);
+                    sendTipMessage(sessionId, "msg_send_reject", null, true, false);
+//                    sendTipMessage(sessionId, "消息已发出，但被对方拒收了。", null, true, false);
                 }
             }
 
