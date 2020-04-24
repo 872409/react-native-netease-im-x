@@ -656,7 +656,7 @@
 }
 
 +(void)sendCustomNotice:(NSDictionary *)options payload:(NSDictionary *)payload{
-     NSLog(@"sendCustomNotice: options: %@ payload: %@",options,payload);
+     
     
     NIMSession *session = [NIMSession session:[options jsonString:@"sessionId"] type:[options jsonInteger:@"sessionType"]];
  
@@ -670,10 +670,16 @@
     setting.apnsWithPrefix = [options jsonBool:@"apnsWithPrefix"];
     
     notifi.apnsContent = [options jsonString:@"apns"];
+    if (notifi.apnsContent== nil || [notifi.apnsContent length] ==0){
+        setting.apnsEnabled = false;
+    }
     
     NSString *apns_sound = [options jsonString:@"apns_sound"];
     notifi.apnsPayload = [NIMMessageMaker makeApnsPayload:[options jsonString:@"apnsType"] payloadData:payload sound:apns_sound];
     notifi.setting = setting;
+    
+    NSLog(@"sendCustomNotice: options: %@ payload: %@",options,payload);
+    NSLog(@"sendCustomNotice: content:%@,%@",notifi.content,notifi.apnsPayload);
     
     [[NIMSDK sharedSDK].systemNotificationManager sendCustomNotification:notifi toSession:session completion:nil];//发送自定义通知
 }

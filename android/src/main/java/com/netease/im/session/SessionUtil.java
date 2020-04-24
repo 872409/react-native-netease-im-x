@@ -138,6 +138,7 @@ public class SessionUtil {
 
     public static void receiver(NotificationManager manager, CustomNotification customNotification) {
 //        LogUtil.w("SessionUtil content", customNotification.getContent());
+//        customNotification.getTime()
         Map<String, Object> map = customNotification.getPushPayload();
         LogUtil.w("SessionUtil payload", ReactNativeJson.convertMapToJson(ReactExtendsion.makeHashMap2WritableMap(map)).toJSONString());
         if (map != null && map.containsKey("type")) {
@@ -259,12 +260,18 @@ public class SessionUtil {
         config.enablePush = options.getBoolean("apnsEnabled");
         config.enableUnreadCount = options.getBoolean("shouldBeCounted");
         config.enablePushNick = options.getBoolean("apnsWithPrefix");
-        notification.setConfig(config);
+
 
         String content = ReactNativeJson.convertMapToJson(payload).toJSONString();
         notification.setContent(content);
         notification.setSendToOnlineUserOnly(options.getBoolean("sendToOnlineUsersOnly"));
         notification.setApnsText(options.getString("apns"));
+
+        if (notification.getApnsText() == null || notification.getApnsText().length() == 0) {
+            config.enablePush = false;
+        }
+
+        notification.setConfig(config);
 
         String apns_sound = options.hasKey("apns_sound") ? options.getString("apns_sound") : "default";
         String apnsType = options.hasKey("apnsType") ? options.getString("apnsType") : "";

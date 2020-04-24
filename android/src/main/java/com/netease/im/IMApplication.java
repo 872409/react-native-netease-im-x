@@ -111,14 +111,14 @@ public class IMApplication {
         DEBUG = debugAble;
         LogUtil.setDebugAble(debugAble);
     }
-
-    private static Observer<CustomNotification> notificationObserver = new Observer<CustomNotification>() {
-        @Override
-        public void onEvent(CustomNotification customNotification) {
-            NotificationManager notificationManager = (NotificationManager) IMApplication.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-            SessionUtil.receiver(notificationManager, customNotification);
-        }
-    };
+//
+//    private static Observer<CustomNotification> notificationObserver = new Observer<CustomNotification>() {
+//        @Override
+//        public void onEvent(CustomNotification customNotification) {
+//            NotificationManager notificationManager = (NotificationManager) IMApplication.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+//            SessionUtil.receiver(notificationManager, customNotification);
+//        }
+//    };
 
     private static boolean inMainProcess(Context context) {
         String packageName = context.getPackageName();

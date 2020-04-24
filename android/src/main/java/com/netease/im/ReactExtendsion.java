@@ -33,6 +33,10 @@ public class ReactExtendsion {
                 ReadableType type = readableArray.getType(i);
                 if (type == ReadableType.String) {
                     list.add(readableArray.getString(i));
+                } else if (type == ReadableType.Number) {
+                    list.add(readableArray.getDouble(i));
+                } else if (type == ReadableType.Boolean) {
+                    list.add(readableArray.getBoolean(i));
                 } else if (type == ReadableType.Array && level <= maxLevel) {
                     List child = makeReadableArray2List(readableArray.getArray(i), level + 1, maxLevel);
                     if (child != null)
@@ -66,6 +70,10 @@ public class ReactExtendsion {
                 ReadableType type = readableMap.getType(key);
                 if (type == ReadableType.String) {
                     extendsionMap.put(key, readableMap.getString(key));
+                } else if (type == ReadableType.Number) {
+                    extendsionMap.put(key, readableMap.getDouble(key));
+                } else if (type == ReadableType.Boolean) {
+                    extendsionMap.put(key, readableMap.getBoolean(key));
                 } else if (type == ReadableType.Array && level <= maxLevel) {
                     extendsionMap.put(key, makeReadableArray2List(readableMap.getArray(key), level + 1, maxLevel));
                 } else if (type == ReadableType.Map && level <= maxLevel) {
@@ -87,6 +95,14 @@ public class ReactExtendsion {
         for (Object object : list) {
             if (object instanceof String) {
                 array.pushString(String.valueOf(object));
+            } else if (object instanceof Double) {
+                array.pushDouble((Double) object);
+            } else if (object instanceof Integer) {
+                array.pushInt((Integer) object);
+            } else if (object instanceof Number) {
+                array.pushDouble(((Number) object).doubleValue());
+            } else if (object instanceof Boolean) {
+                array.pushBoolean((Boolean) object);
             } else if (object instanceof ArrayList) {
                 array.pushArray(makeList2WritableArray((List) object));
             } else if (object instanceof HashMap) {
@@ -107,6 +123,14 @@ public class ReactExtendsion {
             String key = entry.getKey();
             if (value instanceof String) {
                 writableMap.putString(key, String.valueOf(value));
+            } else if (value instanceof Double) {
+                writableMap.putDouble(key, (Double) value);
+            } else if (value instanceof Integer) {
+                writableMap.putInt(key, (Integer) value);
+            } else if (value instanceof Number) {
+                writableMap.putDouble(key, ((Number) value).doubleValue());
+            } else if (value instanceof Boolean) {
+                writableMap.putBoolean(key, (Boolean) value);
             } else if (value instanceof ArrayList) {
                 writableMap.putArray(key, makeList2WritableArray((List) value));
             } else if (value instanceof HashMap) {
