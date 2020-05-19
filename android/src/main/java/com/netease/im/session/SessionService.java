@@ -1,6 +1,5 @@
 package com.netease.im.session;
 
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Handler;
 
@@ -141,10 +140,14 @@ public class SessionService {
      * @param messages
      */
     public void onIncomingMessage(@NonNull List<IMMessage> messages) {
+        if (this.sessionId == null){
+            refreshMessageList(messages);
+            return ;
+        }
         boolean needRefresh = false;
         List<IMMessage> addedListItems = new ArrayList<>(messages.size());
         for (IMMessage message : messages) {
-            if (isMyMessage(message)) {
+            if (isCurrentSessionMessage(message)) {
                 addedListItems.add(message);
                 needRefresh = true;
             }
@@ -156,19 +159,19 @@ public class SessionService {
             updateShowTimeItem(addedListItems, false);
         }
         List<IMMessage> r = onQuery(addedListItems);
-        if (r.size() > 0) {
-            IMMessage m = messages.get(0);
-            if (!this.mute && m.getDirect() == MsgDirectionEnum.In) {
-                if (showMsg(m)) {
-                    if (m.getAttachment() != null && (m.getAttachment() instanceof RedPacketAttachement)) {
-                        AudioPlayService.getInstance().playAudio(handler, ReactCache.getReactContext(), AudioManager.STREAM_RING, "raw", "rp");
-                    } else {
-                        AudioPlayService.getInstance().playAudio(handler, ReactCache.getReactContext(), AudioManager.STREAM_RING, "raw", "msg");
-                    }
-                }
-
-            }
-        }
+//        if (r.size() > 0) {
+//            IMMessage m = messages.get(0);
+//            if (!this.mute && m.getDirect() == MsgDirectionEnum.In) {
+//                if (showMsg(m)) {
+//                    if (m.getAttachment() != null && (m.getAttachment() instanceof RedPacketAttachement)) {
+//                        AudioPlayService.getInstance().playAudio(handler, ReactCache.getReactContext(), AudioManager.STREAM_RING, "raw", "rp");
+//                    } else {
+//                        AudioPlayService.getInstance().playAudio(handler, ReactCache.getReactContext(), AudioManager.STREAM_RING, "raw", "msg");
+//                    }
+//                }
+//
+//            }
+//        }
         refreshMessageList(r);
 
     }
@@ -178,7 +181,7 @@ public class SessionService {
                 || (m.getAttachment() != null && (m.getAttachment() instanceof RedPacketOpenAttachement)));
     }
 
-    public boolean isMyMessage(IMMessage message) {
+    public boolean isCurrentSessionMessage(IMMessage message) {
         return message.getSessionType() == sessionTypeEnum
                 && message.getSessionId() != null
                 && message.getSessionId().equals(sessionId);
@@ -336,9 +339,11 @@ public class SessionService {
     Observer<List<IMMessage>> incomingMessageObserver = new Observer<List<IMMessage>>() {
         @Override
         public void onEvent(List<IMMessage> messages) {
+            LogUtil.w(TAG, "incomingMessageObserver:" + (messages != null ? messages.size() + "" : "messages is null"));
             if (messages == null || messages.isEmpty()) {
                 return;
             }
+
             sendMsgReceipt(messages); // 发送已读回执
             onIncomingMessage(messages);
 
@@ -354,7 +359,7 @@ public class SessionService {
     }
 
     private void onMessageStatusChange(IMMessage message, boolean isSend) {
-        if (isMyMessage(message)) {
+        if (isCurrentSessionMessage(message)) {
             List<IMMessage> list = new ArrayList<>(1);
             list.add(message);
             Object a = ReactCache.createMessageList(list);
@@ -528,6 +533,7 @@ public class SessionService {
     boolean hasRegister;
 
     public void registerObservers(boolean register) {
+        LogUtil.w(TAG, "registerObservers: hasRegister" + (hasRegister) + " register:" + register);
         if (hasRegister && register) {
             return;
         }
@@ -604,7 +610,7 @@ public class SessionService {
 
     public void stopSession() {
         clear();
-        registerObservers(false);
+//        registerObservers(false);
         getMsgService().setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE,
                 SessionTypeEnum.None);
     }

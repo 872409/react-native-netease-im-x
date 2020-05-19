@@ -245,8 +245,8 @@
             [dic setObject:[NSString stringWithFormat:@"%@",recent.session.sessionId] forKey:@"contactId"];
             [dic setObject:[NSString stringWithFormat:@"%zd", recent.session.sessionType] forKey:@"sessionType"];
             //未读
-            NSString *strUnreadCount = [NSString stringWithFormat:@"%ld", recent.unreadCount];
-            allUnreadNum = allUnreadNum + [strUnreadCount integerValue];
+            NSString *strUnreadCount = [NSString stringWithFormat:@"%zd", recent.unreadCount];
+            
             [dic setObject:strUnreadCount forKey:@"unreadCount"];
             //群组名称或者聊天对象名称
             [dic setObject:[NSString stringWithFormat:@"%@", [self nameForRecentSession:recent] ] forKey:@"name"];
@@ -285,6 +285,10 @@
             NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:recent.lastMessage.session.sessionId];
             NSString *strMute = user.notifyForNewMsg?@"1":@"0";
             [dic setObject:strMute forKey:@"mute"];
+            
+            if ([strMute isEqualToString:@"1"]){
+                allUnreadNum = allUnreadNum + recent.unreadCount;
+            }
             //X 消息内容扩展
             //X
             [self setContentForRecentSession:recent messageDic:dic];
@@ -299,8 +303,8 @@
                 [dic setObject:[NSString stringWithFormat:@"%zd", recent.session.sessionType] forKey:@"sessionType"];
                 //未读
                 NSString *strUnreadCount = [NSString stringWithFormat:@"%zd", recent.unreadCount];
-                allUnreadNum = allUnreadNum + [strUnreadCount integerValue];
                 [dic setObject:strUnreadCount forKey:@"unreadCount"];
+                
                 //群组名称或者聊天对象名称
                 [dic setObject:[NSString stringWithFormat:@"%@", [self nameForRecentSession:recent] ] forKey:@"name"];
                 //账号
@@ -338,7 +342,10 @@
                 [dic setObject:[NSString stringWithFormat:@"%zd",team.memberNumber] forKey:@"memberCount"];
                 NSString *strMute = team.notifyStateForNewMsg == NIMTeamNotifyStateAll ? @"1" : @"0";
                 [dic setObject:strMute forKey:@"mute"];
-
+                
+                if ([strMute isEqualToString:@"1"]){
+                    allUnreadNum = allUnreadNum + recent.unreadCount;
+                }
                 //X 消息内容扩展
                 //X
                 [self setContentForRecentSession:recent messageDic:dic];
@@ -347,6 +354,8 @@
 
             }
         }
+        
+        
     }
 
     NSDictionary *recentDict = @{@"recents":sessionList,@"unreadCount":[NSString stringWithFormat:@"%zd",allUnreadNum]};

@@ -47,6 +47,7 @@ public class ReactExtendsion {
                         list.add(childMap);
                 }
             }
+
             if (!list.isEmpty()) {
                 return list;
             }

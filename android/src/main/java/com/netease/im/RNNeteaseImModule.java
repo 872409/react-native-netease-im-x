@@ -193,13 +193,29 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      */
     @ReactMethod
     public void autoLogin(String contactId, String token, String forced, final Promise promise) {
-        LogUtil.w(TAG, "_id:" + contactId);
-        LogUtil.w(TAG, "t:" + token);
+        LogUtil.w(TAG, "autoLogin:" + contactId);
+//        LogUtil.w(TAG, "t:" + token);
 //        LogUtil.w(TAG, "md5:" + MD5.getStringMD5(token));
 
         NIMClient.getService(AuthService.class).openLocalCache(contactId);
         LogUtil.w(TAG, "s:" + NIMClient.getStatus().name());
-        LoginService.getInstance().autoLogin();
+        LoginService.getInstance().autoLogin(new RequestCallback<LoginInfo>() {
+
+            @Override
+            public void onSuccess(LoginInfo param) {
+                promise.resolve(param.getAccount());
+            }
+
+            @Override
+            public void onFailed(int code) {
+                promise.reject(code + "", "onFailed");
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                promise.reject("-1", "onException");
+            }
+        });
     }
 
     /**
@@ -518,13 +534,13 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      */
     @ReactMethod
     public void setTeamNotify(String teamId, String mute, final Promise promise) {
-        LogUtil.w(TAG, "setTeamNotify:" + teamId + ",mute:" + mute);
+//        LogUtil.w(TAG, "setTeamNotify:" + teamId + ",mute:" + mute);
         TeamMessageNotifyTypeEnum typeEnum = TeamMessageNotifyTypeEnum.All;
-        if ("2".equals(mute)) {
+        if ("1".equals(mute)) {
             typeEnum = TeamMessageNotifyTypeEnum.Mute;
         } else if ("0".equals(mute)) {
             typeEnum = TeamMessageNotifyTypeEnum.All;
-        } else if ("1".equals(mute)) {
+        } else if ("2".equals(mute)) {
             typeEnum = TeamMessageNotifyTypeEnum.Manager;
         }
         NIMClient.getService(TeamService.class).muteTeam(teamId, typeEnum)//!string2Boolean(mute)
@@ -1552,6 +1568,11 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
         sessionService.queryMessage(messageId, new SessionService.OnMessageQueryListener() {
             @Override
             public int onResult(int code, IMMessage message) {
+
+                if (message == null) {
+                    return 0;
+                }
+
                 Map<String, Object> map = message.getLocalExtension();
                 if (map != null) {
                     if (map.containsKey("resend")) {
@@ -1647,7 +1668,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      */
     @ReactMethod
     public void startSession(String sessionId, String type, final Promise promise) {
-        LogUtil.w(TAG, "startSession" + sessionId);
+//        LogUtil.w(TAG, "startSession" + sessionId);
         if (TextUtils.isEmpty(sessionId)) {
 
             return;
@@ -1674,6 +1695,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      */
     @ReactMethod
     public void startChatMsg(final Promise promise) {
+        LogUtil.w(TAG, "startChatMsg");
         sessionService.registerObservers(true);
     }
 
@@ -1684,6 +1706,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      */
     @ReactMethod
     public void stopChatMsg(final Promise promise) {
+        LogUtil.w(TAG, "stopChatMsg");
         sessionService.registerObservers(false);
     }
 

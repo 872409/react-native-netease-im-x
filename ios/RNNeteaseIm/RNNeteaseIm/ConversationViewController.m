@@ -99,6 +99,11 @@
 //重发消息
 - (void)resendMessage:(NSString *)messageID{
     NSArray *currentMessage = [[[NIMSDK sharedSDK] conversationManager] messagesInSession:self._session messageIds:@[messageID] ];
+    
+    if(currentMessage.count==0){
+        return;
+    }
+    
     NIMMessage *currentM = currentMessage[0];
     NSString *isFriend = [currentM.localExt objectForKey:@"isFriend"];
     if ([isFriend length]) {

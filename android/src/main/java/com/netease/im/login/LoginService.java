@@ -115,8 +115,9 @@ public class LoginService {
 
     }
 
-    public void autoLogin() {
-        login(getLoginInfo(null), null);
+    public void autoLogin(RequestCallback<LoginInfo> callback) {
+        Log.w(TAG, "autoLogin");
+        login(getLoginInfo(null), callback);
     }
 
     public void login(final LoginInfo loginInfoP, final RequestCallback<LoginInfo> callback) {
@@ -124,6 +125,7 @@ public class LoginService {
         loginInfoFuture.setCallback(new RequestCallback<LoginInfo>() {
             @Override
             public void onSuccess(LoginInfo loginInfo) {
+                Log.w(TAG, "onSuccess:" + loginInfo.getAccount());
                 account = loginInfo.getAccount();
                 token = loginInfoP.getToken();
                 initLogin(loginInfo);

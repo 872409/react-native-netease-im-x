@@ -141,7 +141,7 @@ public class ReactCache {
 
                 map = Arguments.createMap();
                 String contactId = contact.getContactId();
-                unreadNumTotal += contact.getUnreadCount();
+//                unreadNumTotal += contact.getUnreadCount();
 
                 map.putString("contactId", contactId);
                 map.putString("unreadCount", String.valueOf(contact.getUnreadCount()));
@@ -163,9 +163,15 @@ public class ReactCache {
                         map.putString("teamType", Integer.toString(team.getType().getValue()));
                         imagePath = team.getIcon();
                         map.putString("memberCount", Integer.toString(team.getMemberCount()));
-                        map.putString("mute", getMessageNotifyType(team.getMessageNotifyType()));
+//                        map.putString("mute", team.getMessageNotifyType()==TeamMessageNotifyTypeEnum.All?"1":"0"  getMessageNotifyType(team.getMessageNotifyType())+"");
+                        map.putString("mute", team.getMessageNotifyType() == TeamMessageNotifyTypeEnum.All ? "1" : "0");
                     }
                 }
+
+                if (map.getString("mute").equals("1")) {
+                    unreadNumTotal += contact.getUnreadCount();
+                }
+
                 map.putString("imagePath", imagePath);
                 map.putString("imageLocal", ImageLoaderKit.getMemoryCachedAvatar(imagePath));
                 map.putString("name", name);
@@ -344,7 +350,7 @@ public class ReactCache {
 //            LogUtil.w(TAG, array + "");
         }
         writableMap.putArray("recents", array);
-        writableMap.putString("unreadCount", Integer.toString(unreadNumTotal));
+        writableMap.putInt("unreadCount", unreadNumTotal);
         return writableMap;
     }
 
@@ -738,14 +744,14 @@ public class ReactCache {
         return writableArray;
     }
 
-    static String getMessageNotifyType(TeamMessageNotifyTypeEnum notifyTypeEnum) {
-        String notify = "1";
+    static int getMessageNotifyType(TeamMessageNotifyTypeEnum notifyTypeEnum) {
+        int notify = 0;
         if (notifyTypeEnum == TeamMessageNotifyTypeEnum.All) {
-            notify = "1";
+            notify = 0;
         } else if (notifyTypeEnum == TeamMessageNotifyTypeEnum.Manager) {
-            notify = "0";
+            notify = 2;
         } else if (notifyTypeEnum == TeamMessageNotifyTypeEnum.Mute) {
-            notify = "0";
+            notify = 1;
         }
         return notify;
     }
@@ -756,17 +762,18 @@ public class ReactCache {
             writableMap.putString("teamId", team.getId());
             writableMap.putString("name", team.getName());
             writableMap.putString("avatar", team.getIcon());
+            writableMap.putString("announcement", team.getAnnouncement());
             writableMap.putString("avatarLocal", ImageLoaderKit.getMemoryCachedAvatar(team.getIcon()));
             writableMap.putString("type", Integer.toString(team.getType().getValue()));
             writableMap.putString("introduce", team.getIntroduce());
             writableMap.putString("createTime", TimeUtil.getTimeShowString(team.getCreateTime(), true));
             writableMap.putString("creator", team.getCreator());
-            writableMap.putString("mute", getMessageNotifyType(team.getMessageNotifyType()));
+//            writableMap.putString("mute", getMessageNotifyType(team.getMessageNotifyType()));
             writableMap.putString("memberCount", Integer.toString(team.getMemberCount()));
             writableMap.putString("memberLimit", Integer.toString(team.getMemberLimit()));
 
             writableMap.putInt("inAllMuteMode", team.isAllMute() ? 1 : 0);
-            writableMap.putInt("notifyState", team.getMessageNotifyType().getValue());
+            writableMap.putInt("notifyState", getMessageNotifyType(team.getMessageNotifyType()));
             writableMap.putInt("joinMode", team.getVerifyType().getValue());
             writableMap.putInt("beInviteMode", team.getTeamBeInviteMode().getValue());
             writableMap.putInt("teamUpdateMode", team.getTeamUpdateMode().getValue());
@@ -788,14 +795,15 @@ public class ReactCache {
         if (teamMember != null) {
             writableMap.putString("contactId", teamMember.getAccount());
             writableMap.putString("type", Integer.toString(teamMember.getType().getValue()));
-            writableMap.putString("alias", NimUserInfoCache.getInstance().getUserDisplayName(teamMember.getAccount()));
+            writableMap.putString("alias", NimUserInfoCache.getInstance().getAlias(teamMember.getAccount()));
+            writableMap.putString("nickname", teamMember.getTeamNick());
             writableMap.putString("name", TeamDataCache.getInstance().getTeamMemberDisplayName(teamMember.getTid(), teamMember.getAccount()));
             writableMap.putString("joinTime", TimeUtil.getTimeShowString(teamMember.getJoinTime(), true));
             String avatar = NimUserInfoCache.getInstance().getAvatar(teamMember.getAccount());
             writableMap.putString("avatar", avatar);
             writableMap.putString("avatarLocal", ImageLoaderKit.getMemoryCachedAvatar(avatar));
             writableMap.putString("isInTeam", boolean2String(teamMember.isInTeam()));
-            writableMap.putString("isMute", boolean2String(teamMember.isMute()));
+            writableMap.putString("isMuted", boolean2String(teamMember.isMute()));
             writableMap.putString("teamId", teamMember.getTid());
             writableMap.putString("isMe", boolean2String(TextUtils.equals(teamMember.getAccount(), LoginService.getInstance().getAccount())));
         }
@@ -1039,7 +1047,7 @@ public class ReactCache {
                     audioObj.putString(MessageConstant.MediaFile.PATH, wrapLocalFile(audioAttachment.getPath()));
                     audioObj.putString(MessageConstant.MediaFile.THUMB_PATH, wrapLocalFile(audioAttachment.getThumbPath()));
                     audioObj.putString(MessageConstant.MediaFile.URL, audioAttachment.getUrl());
-                    audioObj.putString(MessageConstant.MediaFile.DURATION, Long.toString(audioAttachment.getDuration()));
+                    audioObj.putString(MessageConstant.MediaFile.DURATION, Long.toString(audioAttachment.getDuration() / 1000));
                 }
                 itemMap.putMap(MESSAGE_EXTEND, audioObj);
             } else if (item.getMsgType() == MsgTypeEnum.video) {

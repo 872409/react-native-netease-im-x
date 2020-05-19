@@ -22,6 +22,7 @@ public class ImPushConfig {
      * 华为推送证书，请在云信管理后台申请
      */
     public String hwCertificateName;
+    public String hwAppId;
 
     /**
      * 魅族推送 appId

@@ -27,7 +27,7 @@ public class NetworkReceiver extends BroadcastReceiver {
         NetworkInfo activeInfo = manager.getActiveNetworkInfo();
         if (activeInfo != null && activeInfo.isAvailable()) {
             if (NIMClient.getStatus().shouldReLogin()) {
-                LoginService.getInstance().autoLogin();
+                LoginService.getInstance().autoLogin(null);
             }
         } else {
             WritableMap r = Arguments.createMap();
