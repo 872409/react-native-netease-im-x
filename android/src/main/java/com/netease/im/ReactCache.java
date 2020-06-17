@@ -103,6 +103,7 @@ public class ReactCache {
 
     public static void emit(String eventName, Object date) {
         try {
+            Log.e(TAG, (reactContext != null ? "reactContext" : "reactContext is null ") + " emit:" + eventName + " " + (date != null ? date.toString() : "date is null"));
             reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, date);
         } catch (Exception e) {
             e.printStackTrace();
@@ -1176,6 +1177,13 @@ public class ReactCache {
             extend = ReactCache.getTipMessageExtend(item);
 
         }
+        if (item.getMsgType() != MsgTypeEnum.tip) {
+            Map local = item.getLocalExtension();
+            if (local != null) {
+                itemMap.putMap("localExtension", ReactExtendsion.makeHashMap2WritableMap(local));
+            }
+        }
+
 
         if (extend != null) {
             itemMap.putMap(MESSAGE_EXTEND, extend);

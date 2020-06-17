@@ -140,9 +140,9 @@ public class SessionService {
      * @param messages
      */
     public void onIncomingMessage(@NonNull List<IMMessage> messages) {
-        if (this.sessionId == null){
+        if (this.sessionId == null) {
             refreshMessageList(messages);
-            return ;
+            return;
         }
         boolean needRefresh = false;
         List<IMMessage> addedListItems = new ArrayList<>(messages.size());
@@ -546,6 +546,7 @@ public class SessionService {
 //        service.observeAttachmentProgress(attachmentProgressObserver, register);
         service.observeRevokeMessage(revokeMessageObserver, register);
         observerAttachProgress(register);
+
         if (register) {
             registerUserInfoObserver();
         } else {
@@ -778,12 +779,13 @@ public class SessionService {
         attachment.setDigst(CustomAttachmentType.RTCCall);
         attachment.setContent(content);
         IMMessage message = MessageBuilder.createCustomMessage(sessionId, sessionType, CustomAttachmentType.RTCCall, attachment, config);
+        message.setPushContent(push);
         sendMessageSelf(message, onSendMessageListener, false);
     }
 
     public void saveRTCCallMessage(ReadableMap options, OnSendMessageListener onSendMessageListener) {
         String sessionId = options.getString("sessionId");
-        String from = options.getString("from");
+        String from = options.hasKey("from") ? options.getString("from") : null;
 
         String content = ReactNativeJson.convertMapToJson(options.getMap("data")).toJSONString();
 
@@ -940,6 +942,14 @@ public class SessionService {
             LogUtil.w(TAG, "isFriend:" + isFriend);
             if (!isFriend) {
 
+                Map<String, Object> map = message.getLocalExtension();
+                if (map == null) {
+                    map = MapBuilder.newHashMap();
+                }
+
+                map.put("isFriend", false);
+                message.setLocalExtension(map);
+
                 message.setStatus(MsgStatusEnum.fail);
                 CustomMessageConfig config = new CustomMessageConfig();
                 config.enablePush = false;
@@ -961,7 +971,10 @@ public class SessionService {
             public void onFailed(int code) {
                 LogUtil.w(TAG, "code:" + code);
                 if (code == ResponseCode.RES_IN_BLACK_LIST) {
-                    Map<String, Object> map = MapBuilder.newHashMap();
+                    Map<String, Object> map = message.getLocalExtension();
+                    if (map == null) {
+                        map = MapBuilder.newHashMap();
+                    }
                     map.put("resend", false);
                     message.setLocalExtension(map);
                     getMsgService().updateIMMessage(message);
@@ -984,7 +997,11 @@ public class SessionService {
 //        if (customConfig != null) {
 //            String content = customConfig.getPushContent(message);
 //            Map<String, Object> payload = customConfig.getPushPayload(message);
-        message.setPushContent(message.getContent());
+
+        String pushContent = message.getPushContent();
+        if (pushContent == null) {
+            message.setPushContent(message.getContent());
+        }
         Map<String, Object> payload = new HashMap<>();
         Map<String, Object> body = new HashMap<>();
 
@@ -996,7 +1013,7 @@ public class SessionService {
 
         }
         body.put("sessionName", SessionUtil.getSessionName(sessionId, message.getSessionType(), true));
-        payload.put("sessionBody", body);
+        payload.put("payload", body);
         message.setPushPayload(payload);
 //        }
     }

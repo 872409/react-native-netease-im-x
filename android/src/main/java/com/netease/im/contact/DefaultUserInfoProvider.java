@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.netease.im.R;
 import com.netease.im.common.ImageLoaderKit;
@@ -15,7 +16,7 @@ import com.netease.nimlib.sdk.team.model.Team;
 import com.netease.nimlib.sdk.uinfo.UserInfoProvider;
 import com.netease.nimlib.sdk.uinfo.model.UserInfo;
 
-import static com.netease.im.MessageConstant.Card.sessionId;
+//import static com.netease.im.MessageConstant.Card.sessionId;
 
 
 /**
@@ -24,11 +25,11 @@ import static com.netease.im.MessageConstant.Card.sessionId;
  * Created by hzchenkang on 2016/12/19.
  */
 
-public class DefalutUserInfoProvider implements UserInfoProvider {
+public class DefaultUserInfoProvider implements UserInfoProvider {
 
     private Context context;
 
-    public DefalutUserInfoProvider(Context context) {
+    public DefaultUserInfoProvider(Context context) {
         this.context = context;
     }
 
@@ -75,20 +76,22 @@ public class DefalutUserInfoProvider implements UserInfoProvider {
 
     @Override
     public Bitmap getAvatarForMessageNotifier(SessionTypeEnum sessionType, String account) {
-       /*
+        /*
          * 注意：这里最好从缓存里拿，如果加载时间过长会导致通知栏延迟弹出！该函数在后台线程执行！
          */
         Bitmap bm = null;
         int defResId = R.drawable.nim_avatar_default;
 
         if (SessionTypeEnum.P2P == sessionType) {
-            UserInfo user = getUserInfo(sessionId);
+            UserInfo user = getUserInfo(account);
             bm = (user != null) ? ImageLoaderKit.getNotificationBitmapFromCache(user.getAvatar()) : null;
+//            Log.w("DefaultUserInfoProvider", account + ":" + (bm == null ? "bm is null " : "bm cached") + (user == null ? "user is null" : user.getAvatar()));
         } else if (SessionTypeEnum.Team == sessionType) {
             Team team = TeamDataCache.getInstance().getTeamById(account);
             bm = (team != null) ? ImageLoaderKit.getNotificationBitmapFromCache(team.getIcon()) : null;
             defResId = R.drawable.nim_avatar_group;
         }
+
 
         if (bm == null) {
             Drawable drawable = context.getResources().getDrawable(defResId);

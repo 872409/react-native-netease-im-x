@@ -23,6 +23,7 @@ import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.download.BaseImageDownloader;
 import com.nostra13.universalimageloader.core.download.ImageDownloader;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.nostra13.universalimageloader.utils.DiskCacheUtils;
 import com.nostra13.universalimageloader.utils.MemoryCacheUtils;
 import com.nostra13.universalimageloader.utils.StorageUtils;
 
@@ -196,17 +197,17 @@ public class ImageLoaderKit {
     }
 
     public static String getMemoryCachedAvatar(String url) {//TODO
-        return "";
-//        if (url == null || !isImageUriValid(url)) {
-//            return "";
-//        }
-//        String key = getAvatarCacheKey(url);
-//
-//        File file = DiskCacheUtils.findInCache(key, ImageLoader.getInstance().getDiskCache());// 查询磁盘缓存示例
-//        if (file == null) {
-////            asyncLoadAvatarBitmapToCache(url);
-//        }
-//        return file == null ? "" : file.getAbsolutePath();
+//        return "";
+        if (url == null || !isImageUriValid(url)) {
+            return "";
+        }
+        String key = getAvatarCacheKey(url);
+
+        File file = DiskCacheUtils.findInCache(key, ImageLoader.getInstance().getDiskCache());// 查询磁盘缓存示例
+        if (file == null) {
+            asyncLoadAvatarBitmapToCache(url);
+        }
+        return file == null ? "" : file.getAbsolutePath();
     }
 
     private static Set<String> cacheLoad = new HashSet<>();

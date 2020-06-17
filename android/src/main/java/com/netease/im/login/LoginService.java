@@ -202,7 +202,6 @@ public class LoginService {
     private Observer<CustomNotification> notificationObserver = new Observer<CustomNotification>() {
         @Override
         public void onEvent(CustomNotification customNotification) {
-
             SessionUtil.receiver(getNotificationManager(), customNotification);
         }
     };

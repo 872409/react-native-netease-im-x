@@ -447,8 +447,9 @@
 - (void)sendMakeFriendSucessMessgae:(NSString *)strUserId content:(NSString *)content{
     NIMMessage *message = [[NIMMessage alloc] init];
     message.text    = content;
+    message.apnsContent = content;
     NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
-    setting.apnsEnabled = NO;
+    setting.apnsEnabled = YES;
     message.setting = setting;
     NIMSession *session = [NIMSession session:strUserId type:NIMSessionTypeP2P];
     //发送消息
@@ -460,9 +461,11 @@
     NIMSession *session2  = [NIMSession session:strUserId type:NIMSessionTypeP2P];
     // 获得文件附件对象
     NIMTipObject *object = [[NIMTipObject alloc] init];
+    
     // 构造出具体消息并注入附件
     NIMMessage *message2 = [[NIMMessage alloc] init];
     message2.messageObject = object;
+    message2.setting = setting;
     message2.text = @"friend_Verified";
     
     // 发送消息

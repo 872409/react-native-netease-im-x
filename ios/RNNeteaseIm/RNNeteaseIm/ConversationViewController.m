@@ -231,6 +231,13 @@
         [dic setObject:[NSNumber numberWithBool:NO] forKey:@"isShowTime"];
         [dic setObject:[NSString stringWithFormat:@"%@", message.messageId] forKey:@"msgId"];
         NSLog(@"NIMMessageTypeCustom：message.messageType %ld",message.messageType);
+      
+        if(message.messageType!=NIMMessageTypeTip){
+            if(message.localExt!=nil){
+                [dic setObject:message.localExt forKey:@"localExtension"];
+            }
+        }
+        
         if (message.messageType == NIMMessageTypeText) {
             [dic setObject:@"text" forKey:@"msgType"];
         }else if (message.messageType  == NIMMessageTypeImage) {
@@ -523,14 +530,19 @@
 }
 //发送自定义消息3
 -(void)sendCustomMessage:(NSInteger )custType data:(NSDictionary *)dataDict toSession:(NIMSession *)session  apns:(nonnull  NSString *)apns{
+    NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
+    setting.shouldBeCounted = false;
+    [self sendCustomMessage:custType data:dataDict toSession:session apns:setting];
+}
+
+
+-(void)sendCustomMessage:(NSInteger )custType data:(NSDictionary *)dataDict toSession:(NIMSession *)session  apns:(nonnull  NSString *)apns setting:(NIMMessageSetting *)setting{
     NIMMessage *message;
     DWCustomAttachment *obj = [[DWCustomAttachment alloc]init];
     obj.custType = custType;
     obj.dataDict = dataDict;
     message = [NIMMessageMaker msgWithCustomAttachment:obj andeSession:session apns:apns];
     
-    NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
-    setting.shouldBeCounted = false;
     message.setting = setting;
     message.apnsContent = apns;
     
@@ -604,8 +616,13 @@
     NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
     setting.shouldBeCounted = shouldBeCounted;
     setting.apnsWithPrefix = YES;
+    setting.apnsEnabled = [apns length]>0;
     message.setting = setting;
-    message.apnsContent = apns;
+    
+    if(setting.apnsEnabled){
+        message.apnsContent = apns;
+    }
+//    NSLog(@"%@ length:%d setting.apnsEnabled:%@ message.apnsContent:%@",apns,[apns length],setting.apnsEnabled,message.apnsContent);
     
     if ([self isFriendToSendMessage:message toSession:session]) {
         [[NIMSDK sharedSDK].chatManager sendMessage:message toSession:session error:nil];
@@ -613,10 +630,11 @@
 }
 
 -(void)sendRTCCallMessage:(NSDictionary *)options{
-    NSString *sessionId = [options objectForKey:@"sessionId"];
+    NSString *sessionId = [options jsonString:@"sessionId"];
     NSDictionary *data = [options jsonDict:@"data"];
-    NSString *apns = [options objectForKey:@"apns"];
+    NSString *apns = [options jsonString:@"apns"];
     BOOL shouldBeCounted = [options jsonBool:@"counted"];
+//    NSLog(@"sendRTCCallMessage %@ apns:%@",options,anps);
     
     NIMSession *session = [NIMSession session:sessionId type:NIMSessionTypeP2P];
     [self sendRTCCallMessage:data toSession:session shouldBeCounted:shouldBeCounted apns:apns];
@@ -816,10 +834,15 @@
     NSInteger msgType = [options jsonInteger:@"msgType"];
     NSDictionary *data = [options jsonDict:@"data"];
     NSString *apns = [options objectForKey:@"apns"];
+    
+    NIMMessageSetting *setting = [[NIMMessageSetting alloc]init];
+    
+    setting.shouldBeCounted = [options objectForKey:@"enableUnreadCount"]!=nil? [options jsonBool:@"enableUnreadCount"]:true;
+    setting.apnsEnabled = [options objectForKey:@"enablePush"]!=nil? [options jsonBool:@"enablePush"]:true;
     //    NSString *apns_data = [options objectForKey:@"apns_data"];
     
     NIMSession *session = [NIMSession session:sessionId type:sessionType];
-    [self sendCustomMessage:msgType data:data toSession:session apns:apns];
+    [self sendCustomMessage:msgType data:data toSession:session apns:apns setting:setting];
     
 }
 
@@ -910,7 +933,7 @@
             tipMessage.timestamp = message.timestamp;
             [[NIMSDK sharedSDK].conversationManager saveMessage:tipMessage forSession:self._session completion:nil];
         }
-        message.localExt = @{@"isFriend":@"NO"};
+        message.localExt = @{@"isFriend":@"NO",@"resend":[NSNumber numberWithBool:false]};
         [[NIMSDK sharedSDK].conversationManager updateMessage:message forSession:self._session completion:nil];
         [self refrashMessage:message From:@"send"];
     }
@@ -1271,6 +1294,13 @@
             [dic2 setObject:@"send_failed" forKey:@"status"];
         }
     }
+    
+    if(message.messageType!=NIMMessageTypeTip){
+       if(message.localExt!=nil){
+           [dic2 setObject:message.localExt forKey:@"localExtension"];
+       }
+    }
+    
     [dic2 setObject: [NSNumber numberWithBool:message.isOutgoingMsg] forKey:@"isOutgoing"];
     [dic2 setObject:[NSString stringWithFormat:@"%f", message.timestamp] forKey:@"timeString"];
     //    [dic2 setObject:[NSNumber numberWithBool:NO] forKey:@"isShowTime"];

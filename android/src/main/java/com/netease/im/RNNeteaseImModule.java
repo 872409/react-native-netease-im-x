@@ -95,6 +95,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import static com.netease.im.ReceiverMsgParser.getIntent;
 
 
@@ -291,24 +293,24 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      *
      * @param contactId
      * @param verifyType 1 直接添加
-     * @param msg        备注
+     * @param payload        备注
      * @param promise
      */
     @ReactMethod
-    public void addFriendWithType(final String contactId, String verifyType, final String msg, final Promise promise) {
+    public void addFriendWithType(final String contactId, String verifyType, final String payload, final Promise promise) {
         VerifyType verifyTypeAdd = VerifyType.VERIFY_REQUEST;
         if ("1".equals(verifyType)) {
             verifyTypeAdd = VerifyType.DIRECT_ADD;
         }
         LogUtil.w(TAG, "addFriend:" + contactId);
         final VerifyType finalVerifyTypeAdd = verifyTypeAdd;
-        NIMClient.getService(FriendService.class).addFriend(new AddFriendData(contactId, verifyTypeAdd, msg))
+        NIMClient.getService(FriendService.class).addFriend(new AddFriendData(contactId, verifyTypeAdd, payload))
                 .setCallback(new RequestCallbackWrapper<Void>() {
                     @Override
                     public void onResult(int code, Void aVoid, Throwable throwable) {
                         if (code == ResponseCode.RES_SUCCESS) {
-                            String name = NimUserInfoCache.getInstance().getUserName(LoginService.getInstance().getAccount());
-                            SessionUtil.sendAddFriendNotification(LoginService.getInstance().getAccount(), name, contactId, msg, finalVerifyTypeAdd);
+//                            String name = NimUserInfoCache.getInstance().getUserName(LoginService.getInstance().getAccount());
+//                            SessionUtil.sendAddFriendNotification(LoginService.getInstance().getAccount(), name, contactId, apns, finalVerifyTypeAdd);
                             promise.resolve("" + code);
                         } else {
                             promise.reject("" + code, "");
@@ -736,18 +738,47 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     @ReactMethod
     public void sendRTCCallMessage(ReadableMap options) {
         String sessionId = options.getString("sessionId");
-        String anps = options.getString("anps");
+        String apns = options.getString("apns");
         int sessionTypeInt = options.getInt("sessionType");
         boolean counted = options.getBoolean("counted");
         SessionTypeEnum sessionType = SessionUtil.getSessionType(sessionTypeInt);
         String content = ReactNativeJson.convertMapToJson(options.getMap("data")).toJSONString();
 
-        sessionService.sendRTCCallMessage(sessionId, sessionType, content, anps, counted, new SessionService.OnSendMessageListener() {
+        sessionService.sendRTCCallMessage(sessionId, sessionType, content, apns, counted, new SessionService.OnSendMessageListener() {
             @Override
             public int onResult(int code, IMMessage message) {
                 return 0;
             }
         });
+    }
+
+    @ReactMethod
+    public void pushNotificationDisable(Boolean disable) {
+        NIMClient.toggleNotification(!disable);
+    }
+
+    @ReactMethod
+    public void pushNotificationDisplayType(int showContent) {
+        StatusBarNotificationConfig config = IMApplication.getNotificationConfig();
+        config.hideContent = showContent == 2;
+        NIMClient.updateStatusBarNotificationConfig(config);
+    }
+
+    @ReactMethod
+    public void setChattingAccount(String account, int sessionType) {
+        LogUtil.w(TAG, account + ":" + sessionType);
+        sessionService.getMsgService().setChattingAccount(account, SessionTypeEnum.typeOfValue(sessionType));
+    }
+
+
+    //TODO
+    @ReactMethod
+    public void pushNotificationSetting(final Promise promise) {
+        StatusBarNotificationConfig config = IMApplication.getNotificationConfig();
+        WritableMap map = new WritableNativeMap();
+        map.putBoolean("disable", false);
+        map.putInt("displayType", config.hideContent ? 2 : 1);
+        promise.resolve(map);
     }
 
 
@@ -1603,16 +1634,6 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
         } else {
             promise.reject("-1", "");
         }
-    }
-
-    //TODO
-    @ReactMethod
-    public void pushNotificationSetting(final Promise promise) {
-        StatusBarNotificationConfig config = IMApplication.getNotificationConfig();
-        WritableMap map = new WritableNativeMap();
-        map.putBoolean("disable", false);
-        map.putInt("displayType", config.hideContent ? 2 : 1);
-        promise.resolve(map);
     }
 
     @ReactMethod

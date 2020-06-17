@@ -57,50 +57,50 @@
     NIMCustomObject *customObject     = [[NIMCustomObject alloc] init];
     customObject.attachment           = attachment;
     message.messageObject             = customObject;
-    NSString *text = @"";
+//    NSString *text = @"";
     
     if(attachment.custTypeStr == nil || [attachment.custTypeStr length]==0){
         attachment.custTypeStr = [NSString stringWithFormat:@"%zd",attachment.custType];
     }
     
-    switch (attachment.custType) {
-        case CustomMessgeTypeRedpacket:
-            text = [NSString stringWithFormat:@"[红包]%@", [attachment.dataDict objectForKey:@"comments"]];
-            break;
-        case CustomMessgeTypeRTCCall:
-            text = @"rtcCall";
-            break;
-        case CustomMessgeTypeBankTransfer:
-            text = [NSString stringWithFormat:@"[转账]%@", [attachment.dataDict objectForKey:@"comments"]];
-            break;
-        case CustomMessgeTypeUrl:
-            text = [attachment.dataDict objectForKey:@"title"];
-            break;
-        case CustomMessgeTypeAccountNotice:
-            text = [attachment.dataDict objectForKey:@"title"];
-            break;
-        case CustomMessgeTypeRedPacketOpenMessage:{
-            text = @"";
-            NIMMessageSetting *seting = [[NIMMessageSetting alloc]init];
-            seting.apnsEnabled = NO;
-            seting.shouldBeCounted = NO;
-            message.setting = seting;
-        }
-            break;
-        case CustomMessgeTypeBusinessCard: //名片
-        {
-            text = [NSString stringWithFormat:@"[名片]%@", [attachment.dataDict objectForKey:@"name"]];
-        }
-            break;
-        case CustomMessgeTypeCustom: //自定义
-        {
-            text = [NSString stringWithFormat:@"%@", [attachment.dataDict objectForKey:@"pushContent"]];
-        }
-            break;
-        default:
-            text = attachment.custTypeStr;
-            break;
-    }
+//    switch (attachment.custType) {
+//        case CustomMessgeTypeRedpacket:
+//            text = [NSString stringWithFormat:@"[红包]%@", [attachment.dataDict objectForKey:@"comments"]];
+//            break;
+//        case CustomMessgeTypeRTCCall:
+//            text = @"rtcCall";
+//            break;
+//        case CustomMessgeTypeBankTransfer:
+//            text = [NSString stringWithFormat:@"[转账]%@", [attachment.dataDict objectForKey:@"comments"]];
+//            break;
+//        case CustomMessgeTypeUrl:
+//            text = [attachment.dataDict objectForKey:@"title"];
+//            break;
+//        case CustomMessgeTypeAccountNotice:
+//            text = [attachment.dataDict objectForKey:@"title"];
+//            break;
+//        case CustomMessgeTypeRedPacketOpenMessage:{
+//            text = @"";
+//            NIMMessageSetting *seting = [[NIMMessageSetting alloc]init];
+//            seting.apnsEnabled = NO;
+//            seting.shouldBeCounted = NO;
+//            message.setting = seting;
+//        }
+//            break;
+//        case CustomMessgeTypeBusinessCard: //名片
+//        {
+//            text = [NSString stringWithFormat:@"[名片]%@", [attachment.dataDict objectForKey:@"name"]];
+//        }
+//            break;
+//        case CustomMessgeTypeCustom: //自定义
+//        {
+//            text = [NSString stringWithFormat:@"%@", [attachment.dataDict objectForKey:@"pushContent"]];
+//        }
+//            break;
+//        default:
+//            text = attachment.custTypeStr;
+//            break;
+//    }
     message.apnsContent = apns;
     [NIMMessageMaker setupMessagePushBody:message andSession:session];
     return message;

@@ -26,6 +26,7 @@ public class ReactExtendsion {
      * @param maxLevel
      * @return
      */
+    @SuppressWarnings("unchecked")
     public static List makeReadableArray2List(ReadableArray readableArray, int level, int maxLevel) {
         if (readableArray != null && readableArray.size() > 0) {
             List list = new ArrayList<>();
@@ -61,6 +62,7 @@ public class ReactExtendsion {
      * @param maxLevel
      * @return
      */
+    @SuppressWarnings("unchecked")
     public static Map makeReadableMap2HashMap(ReadableMap readableMap, int level, int maxLevel) {
 
         if (readableMap != null) {

@@ -81,6 +81,7 @@ public abstract class AbstractDataList {
             }
         });
     }
+    @SuppressWarnings("unchecked")
     protected static final class Group {
         final String id;
 
@@ -159,6 +160,7 @@ public abstract class AbstractDataList {
             }
         }
     }
+
     public void clear(){
         if(groupMap!=null){
             groupMap.clear();

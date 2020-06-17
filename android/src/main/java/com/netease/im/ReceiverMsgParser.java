@@ -45,6 +45,7 @@ public class ReceiverMsgParser {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public static Bundle openIntent(Intent intent) {
         Bundle result = new Bundle();
         if (intent != null && canAutoLogin()) {
@@ -92,7 +93,7 @@ public class ReceiverMsgParser {
                     r.putString("sessionType", Integer.toString(message.getSessionType().getValue()));
                     r.putString("sessionId", message.getSessionId());
                     r.putString("sessionName", SessionUtil.getSessionName(message.getSessionId(), message.getSessionType(), false));
-                    rr.putMap("sessionBody", r);
+                    rr.putMap("payload", r);
                 }
             } else if (intent.hasExtra(Extras.EXTRA_JUMP_P2P)) {
                 Intent data = intent.getParcelableExtra(Extras.EXTRA_DATA);
@@ -103,7 +104,7 @@ public class ReceiverMsgParser {
                     r.putString("sessionType", Integer.toString(SessionTypeEnum.P2P.getValue()));
                     r.putString("sessionId", account);
                     r.putString("sessionName", SessionUtil.getSessionName(account, SessionTypeEnum.P2P, false));
-                    rr.putMap("sessionBody", r);
+                    rr.putMap("payload", r);
                 }
 
             }

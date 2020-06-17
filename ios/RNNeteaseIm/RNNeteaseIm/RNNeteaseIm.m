@@ -406,10 +406,7 @@ RCT_EXPORT_METHOD(sendCardMessage:(nonnull  NSDictionary *)options){
 
 
 
-////发送自定义消息
-//RCT_EXPORT_METHOD(sendRTCCallMessage:(nonnull  NSDictionary *)attachment){
-//    [[ConversationViewController initWithConversationViewController] sendRTCCallMessage:attachment];
-//}
+ 
 //发送视频消息
 RCT_EXPORT_METHOD(sendVideoMessage:(nonnull  NSString *)file duration:(nonnull  NSString *)duration width:(nonnull  NSString *)width height:(nonnull  NSString *)height displayName:(nonnull  NSString *)displayName  apns:(nonnull  NSString *)apns){
     [[ConversationViewController initWithConversationViewController]sendVideoMessage:file duration:duration width:width height:height displayName:displayName apns:apns];

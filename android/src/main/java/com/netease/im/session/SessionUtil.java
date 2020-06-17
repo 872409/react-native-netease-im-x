@@ -2,10 +2,13 @@ package com.netease.im.session;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import android.os.Build;
 import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -75,14 +78,36 @@ public class SessionUtil {
     }
 
     private static void appendPushConfig(IMMessage message) {
-//        CustomPushContentProvider customConfig = NimUIKit.getCustomPushContentProvider();
+//        CustomPushContentProvider customConfig = null;//NimUIKit.getCustomPushContentProvider();
 //        if (customConfig != null) {
 //            String content = customConfig.getPushContent(message);
 //            Map<String, Object> payload = customConfig.getPushPayload(message);
-//            message.setPushContent(content);
-//            message.setPushPayload(payload);
+        message.setPushContent(message.getContent());
+        Map<String, Object> payload = new HashMap<>();
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("sessionType", String.valueOf(message.getSessionType().getValue()));
+        if (message.getSessionType() == SessionTypeEnum.P2P) {
+            body.put("sessionId", LoginService.getInstance().getAccount());
+        } else if (message.getSessionType() == SessionTypeEnum.Team) {
+            body.put("sessionId", message.getSessionId());
+
+        }
+        body.put("sessionName", SessionUtil.getSessionName(message.getSessionId(), message.getSessionType(), true));
+        payload.put("payload", body);
+        message.setPushPayload(payload);
 //        }
     }
+//
+//    private static void appendPushConfig(IMMessage message) {
+////        CustomPushContentProvider customConfig = NimUIKit.getCustomPushContentProvider();
+////        if (customConfig != null) {
+////            String content = customConfig.getPushContent(message);
+////            Map<String, Object> payload = customConfig.getPushPayload(message);
+////            message.setPushContent(content);
+////            message.setPushPayload(payload);
+////        }
+//    }
 
     /**
      * 设置最近联系人的消息为已读
@@ -136,24 +161,26 @@ public class SessionUtil {
 //        sendCustomNotification(account, SessionTypeEnum.P2P, CUSTOM_Notification, content);
     }
 
-    public static void receiver(NotificationManager manager, CustomNotification customNotification) {
-//        LogUtil.w("SessionUtil content", customNotification.getContent());
+    public static void receiver( NotificationManager manager, CustomNotification customNotification) {
+//        LogUtil.w("SessionUtil receiver", customNotification.getContent());
 //        customNotification.getTime()
         Map<String, Object> map = customNotification.getPushPayload();
-        LogUtil.w("SessionUtil payload", ReactNativeJson.convertMapToJson(ReactExtendsion.makeHashMap2WritableMap(map)).toJSONString());
+//        LogUtil.w("SessionUtil payload", ReactNativeJson.convertMapToJson(ReactExtendsion.makeHashMap2WritableMap(map)).toJSONString());
         if (map != null && map.containsKey("type")) {
             String type = (String) map.get("type");
-            if (SessionUtil.CUSTOM_Notification.equals(type)) {
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(IMApplication.getContext());
-                builder.setContentTitle("请求加为好友");
-                builder.setContentText(customNotification.getApnsText());
-                builder.setAutoCancel(true);
-                PendingIntent contentIntent = PendingIntent.getActivity(
-                        IMApplication.getContext(), 0, new Intent(IMApplication.getContext(), IMApplication.getMainActivityClass()), 0);
-                builder.setContentIntent(contentIntent);
-                builder.setSmallIcon(IMApplication.getNotify_msg_drawable_id());
-                manager.notify((int) System.currentTimeMillis(), builder.build());
-            }
+
+//            LogUtil.w("receiver type", type);
+//            if (SessionUtil.CUSTOM_Notification.equals(type)) {
+//                NotificationCompat.Builder builder = new NotificationCompat.Builder(IMApplication.getContext());
+//                builder.setContentTitle("请求加为好友");
+//                builder.setContentText(customNotification.getApnsText());
+//                builder.setAutoCancel(true);
+//                PendingIntent contentIntent = PendingIntent.getActivity(
+//                        IMApplication.getContext(), 0, new Intent(IMApplication.getContext(), IMApplication.getMainActivityClass()), 0);
+//                builder.setContentIntent(contentIntent);
+//                builder.setSmallIcon(IMApplication.getNotify_msg_drawable_id());
+//                manager.notify((int) System.currentTimeMillis(), builder.build());
+//            }
 
             map.put("timestamp", customNotification.getTime());
             map.put("notificationId", "");
@@ -182,40 +209,6 @@ public class SessionUtil {
             ReactCache.emit(ReactCache.observeCustomNotice, ReactExtendsion.makeHashMap2WritableMap(map));
 
         }
-//        else {
-//            String content = customNotification.getContent();
-//            if (!TextUtils.isEmpty(content)) {
-//                JSONObject object = JSON.parseObject(content);
-//                if (object == null) {
-//                    return;
-//                }
-//
-//                JSONObject data = object.getJSONObject("data");
-//
-//                JSONObject dict = data.getJSONObject("dict");
-////                String sendId = customNotification.getSessionId();
-////                String openId = dict.getString("openId");
-////                String hasRedPacket = dict.getString("hasRedPacket");
-////                String serialNo = dict.getString("serialNo");
-//
-////                String timestamp = data.getString("timestamp");
-////                long t = customNotification.getTime() / 1000;
-////                try {
-////                    t = Long.parseLong(timestamp);
-////                } catch (NumberFormatException e) {
-////                    t = System.currentTimeMillis() / 1000;
-////                    e.printStackTrace();
-////                }
-////                LogUtil.w("timestamp","timestamp:"+timestamp);
-////                LogUtil.w("timestamp","t:"+t);
-////                LogUtil.w("timestamp",""+data);
-////                String sessionId = data.getString("sessionId");
-////                String sessionType = data.getString("sessionType");
-////                final String id = sessionId;//getSessionType(sessionType) == SessionTypeEnum.P2P ? openId :
-////                sendRedPacketOpenLocal(id, getSessionType(sessionType), sendId, openId, hasRedPacket, serialNo, t);
-//            }
-//        }
-
     }
 
     /**
@@ -257,6 +250,7 @@ public class SessionUtil {
         notification.setSessionType(sessionType);
 
         CustomNotificationConfig config = new CustomNotificationConfig();
+
         config.enablePush = options.getBoolean("apnsEnabled");
         config.enableUnreadCount = options.getBoolean("shouldBeCounted");
         config.enablePushNick = options.getBoolean("apnsWithPrefix");

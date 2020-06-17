@@ -1,21 +1,27 @@
 package com.netease.im;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.LocationProvider;
+import android.os.Build;
 import android.os.Environment;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.netease.im.common.ImageLoaderKit;
 import com.netease.im.common.sys.SystemUtil;
-import com.netease.im.contact.DefalutUserInfoProvider;
 import com.netease.im.contact.DefaultContactProvider;
+import com.netease.im.contact.DefaultUserInfoProvider;
 import com.netease.im.login.LoginService;
 import com.netease.im.session.SessionUtil;
 import com.netease.im.session.extension.CustomAttachParser;
@@ -30,6 +36,7 @@ import com.netease.im.uikit.contact.core.ContactProvider;
 import com.netease.im.uikit.contact.core.query.PinYin;
 import com.netease.im.uikit.session.helper.MessageHelper;
 import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.NimIntent;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.SDKOptions;
 import com.netease.nimlib.sdk.StatusBarNotificationConfig;
@@ -111,7 +118,8 @@ public class IMApplication {
         DEBUG = debugAble;
         LogUtil.setDebugAble(debugAble);
     }
-//
+
+    //
 //    private static Observer<CustomNotification> notificationObserver = new Observer<CustomNotification>() {
 //        @Override
 //        public void onEvent(CustomNotification customNotification) {
@@ -119,6 +127,60 @@ public class IMApplication {
 //            SessionUtil.receiver(notificationManager, customNotification);
 //        }
 //    };
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public static void onReceiveCustomNotification(Context context, Intent intent) {
+        String action = context.getPackageName() + NimIntent.ACTION_RECEIVE_CUSTOM_NOTIFICATION;
+        if (action.equals(intent.getAction())) {
+            CustomNotification notification = (CustomNotification) intent.getSerializableExtra(NimIntent.EXTRA_BROADCAST_MSG);
+            NotificationManager notificationManager = (NotificationManager) IMApplication.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            SessionUtil.receiver(notificationManager, notification);
+
+        }
+    }
+
+
+//
+//    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+//    public static void showRTCNotification(Context context, Intent intent) {
+//        final NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//        NotificationCompat.Builder builder3;
+//
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            String channelId = "nim_message_channel_001";
+//            builder3 = new NotificationCompat.Builder(context, channelId);
+//        } else {
+//            builder3 = new NotificationCompat.Builder(context);
+//        }
+//
+//        builder3.setSmallIcon(notify_msg_drawable_id);
+//        builder3.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), notify_msg_drawable_id));
+//        builder3.setAutoCancel(true);
+//        builder3.setDefaults(NotificationCompat.DEFAULT_SOUND);
+//        //设置震动方式，延迟零秒，震动一秒，延迟一秒、震动一秒
+//        builder3.setVibrate(new long[]{0, 1000, 1000, 1000});
+//
+//        builder3.setOnlyAlertOnce(false);
+//        builder3.setContentTitle("dddd");
+//
+//
+////        Intent intent3 = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.jianshu.com/p/82e249713f1b"));
+//        PendingIntent pendingIntent3 = PendingIntent.getActivity(context, 0, intent, 0);
+//        builder3.setContentIntent(pendingIntent3);
+//
+//
+//        Intent XuanIntent = new Intent();
+//        XuanIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//        XuanIntent.setClass(context, mainActivityClass);
+//
+//        PendingIntent xuanpengdIntent = PendingIntent.getActivity(context, 0, XuanIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        builder3.setFullScreenIntent(xuanpengdIntent, true);
+//        builder3.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+//        mNotificationManager.notify(2, builder3.build());
+//
+//    }
+
 
     private static boolean inMainProcess(Context context) {
         String packageName = context.getPackageName();
@@ -167,7 +229,7 @@ public class IMApplication {
         options.thumbnailSize = ImageUtil.getImageMaxEdge();
 
         // 用户信息提供者
-        options.userInfoProvider = new DefalutUserInfoProvider(context);
+        options.userInfoProvider = new DefaultUserInfoProvider(context);
 
         // 定制通知栏提醒文案（可选，如果不定制将采用SDK默认文案）
         options.messageNotifierCustomization = messageNotifierCustomization;
@@ -185,6 +247,7 @@ public class IMApplication {
         // 推送配置
         if (miPushConfig != null) {
             MixPushConfig pushConfig = new MixPushConfig();
+            pushConfig.fcmCertificateName = miPushConfig.fcmCertificateName;
             pushConfig.xmAppId = miPushConfig.xmAppId;
             pushConfig.xmAppKey = miPushConfig.xmAppKey;
             pushConfig.xmCertificateName = miPushConfig.xmCertificateName;
@@ -196,6 +259,7 @@ public class IMApplication {
     }
 
     // 这里开发者可以自定义该应用初始的 StatusBarNotificationConfig
+    @SuppressWarnings("unchecked")
     private static StatusBarNotificationConfig loadStatusBarNotificationConfig(Context context) {
         StatusBarNotificationConfig config = new StatusBarNotificationConfig();
         // 点击通知需要跳转到的界面
@@ -230,6 +294,7 @@ public class IMApplication {
             userConfig.notificationFolded = config.notificationFolded;
 //          userConfig.notificationColor = Color.parseColor("#3a9efb");
         }
+        userConfig.showBadge = true;
         // 持久化生效
 //        UserPreferences.setStatusConfig(config);
         // SDK statusBarNotificationConfig 生效
@@ -312,7 +377,7 @@ public class IMApplication {
     private static void initUserInfoProvider(UserInfoProvider userInfoProvider) {
 
         if (userInfoProvider == null) {
-            userInfoProvider = new DefalutUserInfoProvider(context);
+            userInfoProvider = new DefaultUserInfoProvider(context);
         }
 
         IMApplication.userInfoProvider = userInfoProvider;
