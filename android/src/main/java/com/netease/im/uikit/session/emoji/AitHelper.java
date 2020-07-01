@@ -79,6 +79,7 @@ public class AitHelper {
         return matcher.find();
     }
 
+    @SuppressWarnings({ "unchecked" })
     public static boolean hasAitExtention(RecentContact recentContact) {
         if (recentContact == null || recentContact.getSessionType() != SessionTypeEnum.Team) {
             return false;
@@ -105,6 +106,7 @@ public class AitHelper {
     }
 
 
+    @SuppressWarnings({ "unchecked" })
     public static void buildAitExtentionByMessage(Map<String, Object> extention, IMMessage message) {
 
         if (extention == null || message == null || message.getSessionType() != SessionTypeEnum.Team) {

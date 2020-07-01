@@ -45,6 +45,7 @@ public class RNPinYinModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    @SuppressWarnings({ "unchecked" })
     public void sortPinYin(ReadableArray aa, String key, Promise promise) {
 
         if (aa != null && aa.size() > 0) {

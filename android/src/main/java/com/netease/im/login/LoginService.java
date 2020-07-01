@@ -4,8 +4,6 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Parcel;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.netease.im.IMApplication;
@@ -14,6 +12,7 @@ import com.netease.im.session.SessionUtil;
 import com.netease.im.team.TeamListService;
 import com.netease.im.uikit.LoginSyncDataStatusObserver;
 import com.netease.im.uikit.cache.DataCacheManager;
+import com.netease.im.uikit.common.util.log.LogUtil;
 import com.netease.nimlib.sdk.AbortableFuture;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.Observer;
@@ -27,8 +26,6 @@ import com.netease.nimlib.sdk.msg.SystemMessageService;
 import com.netease.nimlib.sdk.msg.constant.SystemMessageType;
 import com.netease.nimlib.sdk.msg.model.CustomNotification;
 import com.netease.nimlib.sdk.msg.model.SystemMessage;
-
-import java.util.prefs.Preferences;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -95,7 +92,7 @@ public class LoginService {
         return this.loginInfo;
     }
 
-    void initLogin(LoginInfo loginInfo) {
+    void saveLoginInfo(LoginInfo loginInfo) {
         this.account = loginInfo.getAccount();
         this.token = loginInfo.getToken();
         this.loginInfo = loginInfo;
@@ -120,6 +117,7 @@ public class LoginService {
         login(getLoginInfo(null), callback);
     }
 
+    @SuppressWarnings({"unchecked"})
     public void login(final LoginInfo loginInfoP, final RequestCallback<LoginInfo> callback) {
         loginInfoFuture = NIMClient.getService(AuthService.class).login(loginInfoP);
         loginInfoFuture.setCallback(new RequestCallback<LoginInfo>() {
@@ -128,13 +126,12 @@ public class LoginService {
                 Log.w(TAG, "onSuccess:" + loginInfo.getAccount());
                 account = loginInfo.getAccount();
                 token = loginInfoP.getToken();
-                initLogin(loginInfo);
+                saveLoginInfo(loginInfo);
                 if (callback != null) {
                     callback.onSuccess(loginInfo);
                 }
 
-                registerObserver(true);
-                startLogin();
+                afterFirstLogin();
                 loginInfoFuture = null;
             }
 
@@ -158,6 +155,12 @@ public class LoginService {
             }
         });
 
+    }
+
+
+    public void afterFirstLogin() {
+        registerObserver(true);
+        startLogin();
     }
 
 
@@ -186,6 +189,7 @@ public class LoginService {
 //    SysMessageObserver sysMessageObserver = new SysMessageObserver();
 
     synchronized void registerObserver(boolean register) {
+        LogUtil.e(TAG, "registerObserver: register " + (register ? "true" : "false") + " hasRegister:" + (hasRegister ? "true" : "false"));
         if (hasRegister && register) {
             return;
         }

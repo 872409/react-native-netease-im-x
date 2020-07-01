@@ -78,6 +78,7 @@ public class ReceiverMsgParser {
         return result;
     }
 
+    @SuppressWarnings({ "unchecked" })
     public static WritableMap getWritableMap(Intent intent) {
         WritableMap rr = Arguments.createMap();
         if (intent != null && canAutoLogin()) {

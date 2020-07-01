@@ -1,13 +1,17 @@
 package com.netease.im;
 
+import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.JSIModule;
+import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
+import com.facebook.react.common.LifecycleState;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.netease.im.common.ImageLoaderKit;
 import com.netease.im.login.LoginService;
@@ -101,13 +105,36 @@ public class ReactCache {
         return reactContext;
     }
 
-    public static void emit(String eventName, Object date) {
+    public static boolean canEmit() {
+        return reactContext != null && reactContext.getCurrentActivity() != null;
+    }
+
+    public static boolean mainActiveInBackground() {
+        if (reactContext == null || reactContext.getCurrentActivity() == null) {
+            return true;
+        }
+
+        LifecycleState state = reactContext.getLifecycleState();
+
+        return state != LifecycleState.RESUMED;
+    }
+
+    public static boolean emit(String eventName, Object date) {
+
         try {
-            Log.e(TAG, (reactContext != null ? "reactContext" : "reactContext is null ") + " emit:" + eventName + " " + (date != null ? date.toString() : "date is null"));
-            reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, date);
+            if (reactContext == null) {
+                Log.e(TAG, "reactContext is null");
+                return false;
+            }
+
+            DeviceEventManagerModule.RCTDeviceEventEmitter module = reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
+            module.emit(eventName, date);
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+
     }
 
     public static WritableMap getTipMessageExtend(IMMessage lastMessage) {
@@ -118,7 +145,7 @@ public class ReactCache {
         if (extension == null) {
             extension = lastMessage.getRemoteExtension();
         }
-        Log.e(TAG, "getTipMessageExtend:" + (extension != null ? extension.size() : "extension is null"));
+//        Log.e(TAG, "getTipMessageExtend:" + (extension != null ? extension.size() : "extension is null"));
         if (extension != null) {
             map.putString("tipType", extension.containsKey("tipType") ? extension.get("tipType").toString() : "");
             map.putMap("options", Arguments.makeNativeMap(extension));
@@ -143,6 +170,7 @@ public class ReactCache {
                 map = Arguments.createMap();
                 String contactId = contact.getContactId();
 //                unreadNumTotal += contact.getUnreadCount();
+//                Log.w(TAG, contactId + " getUnreadCount:" + contact.getUnreadCount());
 
                 map.putString("contactId", contactId);
                 map.putString("unreadCount", String.valueOf(contact.getUnreadCount()));
@@ -383,7 +411,7 @@ public class ReactCache {
      * @return
      */
     public static Object createFriendList(ContactDataList dataList, boolean hasFilter) {
-        LogUtil.w(TAG, dataList.getCount() + "");
+//        LogUtil.w(TAG, dataList.getCount() + "");
         WritableArray array = Arguments.createArray();
         if (dataList != null) {
             int count = dataList.getCount();
@@ -418,7 +446,7 @@ public class ReactCache {
                 }
             }
         }
-        LogUtil.w(TAG, array + "");
+//        LogUtil.w(TAG, array + "");
         return array;
     }
 
@@ -472,7 +500,7 @@ public class ReactCache {
             listHashMap.clear();
         }
 
-        LogUtil.w(TAG, writableMap + "");
+//        LogUtil.w(TAG, writableMap + "");
         return writableMap;
     }
 
@@ -512,7 +540,7 @@ public class ReactCache {
             }
         }
 
-        LogUtil.w(TAG, writableArray + "");
+//        LogUtil.w(TAG, writableArray + "");
         return writableArray;
     }
 

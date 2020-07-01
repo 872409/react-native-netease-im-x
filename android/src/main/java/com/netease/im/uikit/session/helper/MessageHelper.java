@@ -76,6 +76,7 @@ public class MessageHelper {
     }
 
     // 消息撤回
+    @SuppressWarnings({ "unchecked" })
     public void onRevokeMessage(IMMessage item, boolean isSelf, String fromAccount) {
         if (item == null) {
             return;

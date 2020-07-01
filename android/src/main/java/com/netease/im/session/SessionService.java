@@ -333,6 +333,14 @@ public class SessionService {
         getMsgService().sendMessageReceipt(sessionId, message);
     }
 
+    public void sendMessageReceipt(String sessionId,IMMessage message) {
+        if (sessionId == null || sessionTypeEnum != SessionTypeEnum.P2P) {
+            return;
+        }
+
+        getMsgService().sendMessageReceipt(sessionId, message);
+    }
+
     /**
      * 消息接收观察者
      */
@@ -344,7 +352,7 @@ public class SessionService {
                 return;
             }
 
-            sendMsgReceipt(messages); // 发送已读回执
+//            sendMsgReceipt(messages); // 发送已读回执
             onIncomingMessage(messages);
 
         }
@@ -612,8 +620,7 @@ public class SessionService {
     public void stopSession() {
         clear();
 //        registerObservers(false);
-        getMsgService().setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE,
-                SessionTypeEnum.None);
+        getMsgService().setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
     }
 
     private void refreshMessageList(List<IMMessage> messageList) {

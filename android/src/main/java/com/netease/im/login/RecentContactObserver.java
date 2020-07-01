@@ -1,6 +1,7 @@
 package com.netease.im.login;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
@@ -195,6 +196,7 @@ public class RecentContactObserver {
 
             // 方式二：直接从SDK读取（相对慢）
 //            unreadNum = NIMClient.getService(MsgService.class).getTotalUnreadCount();
+//            Log.w(TAG, "getTotalUnreadCount:" + unreadNum);
 
 //            if (callback != null) {
 //                callback.onUnreadCountChange(unreadNum);
@@ -323,7 +325,7 @@ public class RecentContactObserver {
                 }
                 if ("onHostPause".equals(RNNeteaseImModule.status)) {
                     RNNeteaseImModule.status = status;
-                }else {
+                } else {
                     RNNeteaseImModule.status = "";
                 }
                 r.putString("status", status);

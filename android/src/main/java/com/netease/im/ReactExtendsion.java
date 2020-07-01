@@ -115,6 +115,7 @@ public class ReactExtendsion {
         return array;
     }
 
+    @SuppressWarnings({ "unchecked" })
     public static WritableMap makeHashMap2WritableMap(Map map) {
         if (map == null || map.isEmpty()) {
             return null;

@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.alibaba.fastjson.JSON;
 import com.netease.im.common.ImageLoaderKit;
 import com.netease.im.common.sys.SystemUtil;
 import com.netease.im.contact.DefaultContactProvider;
@@ -40,18 +41,24 @@ import com.netease.nimlib.sdk.NimIntent;
 import com.netease.nimlib.sdk.Observer;
 import com.netease.nimlib.sdk.SDKOptions;
 import com.netease.nimlib.sdk.StatusBarNotificationConfig;
+import com.netease.nimlib.sdk.StatusCode;
+import com.netease.nimlib.sdk.auth.AuthServiceObserver;
 import com.netease.nimlib.sdk.auth.LoginInfo;
 import com.netease.nimlib.sdk.mixpush.MixPushConfig;
 import com.netease.nimlib.sdk.mixpush.MixPushService;
-import com.netease.nimlib.sdk.mixpush.NIMPushClient;
+import com.netease.nimlib.sdk.msg.MessageBuilder;
 import com.netease.nimlib.sdk.msg.MessageNotifierCustomization;
 import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.MsgServiceObserve;
+import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
 import com.netease.nimlib.sdk.msg.model.CustomNotification;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.RevokeMsgNotification;
 import com.netease.nimlib.sdk.uinfo.UserInfoProvider;
 import com.netease.nimlib.sdk.util.NIMUtil;
+
+import java.util.ArrayList;
+import java.util.Map;
 
 
 /**
@@ -61,6 +68,7 @@ import com.netease.nimlib.sdk.util.NIMUtil;
 public class IMApplication {
 
 
+    private static String TAG = "IMApplication";
     // context
     private static Context context;
 
@@ -94,11 +102,19 @@ public class IMApplication {
 //            mixPushConfig.xmAppKey = miPushConfig.appKey;
 //            NIMPushClient.initPush(new MixPushConfig());
 //        }
-        NIMClient.init(context, getLoginInfo(), getOptions(context, miPushConfig));
+
+        LoginInfo loginInfo = getLoginInfo();
+        NIMClient.init(context, loginInfo, getOptions(context, miPushConfig));
+
+
         // crash handler
 //        AppCrashHandler.getInstance(context);
+        Log.e("MainApplication", NIMClient.getStatus().toString());
         if (NIMUtil.isMainProcess(IMApplication.context)) {
 
+            if (loginInfo != null && loginInfo.getAccount().length() > 0) {
+                autoLoginInit(true);
+            }
 
             // init pinyin
             PinYin.init(context);
@@ -112,6 +128,22 @@ public class IMApplication {
 
         }
 
+    }
+
+    static Observer<StatusCode> userStatusObserver = new Observer<StatusCode>() {
+
+        @Override
+        public void onEvent(StatusCode statusCode) {
+            LogUtil.e(TAG, "userStatusObserver:" + statusCode.toString());
+            if (statusCode.equals(StatusCode.LOGINED)) {
+                LoginService.getInstance().afterFirstLogin();
+            }
+
+        }
+    };
+
+    private static void autoLoginInit(boolean register) {
+        NIMClient.getService(AuthServiceObserver.class).observeOnlineStatus(userStatusObserver, register);
     }
 
     public static void setDebugAble(boolean debugAble) {
@@ -130,12 +162,55 @@ public class IMApplication {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static void onReceiveCustomNotification(Context context, Intent intent) {
         String action = context.getPackageName() + NimIntent.ACTION_RECEIVE_CUSTOM_NOTIFICATION;
+        Log.e(TAG, "onReceiveCustomNotification");
         if (action.equals(intent.getAction())) {
             CustomNotification notification = (CustomNotification) intent.getSerializableExtra(NimIntent.EXTRA_BROADCAST_MSG);
             NotificationManager notificationManager = (NotificationManager) IMApplication.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
             SessionUtil.receiver(notificationManager, notification);
-
         }
+//        startApp(context);
+    }
+
+    public static void startApp(Context content) {
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(content.getPackageName());
+        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+//            launchIntent.putExtras(bundle);
+        context.startActivity(launchIntent);
+    }
+
+    public static void mainActivityLaunch(Intent intent) {
+        Log.w(TAG, "mainActivityLaunch:" + (intent == null ? "null" : intent.toString()));
+        if (intent != null) {
+//            if (NIMClient.getService(MixPushService.class).isFCMIntent(intent)) {
+//                parseFCMNotifyIntent(NIMClient.getService(MixPushService.class).parseFCMPayload(intent));
+//            }
+            parseNotifyIntent(intent);
+        }
+    }
+
+    private static void parseNotifyIntent(Intent intent) {
+//        ArrayList<IMMessage> messages = (ArrayList<IMMessage>) intent.getSerializableExtra(NimIntent.EXTRA_NOTIFY_CONTENT);
+//        Log.w(TAG, "parseNotifyIntent:" + (messages == null ? "null" : messages.size()));
+//        if (ReceiverMsgParser.checkOpen(intent)) {
+////            RNNeteaseImModule.launch = intent;
+////            IMMessage message = messages.get(0);
+////            ReactCache.emit(ReactCache.observeLaunchPushEvent, ReceiverMsgParser.getWritableMap(intent));
+////            Log.w(TAG, "parseNotifyIntent getSessionType:" + message.getSessionType() + " getSessionId:" + message.getSessionId() + " " + message.getContent());
+//        }
+    }
+
+    private static void parseFCMNotifyIntent(String payloadString) {
+        Log.w(TAG, "parseFCMNotifyIntent:" + payloadString);
+//        Map<String, String> payload = JSON.parseObject(payloadString, Map.class);
+//        String sessionId = payload.get("sessionId");
+//        String type = payload.get("sessionType");
+//        if (sessionId != null && type != null) {
+//            int typeValue = Integer.valueOf(type);
+//            IMMessage message = MessageBuilder.createEmptyMessage(sessionId, SessionTypeEnum.typeOfValue(typeValue), 0);
+//            showMainActivity(new Intent().putExtra(NimIntent.EXTRA_NOTIFY_CONTENT, message));
+//        } else {
+//            showMainActivity(null);
+//        }
     }
 
 
@@ -218,6 +293,8 @@ public class IMApplication {
         // 配置保存图片，文件，log等数据的目录
 
         options.sdkStorageRootPath = getSdkStorageRooPath();
+        options.teamNotificationMessageMarkUnread = true;
+        options.sessionReadAck = true;
 
         // 配置数据库加密秘钥
         options.databaseEncryptKey = "NETEASE";

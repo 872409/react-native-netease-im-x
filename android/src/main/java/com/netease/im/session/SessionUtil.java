@@ -17,6 +17,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.netease.im.IMApplication;
+import com.netease.im.RNNeteaseImModule;
 import com.netease.im.ReactCache;
 import com.netease.im.ReactExtendsion;
 import com.netease.im.ReactNativeJson;
@@ -25,7 +26,9 @@ import com.netease.im.session.extension.RedPacketOpenAttachement;
 import com.netease.im.uikit.cache.NimUserInfoCache;
 import com.netease.im.uikit.cache.TeamDataCache;
 import com.netease.im.uikit.common.util.log.LogUtil;
+import com.netease.nimlib.sdk.InvocationFuture;
 import com.netease.nimlib.sdk.NIMClient;
+import com.netease.nimlib.sdk.NimIntent;
 import com.netease.nimlib.sdk.friend.constant.VerifyType;
 import com.netease.nimlib.sdk.msg.MessageBuilder;
 import com.netease.nimlib.sdk.msg.MsgService;
@@ -109,25 +112,25 @@ public class SessionUtil {
 ////        }
 //    }
 
-    /**
-     * 设置最近联系人的消息为已读
-     *
-     * @param enable
-     */
-    private void enableMsgNotification(boolean enable) {
-        if (enable) {
-            /**
-             * 设置最近联系人的消息为已读
-             *
-             * @param account,    聊天对象帐号，或者以下两个值：
-             *                    {@link #MSG_CHATTING_ACCOUNT_ALL} 目前没有与任何人对话，但能看到消息提醒（比如在消息列表界面），不需要在状态栏做消息通知
-             *                    {@link #MSG_CHATTING_ACCOUNT_NONE} 目前没有与任何人对话，需要状态栏消息通知
-             */
-            NIMClient.getService(MsgService.class).setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
-        } else {
-            NIMClient.getService(MsgService.class).setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_ALL, SessionTypeEnum.None);
-        }
-    }
+//    /**
+//     * 设置最近联系人的消息为已读
+//     *
+//     * @param enable
+//     */
+//    private void enableMsgNotification(boolean enable) {
+//        if (enable) {
+//            /**
+//             * 设置最近联系人的消息为已读
+//             *
+//             * @param account,    聊天对象帐号，或者以下两个值：
+//             *                    {@link #MSG_CHATTING_ACCOUNT_ALL} 目前没有与任何人对话，但能看到消息提醒（比如在消息列表界面），不需要在状态栏做消息通知
+//             *                    {@link #MSG_CHATTING_ACCOUNT_NONE} 目前没有与任何人对话，需要状态栏消息通知
+//             */
+//            NIMClient.getService(MsgService.class).setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_NONE, SessionTypeEnum.None);
+//        } else {
+//            NIMClient.getService(MsgService.class).setChattingAccount(MsgService.MSG_CHATTING_ACCOUNT_ALL, SessionTypeEnum.None);
+//        }
+//    }
 
     public static void sendMessage(IMMessage message) {
 
@@ -161,15 +164,33 @@ public class SessionUtil {
 //        sendCustomNotification(account, SessionTypeEnum.P2P, CUSTOM_Notification, content);
     }
 
-    public static void receiver( NotificationManager manager, CustomNotification customNotification) {
-//        LogUtil.w("SessionUtil receiver", customNotification.getContent());
+
+    private static void handleRTCNotice(CustomNotification customNotification) {
+        if (ReactCache.mainActiveInBackground()) {
+            startApp(IMApplication.getContext());
+        }
+    }
+
+    public static void receiver(NotificationManager manager, CustomNotification customNotification) {
+
+        LogUtil.w("SessionUtil receiver", customNotification.getContent());
 //        customNotification.getTime()
         Map<String, Object> map = customNotification.getPushPayload();
 //        LogUtil.w("SessionUtil payload", ReactNativeJson.convertMapToJson(ReactExtendsion.makeHashMap2WritableMap(map)).toJSONString());
         if (map != null && map.containsKey("type")) {
             String type = (String) map.get("type");
+            LogUtil.w("receiver", type);
 
-//            LogUtil.w("receiver type", type);
+
+//            if (map.containsKey("payload")) {
+//                HashMap payload = (HashMap) map.get("payload");
+//                if (payload.containsKey("msg")) {
+//                    LogUtil.w("receiver msg", (String) payload.get("msg"));
+//                }
+//                LogUtil.w("receiver payload", ReactNativeJson.convertMapToJson(ReactExtendsion.makeHashMap2WritableMap(payload)).toJSONString());
+//            }
+
+//            LogUtil.w("c type", type);
 //            if (SessionUtil.CUSTOM_Notification.equals(type)) {
 //                NotificationCompat.Builder builder = new NotificationCompat.Builder(IMApplication.getContext());
 //                builder.setContentTitle("请求加为好友");
@@ -206,9 +227,24 @@ public class SessionUtil {
 
             map.put("sender", sender);
 
-            ReactCache.emit(ReactCache.observeCustomNotice, ReactExtendsion.makeHashMap2WritableMap(map));
+            if ("Notice_RTC".equals(type)) {
+                handleRTCNotice(customNotification);
+            }
 
+            if (!ReactCache.emit(ReactCache.observeCustomNotice, ReactExtendsion.makeHashMap2WritableMap(map))) {
+                RNNeteaseImModule.lastCustomNotification = customNotification;
+                startApp(IMApplication.getContext());
+            }
         }
+    }
+
+    public static void startApp(Context content) {
+        Intent launchIntent = content.getPackageManager().getLaunchIntentForPackage(content.getPackageName());
+        launchIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent payload = new Intent();
+        payload.putExtra(NimIntent.EXTRA_NOTIFY_CONTENT, NimIntent.EXTRA_NOTIFY_CONTENT);
+//        launchIntent.putExtras(payload);
+        content.startActivity(launchIntent);
     }
 
     /**
@@ -217,7 +253,7 @@ public class SessionUtil {
      * @param type
      * @param content
      */
-    public static void sendCustomNotification(String account, SessionTypeEnum sessionType, String type, String content) {
+    public static InvocationFuture<Void> sendCustomNotification(String account, SessionTypeEnum sessionType, String type, String content) {
         CustomNotification notification = new CustomNotification();
         notification.setSessionId(account);
         notification.setSessionType(sessionType);
@@ -231,7 +267,7 @@ public class SessionUtil {
         pushPayload.put("content", content);
         notification.setPushPayload(pushPayload);
 
-        NIMClient.getService(MsgService.class).sendCustomNotification(notification);
+        return NIMClient.getService(MsgService.class).sendCustomNotification(notification);
     }
 
     /**
@@ -239,7 +275,7 @@ public class SessionUtil {
      *
      * @param options
      */
-    public static void sendCustomNotification(ReadableMap options, ReadableMap payload) {
+    public static InvocationFuture<Void> sendCustomNotification(ReadableMap options, ReadableMap payload) {
 
         String sessionId = options.getString("sessionId");
         int sessionTypeInt = options.getInt("sessionType");
@@ -276,7 +312,7 @@ public class SessionUtil {
         pushPayload.put("payload", content);
         notification.setPushPayload(pushPayload);
 
-        NIMClient.getService(MsgService.class).sendCustomNotification(notification);
+       return NIMClient.getService(MsgService.class).sendCustomNotification(notification);
     }
 
 

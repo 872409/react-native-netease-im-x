@@ -51,6 +51,7 @@ import com.netease.im.uikit.permission.annotation.OnMPermissionDenied;
 import com.netease.im.uikit.permission.annotation.OnMPermissionGranted;
 import com.netease.im.uikit.permission.annotation.OnMPermissionNeverAskAgain;
 import com.netease.im.uikit.session.helper.MessageHelper;
+import com.netease.nimlib.sdk.InvocationFuture;
 import com.netease.nimlib.sdk.NIMClient;
 import com.netease.nimlib.sdk.RequestCallback;
 import com.netease.nimlib.sdk.RequestCallbackWrapper;
@@ -67,6 +68,7 @@ import com.netease.nimlib.sdk.msg.MsgService;
 import com.netease.nimlib.sdk.msg.SystemMessageService;
 import com.netease.nimlib.sdk.msg.constant.MsgStatusEnum;
 import com.netease.nimlib.sdk.msg.constant.SessionTypeEnum;
+import com.netease.nimlib.sdk.msg.model.CustomNotification;
 import com.netease.nimlib.sdk.msg.model.IMMessage;
 import com.netease.nimlib.sdk.msg.model.QueryDirectionEnum;
 import com.netease.nimlib.sdk.msg.model.RecentContact;
@@ -293,7 +295,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      *
      * @param contactId
      * @param verifyType 1 直接添加
-     * @param payload        备注
+     * @param payload    备注
      * @param promise
      */
     @ReactMethod
@@ -712,8 +714,25 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
 
     //TODO:X
     @ReactMethod
-    public void sendCustomNotice(ReadableMap options, ReadableMap payload) {
-        SessionUtil.sendCustomNotification(options, payload);
+    public void sendCustomNotice(ReadableMap options, ReadableMap payload, final Promise promise) {
+        SessionUtil.sendCustomNotification(options, payload).setCallback(new RequestCallback<Void>() {
+
+
+            @Override
+            public void onSuccess(Void param) {
+                promise.resolve(200);
+            }
+
+            @Override
+            public void onFailed(int code) {
+                promise.reject("-1");
+            }
+
+            @Override
+            public void onException(Throwable exception) {
+                promise.reject(exception);
+            }
+        });
     }
 
 //    //TODO:X
@@ -887,9 +906,7 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
         }
 
         File f = new File(file);
-        if (f == null) {
-            return;
-        }
+
         NIMClient.getService(NosService.class).upload(f, "image/jpeg").setCallback(new RequestCallbackWrapper<String>() {
             @Override
             public void onResult(int code, String url, Throwable exception) {
@@ -1247,6 +1264,20 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
             @Override
             public int onResult(int code, IMMessage message) {
 //                promise.resolve(ReactCache.createMessage(message,null));
+                return 0;
+            }
+        });
+    }
+
+    @ReactMethod
+    public void sendMessageReceipt(final String sessionId, String messageId, final Promise promise) {
+        sessionService.queryMessage(messageId, new SessionService.OnMessageQueryListener() {
+
+            @Override
+            public int onResult(int code, IMMessage message) {
+                if (code == ResponseCode.RES_SUCCESS && message != null) {
+                    sessionService.sendMessageReceipt(sessionId, message);
+                }
                 return 0;
             }
         });
@@ -2221,13 +2252,30 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
     public static String status = "";
     public static Intent launch = null;
 
+    public static CustomNotification lastCustomNotification;
+
+
     @ReactMethod
     public void getLaunch(Promise promise) {
+
+        if (lastCustomNotification != null) {
+            SessionUtil.receiver(null, lastCustomNotification);
+            lastCustomNotification = null;
+        }
+
+
         if (launch == null) {
             promise.resolve(null);
         } else {
-            promise.resolve(ReceiverMsgParser.getWritableMap(launch));
+            WritableMap map = ReceiverMsgParser.getWritableMap(launch);
+            promise.resolve(map);
+
+            if (ReceiverMsgParser.checkOpen(launch)) {
+                ReactCache.emit(ReactCache.observeLaunchPushEvent, map);
+            }
             launch = null;
+
+
         }
     }
 

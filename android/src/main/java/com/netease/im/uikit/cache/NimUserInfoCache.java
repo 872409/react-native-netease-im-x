@@ -42,7 +42,7 @@ public class NimUserInfoCache {
     public void buildCache() {
         List<NimUserInfo> users = NIMClient.getService(UserService.class).getAllUserInfo();
         addOrUpdateUsers(users, false);
-        LogUtil.w(TAG, "build NimUserInfoCache completed, users count = " + account2UserMap.size());
+//        LogUtil.w(TAG, "build NimUserInfoCache completed, users count = " + account2UserMap.size());
     }
 
     public void clear() {
@@ -113,7 +113,7 @@ public class NimUserInfoCache {
         NIMClient.getService(UserService.class).fetchUserInfo(accounts).setCallback(new RequestCallback<List<NimUserInfo>>() {
             @Override
             public void onSuccess(List<NimUserInfo> users) {
-                Log.i(TAG, "fetch userInfo completed, add users size =" + users.size());
+//                Log.i(TAG, "fetch userInfo completed, add users size =" + users.size());
                 // 这里不需要更新缓存，由监听用户资料变更（添加）来更新缓存
                 if (callback != null) {
                     callback.onSuccess(users);
@@ -163,7 +163,7 @@ public class NimUserInfoCache {
 
     public NimUserInfo getUserInfo(String account) {
         if (!hasUser(account)) {
-            LogUtil.e(TAG, "getUserInfo null, account=" + account + ", account2UserMap=" + account2UserMap);
+//            LogUtil.e(TAG, "getUserInfo null, account=" + account + ", account2UserMap=" + account2UserMap);
             getUserInfoFromRemote(account, null);
             return null;
         }
@@ -173,7 +173,7 @@ public class NimUserInfoCache {
 
     public boolean hasUser(String account) {
         if (TextUtils.isEmpty(account) || account2UserMap == null) {
-            LogUtil.e(TAG, "hasUser null, account=" + account + ", account2UserMap=" + account2UserMap);
+//            LogUtil.e(TAG, "hasUser null, account=" + account + ", account2UserMap=" + account2UserMap);
             return false;
         }
 

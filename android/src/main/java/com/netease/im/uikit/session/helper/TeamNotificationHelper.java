@@ -245,7 +245,7 @@ public class TeamNotificationHelper {
                 operationTag = "extension";
                 format.putString("extension", field.getValue().toString());
 //                sb.append("群扩展字段被更新为 " + field.getValue());
-            } else if (field.getKey() == TeamFieldEnum.Ext_Server) {
+            } else if (field.getKey() == TeamFieldEnum.Ext_Server_Only) {
                 operationTag = "ext_server";
                 format.putString("ext_server", field.getValue().toString());
 //                sb.append("群扩展字段(服务器)被更新为 " + field.getValue());
