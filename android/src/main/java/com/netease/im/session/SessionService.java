@@ -88,6 +88,7 @@ public class SessionService {
 
     private SessionTypeEnum sessionTypeEnum = SessionTypeEnum.None;
     private String sessionId;
+    private ReadableMap sessionOptions;
 
     private IMMessage fistMessage;
     private IMMessage lastMessage;
@@ -333,7 +334,7 @@ public class SessionService {
         getMsgService().sendMessageReceipt(sessionId, message);
     }
 
-    public void sendMessageReceipt(String sessionId,IMMessage message) {
+    public void sendMessageReceipt(String sessionId, IMMessage message) {
         if (sessionId == null || sessionTypeEnum != SessionTypeEnum.P2P) {
             return;
         }
@@ -583,8 +584,9 @@ public class SessionService {
 
     /****************************** 消息处理 ***********************************/
 
-    public void startSession(Handler handler, String sessionId, String type) {
+    public void startSession(Handler handler, String sessionId, String type, ReadableMap options) {
         clear();
+        this.sessionOptions = options;
         this.handler = handler;
         this.sessionId = sessionId;
 
@@ -595,7 +597,7 @@ public class SessionService {
 
         if (sessionTypeEnum == SessionTypeEnum.P2P) {
             sessionName = NimUserInfoCache.getInstance().getUserName(sessionId);
-            isFriend = NIMClient.getService(FriendService.class).isMyFriend(sessionId);
+//            isFriend = NIMClient.getService(FriendService.class).isMyFriend(sessionId);
 
             this.mute = !NIMClient.getService(FriendService.class).isNeedMessageNotify(sessionId);
         } else {
@@ -945,7 +947,13 @@ public class SessionService {
             sessionName = NimUserInfoCache.getInstance().getUserName(sessionId);
 
 
-            isFriend = NIMClient.getService(FriendService.class).isMyFriend(sessionId);
+            if (this.sessionOptions.getBoolean("noFriendVerify")) {
+                isFriend = true;
+            }
+            else{
+                isFriend = NIMClient.getService(FriendService.class).isMyFriend(sessionId);
+            }
+
             LogUtil.w(TAG, "isFriend:" + isFriend);
             if (!isFriend) {
 

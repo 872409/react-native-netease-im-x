@@ -47,7 +47,7 @@
 //监听网络
 #pragma mark - NIMLoginManagerDelegate
 - (void)onLogin:(NIMLoginStep)step{
-    NSLog(@"onLogin:step %ld",step);
+//    NSLog(@"onLogin:step %ld",step);
     NSString *strStatus = @"0";
     switch (step) {
         case NIMLoginStepLinking://连接服务器
@@ -240,8 +240,11 @@
     for (NIMRecentSession *recent in NIMlistArr) {
 
 
+        NSString *avatar = [self imageUrlForRecentSession:recent];
+        
         if (recent.session.sessionType == NIMSessionTypeP2P) {
             NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+            [dic setObject:[NSString stringWithFormat:@"%@",recent.session.sessionId] forKey:@"sessionId"];
             [dic setObject:[NSString stringWithFormat:@"%@",recent.session.sessionId] forKey:@"contactId"];
             [dic setObject:[NSString stringWithFormat:@"%zd", recent.session.sessionType] forKey:@"sessionType"];
             //未读
@@ -251,7 +254,7 @@
             //群组名称或者聊天对象名称
             [dic setObject:[NSString stringWithFormat:@"%@", [self nameForRecentSession:recent] ] forKey:@"name"];
             //账号
-            [dic setObject:[NSString stringWithFormat:@"%@",recent.lastMessage.session.sessionId] forKey:@"account"];
+//            [dic setObject:[NSString stringWithFormat:@"%@",recent.lastMessage.session.sessionId] forKey:@"account"];
             //消息类型
             [dic setObject:[NSString stringWithFormat:@"%zd", recent.lastMessage.messageType] forKey:@"msgType"];
             
@@ -281,12 +284,14 @@
             //            [dic setObject:[NSString stringWithFormat:@"%@", [self timestampDescriptionForRecentSession:recent] ] forKey:@"time"];
             [dic setObject:[NSString stringWithFormat:@"%f", recent.lastMessage.timestamp ] forKey:@"timestamp"];
 
-            [dic setObject:[NSString stringWithFormat:@"%@", [self imageUrlForRecentSession:recent] ?  [self imageUrlForRecentSession:recent] : @""] forKey:@"imagePath"];
+//            NSString *avatar = [self imageUrlForRecentSession:recent];
+            [dic setObject:[NSString stringWithFormat:@"%@", avatar ?  avatar : @""] forKey:@"avatar"];
             NIMUser *user = [[NIMSDK sharedSDK].userManager userInfo:recent.lastMessage.session.sessionId];
-            NSString *strMute = user.notifyForNewMsg?@"1":@"0";
-            [dic setObject:strMute forKey:@"mute"];
+//            NSString *strMute = user.notifyForNewMsg?@"1":@"0";
+//            [dic setObject:strMute forKey:@"mute"];
+            [dic setObject:[NSNumber numberWithBool:user.notifyForNewMsg] forKey:@"notifyForNewMsg"];
             
-            if ([strMute isEqualToString:@"1"]){
+            if (user.notifyForNewMsg){
                 allUnreadNum = allUnreadNum + recent.unreadCount;
             }
             //X 消息内容扩展
@@ -299,6 +304,7 @@
         else{
             if ( [[NIMSDK sharedSDK].teamManager isMyTeam:recent.lastMessage.session.sessionId]) {
                 NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+                [dic setObject:[NSString stringWithFormat:@"%@",recent.session.sessionId] forKey:@"sessionId"];
                 [dic setObject:[NSString stringWithFormat:@"%@",recent.session.sessionId] forKey:@"contactId"];
                 [dic setObject:[NSString stringWithFormat:@"%zd", recent.session.sessionType] forKey:@"sessionType"];
                 //未读
@@ -309,7 +315,7 @@
                 [dic setObject:[NSString stringWithFormat:@"%@", [self nameForRecentSession:recent] ] forKey:@"name"];
                 //账号
                 [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.from] forKey:@"account"];
-                [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.senderName] forKey:@"account_name"];
+                [dic setObject:[NSString stringWithFormat:@"%@", recent.lastMessage.senderName] forKey:@"accountName"];
                 //消息类型
                 [dic setObject:[NSString stringWithFormat:@"%zd", recent.lastMessage.messageType] forKey:@"msgType"];
                 //消息状态
@@ -337,13 +343,18 @@
                 //                [dic setObject:[NSString stringWithFormat:@"%@", [self timestampDescriptionForRecentSession:recent] ] forKey:@"time"];
                 [dic setObject:[NSString stringWithFormat:@"%f", recent.lastMessage.timestamp ] forKey:@"timestamp"];
 
-                [dic setObject:[NSString stringWithFormat:@"%@", [self imageUrlForRecentSession:recent] ?  [self imageUrlForRecentSession:recent] : @""] forKey:@"imagePath"];
+//                [dic setObject:[NSString stringWithFormat:@"%@", [self imageUrlForRecentSession:recent] ?  [self imageUrlForRecentSession:recent] : @""] forKey:@"imagePath"];
+                
+                [dic setObject:[NSString stringWithFormat:@"%@", avatar ?  avatar : @""] forKey:@"avatar"];
                 NIMTeam *team = [[[NIMSDK sharedSDK] teamManager]teamById:recent.lastMessage.session.sessionId];
                 [dic setObject:[NSString stringWithFormat:@"%zd",team.memberNumber] forKey:@"memberCount"];
-                NSString *strMute = team.notifyStateForNewMsg == NIMTeamNotifyStateAll ? @"1" : @"0";
-                [dic setObject:strMute forKey:@"mute"];
+                BOOL notifyForNewMsg =team.notifyStateForNewMsg == NIMTeamNotifyStateAll;
                 
-                if ([strMute isEqualToString:@"1"]){
+                [dic setObject:[NSNumber numberWithBool:notifyForNewMsg] forKey:@"notifyForNewMsg"];
+//                NSString *strMute = notifyForNewMsg ? @"1" : @"0";
+//                [dic setObject:strMute forKey:@"mute"];
+                
+                if (notifyForNewMsg){
                     allUnreadNum = allUnreadNum + recent.unreadCount;
                 }
                 //X 消息内容扩展

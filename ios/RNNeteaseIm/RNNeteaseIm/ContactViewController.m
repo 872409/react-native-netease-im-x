@@ -162,7 +162,7 @@
     [dic setObject:[NSString stringWithFormat:@"%d",isMe] forKey:@"isMe"];
     [dic setObject:[NSString stringWithFormat:@"%d",isMyFriend] forKey:@"isMyFriend"];
     [dic setObject:[NSString stringWithFormat:@"%d",isInBlackList] forKey:@"isInBlackList"];
-    [dic setObject:[NSString stringWithFormat:@"%d",needNotify] forKey:@"mute"];
+    [dic setObject:[NSString stringWithFormat:@"%d",needNotify] forKey:@"notifyForNewMsg"];
     NSArray *keys = [dic allKeys];
     for (NSString *tem  in keys) {
         if ([[dic objectForKey:tem] isEqualToString:@"(null)"]) {

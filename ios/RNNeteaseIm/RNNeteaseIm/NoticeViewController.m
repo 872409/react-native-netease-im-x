@@ -87,7 +87,7 @@
                                                                               limit:MaxNotificationCount];
     
     
-    NSLog(@"ReFrash:%@",Secnotifications);
+//    NSLog(@"ReFrash:%@",Secnotifications);
     [self._notiArr removeAllObjects];
     [self._notifications removeAllObjects];
     [self._notifications addObjectsFromArray:Secnotifications];

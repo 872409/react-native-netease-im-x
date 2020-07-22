@@ -390,7 +390,8 @@ NSMutableArray *_myTeams;
                 [memb setObject:[NSString stringWithFormat:@"%d",isMe] forKey:@"isMe"];
                 [memb setObject:[NSString stringWithFormat:@"%d",isMyFriend] forKey:@"isMyFriend"];
                 [memb setObject:[NSString stringWithFormat:@"%d",isInBlackList] forKey:@"isInBlackList"];
-                [memb setObject:[NSString stringWithFormat:@"%d",needNotify] forKey:@"mute"];
+                [memb setObject:[NSString stringWithFormat:@"%d",needNotify] forKey:@"notifyForNewMsg"];
+//                [memb setObject:[NSNumber numberWithBool:needNotify] forKey:@"notifyForNewMsg"];
                 [memb setObject:@"" forKey:@"extensionMap"];
                 NSArray *keys = [memb allKeys];
                 for (NSString *tem  in keys) {
@@ -435,7 +436,8 @@ NSMutableArray *_myTeams;
     [memb setObject:[NSString stringWithFormat:@"%d",isMe] forKey:@"isMe"];
     [memb setObject:[NSString stringWithFormat:@"%d",isMyFriend] forKey:@"isMyFriend"];
     [memb setObject:[NSString stringWithFormat:@"%d",isInBlackList] forKey:@"isInBlackList"];
-    [memb setObject:[NSString stringWithFormat:@"%d",needNotify] forKey:@"mute"];
+    [memb setObject:[NSString stringWithFormat:@"%d",needNotify] forKey:@"notifyForNewMsg"];
+//    [memb setObject:[NSNumber numberWithBool:needNotify] forKey:@"notifyForNewMsg"];
     [memb setObject:@"" forKey:@"extensionMap"];
     NSArray *keys = [memb allKeys];
     for (NSString *tem  in keys) {

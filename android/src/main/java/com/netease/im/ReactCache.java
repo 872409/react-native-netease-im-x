@@ -172,46 +172,55 @@ public class ReactCache {
 //                unreadNumTotal += contact.getUnreadCount();
 //                Log.w(TAG, contactId + " getUnreadCount:" + contact.getUnreadCount());
 
+                map.putString("sessionId", contactId);
                 map.putString("contactId", contactId);
                 map.putString("unreadCount", String.valueOf(contact.getUnreadCount()));
                 String name = "";
                 SessionTypeEnum sessionType = contact.getSessionType();
-                String imagePath = "";
+                String avatar = "";
                 Team team = null;
+                String fromAccount = contact.getFromAccount();
+
+
+                boolean notifyForNewMsg = true;
                 if (sessionType == SessionTypeEnum.P2P) {
                     map.putString("teamType", "-1");
                     NimUserInfoCache nimUserInfoCache = NimUserInfoCache.getInstance();
-                    imagePath = nimUserInfoCache.getAvatar(contactId);
+                    avatar = nimUserInfoCache.getAvatar(contactId);
 
-                    map.putString("mute", boolean2String(NIMClient.getService(FriendService.class).isNeedMessageNotify(contactId)));
+                    notifyForNewMsg = NIMClient.getService(FriendService.class).isNeedMessageNotify(contactId);
+//                    map.putString("mute", boolean2String(NIMClient.getService(FriendService.class).isNeedMessageNotify(contactId)));
+
                     name = nimUserInfoCache.getUserDisplayName(contactId);
                 } else if (sessionType == SessionTypeEnum.Team) {
                     team = TeamDataCache.getInstance().getTeamById(contactId);
                     if (team != null) {
                         name = team.getName();
+                        map.putString("account", fromAccount);
+                        map.putString("accountName", contact.getFromNick());
                         map.putString("teamType", Integer.toString(team.getType().getValue()));
-                        imagePath = team.getIcon();
+                        avatar = team.getIcon();
                         map.putString("memberCount", Integer.toString(team.getMemberCount()));
 //                        map.putString("mute", team.getMessageNotifyType()==TeamMessageNotifyTypeEnum.All?"1":"0"  getMessageNotifyType(team.getMessageNotifyType())+"");
-                        map.putString("mute", team.getMessageNotifyType() == TeamMessageNotifyTypeEnum.All ? "1" : "0");
+                        notifyForNewMsg = team.getMessageNotifyType() == TeamMessageNotifyTypeEnum.All;
+//                        map.putString("mute", team.getMessageNotifyType() == TeamMessageNotifyTypeEnum.All ? "1" : "0");
                     }
                 }
+                map.putBoolean("notifyForNewMsg", notifyForNewMsg);
 
-                if (map.getString("mute").equals("1")) {
+                if (notifyForNewMsg) {
                     unreadNumTotal += contact.getUnreadCount();
                 }
 
-                map.putString("imagePath", imagePath);
-                map.putString("imageLocal", ImageLoaderKit.getMemoryCachedAvatar(imagePath));
+                map.putString("avatar", avatar);
+                map.putString("avatar_local", ImageLoaderKit.getMemoryCachedAvatar(avatar));
                 map.putString("name", name);
                 map.putString("sessionType", Integer.toString(contact.getSessionType().getValue()));
                 map.putString("msgType", Integer.toString(contact.getMsgType().getValue()));
                 map.putString("msgStatus", Integer.toString(contact.getMsgStatus().getValue()));
                 map.putString("messageId", contact.getRecentMessageId());
+                map.putString("timestamp", (contact.getTime() / 1000) + "");
 
-                String fromAccount = contact.getFromAccount();
-                map.putString("fromAccount", fromAccount);
-                map.putString("account", contactId);
 
                 List<String> uuids = new ArrayList<>();
                 uuids.add(contact.getRecentMessageId());
@@ -266,35 +275,35 @@ public class ReactCache {
                         break;
                 }
 //                map.putString("time", TimeUtil.getTimeShowString(contact.getTime(), true));
-                map.putString("timestamp", (contact.getTime() / 1000) + "");
 
 
-                String fromNick = "";
-                String teamNick = "";
-                if (!TextUtils.isEmpty(fromAccount)) {
-                    try {
-                        fromNick = contact.getFromNick();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
 
-                    fromNick = TextUtils.isEmpty(fromNick) ? NimUserInfoCache.getInstance().getUserDisplayName(fromAccount) : fromNick;
-                    map.putString("nick", fromNick);
-
-                    if (contact.getSessionType() == SessionTypeEnum.Team && !TextUtils.equals(LoginService.getInstance().getAccount(), fromAccount)) {
-                        String tid = contact.getContactId();
-                        teamNick = TextUtils.isEmpty(fromAccount) ? "" : getTeamUserDisplayName(tid, fromAccount) + ": ";
-                        if ((contact.getAttachment() instanceof NotificationAttachment)) {
-                            if (AitHelper.hasAitExtention(contact)) {
-                                if (contact.getUnreadCount() == 0) {
-                                    AitHelper.clearRecentContactAited(contact);
-                                } else {
-                                    content = AitHelper.getAitAlertString(content);
-                                }
-                            }
-                        }
-                    }
-                }
+//                String fromNick = "";
+//                String teamNick = "";
+//                if (!TextUtils.isEmpty(fromAccount)) {
+//                    try {
+//                        fromNick = contact.getFromNick();
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    fromNick = TextUtils.isEmpty(fromNick) ? NimUserInfoCache.getInstance().getUserDisplayName(fromAccount) : fromNick;
+////                    map.putString("nick", fromNick);
+//
+//                    if (contact.getSessionType() == SessionTypeEnum.Team && !TextUtils.equals(LoginService.getInstance().getAccount(), fromAccount)) {
+//                        String tid = contact.getContactId();
+//                        teamNick = TextUtils.isEmpty(fromAccount) ? "" : getTeamUserDisplayName(tid, fromAccount) + ": ";
+//                        if ((contact.getAttachment() instanceof NotificationAttachment)) {
+//                            if (AitHelper.hasAitExtention(contact)) {
+//                                if (contact.getUnreadCount() == 0) {
+//                                    AitHelper.clearRecentContactAited(contact);
+//                                } else {
+//                                    content = AitHelper.getAitAlertString(content);
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
 
                 CustomAttachment attachment = null;
                 if (contact.getMsgType() == MsgTypeEnum.custom) {
@@ -367,7 +376,7 @@ public class ReactCache {
                     }
                 }
 
-                content = teamNick + content;
+//                content = teamNick + content;
                 map.putString("content", content);
 
                 if (options != null) {
@@ -564,7 +573,8 @@ public class ReactCache {
 //            writableMap.putString("isMyFriend", boolean2String(NIMClient.getService(FriendService.class).isMyFriend(userInfo.getAccount())));
             writableMap.putString("isMe", boolean2String(userInfo.getAccount() != null && userInfo.getAccount().equals(LoginService.getInstance().getAccount())));
             writableMap.putString("isInBlackList", boolean2String(NIMClient.getService(FriendService.class).isInBlackList(userInfo.getAccount())));
-            writableMap.putString("mute", boolean2String(NIMClient.getService(FriendService.class).isNeedMessageNotify(userInfo.getAccount())));
+//            writableMap.putString("mute", boolean2String(NIMClient.getService(FriendService.class).isNeedMessageNotify(userInfo.getAccount())));
+            writableMap.putString("notifyForNewMsg", boolean2String(NIMClient.getService(FriendService.class).isNeedMessageNotify(userInfo.getAccount())));
 
             writableMap.putString("contactId", userInfo.getAccount());
             writableMap.putString("name", userInfo.getName());

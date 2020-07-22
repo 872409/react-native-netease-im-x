@@ -1719,13 +1719,13 @@ public class RNNeteaseImModule extends ReactContextBaseJavaModule implements Lif
      * @param promise
      */
     @ReactMethod
-    public void startSession(String sessionId, String type, final Promise promise) {
+    public void startSession(String sessionId, String type, ReadableMap options, final Promise promise) {
 //        LogUtil.w(TAG, "startSession" + sessionId);
         if (TextUtils.isEmpty(sessionId)) {
 
             return;
         }
-        sessionService.startSession(handler, sessionId, type);
+        sessionService.startSession(handler, sessionId, type, options);
     }
 
 

@@ -22,6 +22,7 @@
 #define NTESCustom         (2)
 #import "NSDictionary+NTESJson.h"
 @interface ConversationViewController ()<NIMMediaManagerDelegate,NIMMediaManagerDelegate,NIMSystemNotificationManagerDelegate>{
+    NSDictionary *_sessionOptions;
     NSString *_sessionID;
     NSString *_type;
     NSInteger _index;
@@ -81,7 +82,8 @@
 //    return _mediaFetcher;
 //}
 
--(void)startSession:(NSString *)sessionID withType:(NSString *)type{
+-(void)startSession:(NSString *)sessionID withType:(NSString *)type  options:(nonnull  NSDictionary *)options{
+    _sessionOptions = options;
     _sessionID = sessionID;
     _type = type;
     self._session = [NIMSession session:_sessionID type:[_type integerValue]];
@@ -230,7 +232,7 @@
         [dic setObject:[NSString stringWithFormat:@"%f", message.timestamp] forKey:@"timeString"];
         [dic setObject:[NSNumber numberWithBool:NO] forKey:@"isShowTime"];
         [dic setObject:[NSString stringWithFormat:@"%@", message.messageId] forKey:@"msgId"];
-        NSLog(@"NIMMessageTypeCustom：message.messageType %ld",message.messageType);
+//        NSLog(@"NIMMessageTypeCustom：message.messageType %ld",message.messageType);
       
         if(message.messageType!=NIMMessageTypeTip){
             if(message.localExt!=nil){
@@ -1751,6 +1753,7 @@
 -(void)stopSession;
 {
     
+    _sessionOptions = nil;
     _sessionID = nil;
     _type = nil;
     self._session = nil;
@@ -1766,6 +1769,10 @@
 
 //判断是不是好友
 - (BOOL)isFriendToSendMessage:(NIMMessage *)message toSession:(NIMSession *)session{
+    if([_sessionOptions jsonBool:@"noFriendVerify"]){
+        return YES;
+    }
+    
     if (session.sessionType == NIMSessionTypeP2P) {//点对点
         NSString *strSessionId = session.sessionId;
         if ([[NIMSDK sharedSDK].userManager isMyFriend:strSessionId]) {//判断是否为自己好友

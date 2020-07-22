@@ -16,7 +16,7 @@ typedef void(^Errors)(id erro);
 
 +(instancetype)initWithConversationViewController;
 -(void)localSession:(NSInteger)index cerrentmessageId:(NSString *)currentMessageID success:(Success)succe err:(Errors)err;
--(void)startSession:(NSString *)sessionID withType:(NSString *)type;
+-(void)startSession:(NSString *)sessionID withType:(NSString *)type options:(nonnull  NSDictionary *)options;
 -(void)stopSession;
 //XX
 -(void)startChatMsg;

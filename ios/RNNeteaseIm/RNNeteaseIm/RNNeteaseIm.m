@@ -278,7 +278,7 @@ RCT_EXPORT_METHOD(setMessageNotify:(nonnull NSString *)contactId needNotify:(non
 //刷新最近会话列表
 - (void)updateMessageList{
     [[NIMViewController initWithController]getResouces];
-    NSLog(@"---updateMessageList");
+//    NSLog(@"---updateMessageList");
 }
 
 //删除最近会话列表
@@ -319,8 +319,8 @@ RCT_EXPORT_METHOD(asReadSystemMessage:(nonnull  NSString *)notificationId){
 }
 
 //会话开始
-RCT_EXPORT_METHOD(startSession:(nonnull  NSString *)sessionId type:(nonnull  NSString *)type){
-    [[ConversationViewController initWithConversationViewController]startSession:sessionId withType:type];
+RCT_EXPORT_METHOD(startSession:(nonnull  NSString *)sessionId type:(nonnull  NSString *)type options:(nonnull  NSDictionary *)options){
+    [[ConversationViewController initWithConversationViewController]startSession:sessionId withType:type options:options];
 }
 
 //XX
@@ -837,7 +837,7 @@ RCT_EXPORT_METHOD(cleanCache){
 -(void)setSendState{
     NIMModel *mod = [NIMModel initShareMD];
     mod.myBlock = ^(NSInteger index, id param) {
-        NSLog(@"index %ld param:%@",index,param);
+//        NSLog(@"index %ld param:%@",index,param);
         switch (index) {
             case 0:
                 //网络状态
